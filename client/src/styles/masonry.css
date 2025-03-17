@@ -1,0 +1,98 @@
+/* Masonry Grid Styles */
+.masonry-grid {
+  display: block;
+}
+
+.masonry-item {
+  break-inside: avoid;
+  position: relative;
+}
+
+/* Animation for masonry items */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.masonry-item {
+  animation: fadeInUp 0.5s ease-out forwards;
+  animation-play-state: paused;
+}
+
+.masonry-item.in-view {
+  animation-play-state: running;
+}
+
+/* Responsive adjustments */
+@media (max-width: 640px) {
+  .masonry-grid {
+    column-count: 1;
+    margin-top: -10px; /* Negative margin to pull content up */
+    padding-top: 0; /* Remove padding */
+  }
+
+  .masonry-item {
+    margin-bottom: 16px; /* Standard spacing between items on mobile */
+  }
+
+  /* Standard animation for mobile */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Standard animation duration */
+  .masonry-item {
+    animation-duration: 0.5s;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1023px) {
+  .masonry-grid {
+    column-count: 2;
+  }
+}
+
+@media (min-width: 1024px) {
+  .masonry-grid {
+    column-count: 3;
+  }
+}
+
+/* Hover effects for category cards */
+.category-card-hover-effect:hover .category-name {
+  transform: translateX(8px);
+}
+
+.category-card-hover-effect:hover .category-image {
+  transform: scale(1.1);
+}
+
+.category-card-hover-effect:hover .category-overlay {
+  opacity: 0.9;
+}
+
+.category-card-hover-effect:hover .category-description {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.category-card-hover-effect:hover .category-button {
+  transform: translateX(4px);
+}
+
+.category-card-hover-effect:hover .category-line {
+  width: 100%;
+}

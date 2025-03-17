@@ -1,0 +1,383 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+.table-scroll::-webkit-scrollbar {
+  display: block;
+  height: 6px; /* Adjust scrollbar thickness */
+}
+
+.table-scroll::-webkit-scrollbar-thumb {
+  background: var(--muted); /* Scrollbar color */
+  border-radius: 3px;
+}
+
+.table-scroll::-webkit-scrollbar-thumb:hover {
+  background: var(--foreground); /* Darker color on hover */
+}
+
+
+body {
+  font-family: 'Lato', serif;
+}
+@layer base {
+  /* Light Theme (Default - Gray) */
+  :root {
+    --background: #ffffff;
+    --foreground: #000000;
+    --playground: #ffffff;
+    --card: #ffffff;
+    --card-foreground: #333333;
+    --primary: #2c3315;
+    --primary-foreground: #f0f0f0;
+    --secondary: #2b2b2b;
+    --secondary-foreground: #e0e0e0;
+    --muted: #000000;
+    --muted-foreground: #2c3315;
+    --accent: #272d12;
+    --accent-foreground: #f0f0f0;
+    --destructive: #e53935;
+    --destructive-foreground: #ffffff;
+    --border: #bdbdbd;
+    --input: #bdbdbd;
+    --ring: #333333;
+    --radius: 0.5rem;
+    --chart-1: #f44336;
+    --chart-2: #2196f3;
+    --chart-3: #4caf50;
+    --chart-4: #ff9800;
+    --chart-5: #9c27b0;
+  }
+
+  /* Dark Theme (Black) */
+  .dark {
+    --background: #121212;
+    --foreground: #ffffff;
+    --playground: #1e1e1e;
+    --card: #1e1e1e;
+    --card-foreground: #ffffff;
+    --primary: #333333;
+    --primary-foreground: #ffffff;
+    --secondary: #2a2a2a;
+    --secondary-foreground: #ffffff;
+    --muted: #555555;
+    --muted-foreground: #e0e0e0;
+    --accent: #666666;
+    --accent-foreground: #ffffff;
+    --destructive: #d32f2f;
+    --destructive-foreground: #ffffff;
+    --border: #444444;
+    --input: #444444;
+    --ring: #ffffff;
+    --chart-1: #f44336;
+    --chart-2: #2196f3;
+    --chart-3: #4caf50;
+    --chart-4: #ff9800;
+    --chart-5: #9c27b0;
+  }
+
+  /* Emerald Theme */
+  .emerald {
+    --background: #064e3b;
+    --foreground: #ffffff;
+    --playground: #065f46;
+    --card: #065f46;
+    --card-foreground: #ffffff;
+    --primary: #059669;
+    --primary-foreground: #ffffff;
+    --secondary: #10b981;
+    --secondary-foreground: #ffffff;
+    --muted: #047857;
+    --muted-foreground: #d1fae5;
+    --accent: #047857;
+    --accent-foreground: #ffffff;
+    --destructive: #e11d48;
+    --destructive-foreground: #ffffff;
+    --border: #10b981;
+    --input: #10b981;
+    --ring: #34d399;
+    --chart-1: #059669;
+    --chart-2: #10b981;
+    --chart-3: #34d399;
+    --chart-4: #6ee7b7;
+    --chart-5: #a7f3d0;
+  }
+
+  /* Wine Theme */
+  .wine {
+    --background: #7f1d1d;
+    --foreground: #ffffff;
+    --playground: #9f1239;
+    --card: #9f1239;
+    --card-foreground: #ffffff;
+    --primary: #be123c;
+    --primary-foreground: #ffffff;
+    --secondary: #e11d48;
+    --secondary-foreground: #ffffff;
+    --muted: #9f1239;
+    --muted-foreground: #fecdd3;
+    --accent: #be123c;
+    --accent-foreground: #ffffff;
+    --destructive: #7f1d1d;
+    --destructive-foreground: #ffffff;
+    --border: #e11d48;
+    --input: #e11d48;
+    --ring: #fb7185;
+    --chart-1: #9f1239;
+    --chart-2: #be123c;
+    --chart-3: #e11d48;
+    --chart-4: #fb7185;
+    --chart-5: #fda4af;
+  }
+}
+
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .glow-effect {
+    box-shadow: 0 0 10px 2px rgba(211, 47, 47, 0.5),
+                0 0 20px 4px rgba(211, 47, 47, 0.3),
+                0 0 30px 6px rgba(211, 47, 47, 0.2);
+    transition: box-shadow 0.3s ease-in-out;
+  }
+
+  .glow-effect:hover {
+    box-shadow: 0 0 15px 4px rgba(211, 47, 47, 0.7),
+                0 0 30px 8px rgba(211, 47, 47, 0.5),
+                0 0 45px 12px rgba(211, 47, 47, 0.3);
+  }
+}
+
+/* Custom Scrollbar Styles */
+.custom-scrollbar {
+  height: 80vh;
+  overflow-y: auto;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 12px; 
+  display: block; 
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: var(--background);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--muted);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--foreground);
+}
+
+
+
+
+.bg-auth-bg {
+  background-image: url('./assets/login-2.png');
+  background-size: cover;
+  background-position: top;
+}
+
+
+.animate-quote-in {
+  animation: quote-in 1s ease-out forwards;
+  animation-delay: 0.5s; /* adjust the delay to your liking */
+}
+
+.animate-quote-out {
+  animation: none;
+}
+
+@keyframes quote-in {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes quote-out {
+  0% {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+.slick-slide>div{
+    margin: 10px;
+}
+.slick-icons {
+  position: absolute;
+  width: 4rem;
+  height: 4rem;
+  border: 1px solid var(--foreground);
+  border-radius: 50%;
+  font-size: 1.2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+}
+
+.slick-icons:hover {
+  cursor: pointer;
+  background-color: var(--destructive-foreground);
+}
+
+.slick-icons--left,
+.slick-icons--right {
+  font-size: 2rem;
+}
+
+.slick-icons--left {
+ top: -5rem;
+  right: 5rem;
+}
+
+.slick-icons--right {
+  top: -5rem;
+  right: 0rem;
+}
+
+@media screen and (max-width: 768px) {
+  .slick-icons--left {
+    top: -4rem;
+    right: 5rem;
+  }
+
+  .slick-icons--right {
+    top: -4rem;
+    right: 0rem;
+  }
+  
+}
+
+/* Add the following custom animations in your global styles (Tailwind CSS config or a custom file) */
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shake {
+  0% {
+    transform: rotate(-5deg);
+  }
+  25% {
+    transform: rotate(5deg);
+  }
+  50% {
+    transform: rotate(-5deg);
+  }
+  75% {
+    transform: rotate(5deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 1.2s forwards;
+}
+
+.animate-shake {
+  animation: shake 0.8s ease-in-out infinite;
+}
+
+@keyframes fadeSlideUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fade-slide-up {
+  animation: fadeSlideUp 1s ease-out forwards;
+}
+
+.announcement-bar {
+  display: none;
+  background-color: var(--foreground);
+  width: 100%;
+  color: white;
+  font-size: 0.875rem;
+  align-items: center;
+  justify-content: center;
+  height: 2rem;
+  padding: 0 1rem;
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .announcement-bar {
+    display: flex;
+  }
+}
+
+.message-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 96rem;
+  margin: 0 auto;
+}
+
+@keyframes scroll {
+  0% {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+}
+
+.animate-scroll {
+  position: absolute;
+  animation: scroll 11s linear infinite;
+  white-space: nowrap;
+}
+
+
+
