@@ -47,6 +47,29 @@ function ThemeProvider({ children }) {
     if (currentTheme !== THEMES.LIGHT) {
       document.documentElement.classList.add(currentTheme);
     }
+
+    // Set a data attribute for easier CSS targeting
+    document.documentElement.setAttribute('data-theme', currentTheme);
+
+    // Update meta theme-color for mobile browsers
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      // Set appropriate color based on theme
+      switch (currentTheme) {
+        case THEMES.DARK:
+          metaThemeColor.setAttribute('content', '#121212');
+          break;
+        case THEMES.EMERALD:
+          metaThemeColor.setAttribute('content', '#064e3b');
+          break;
+        case THEMES.WINE:
+          metaThemeColor.setAttribute('content', '#7f1d1d');
+          break;
+        default:
+          metaThemeColor.setAttribute('content', '#ffffff');
+          break;
+      }
+    }
   }, [currentTheme]);
 
   return children;

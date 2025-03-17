@@ -10,6 +10,7 @@ const {
   registerIncognitoUser,
   getIncognitoUsers,
   loginAsIncognitoUser,
+  loginAsMainUser,
 } = require("../../controllers/auth/auth-controller");
 
 const router = express.Router();
@@ -23,6 +24,7 @@ router.post("/reset-password", resetPassword);
 router.post("/register-incognito", authMiddleware, registerIncognitoUser);
 router.get("/incognito-users", authMiddleware, getIncognitoUsers);
 router.post("/login-as-incognito", authMiddleware, loginAsIncognitoUser);
+router.post("/login-as-main", authMiddleware, loginAsMainUser);
 router.get("/check-auth", authMiddleware, (req, res) => {
   const user = req.user;
   res.status(200).json({

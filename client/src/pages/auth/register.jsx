@@ -2,9 +2,9 @@ import CommonForm from "@/components/common/form";
 import { useToast } from "@/components/ui/use-toast";
 import { registerFormControls } from "@/config";
 import { registerUser } from "@/store/auth-slice";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useDispatch } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useOutletContext } from "react-router-dom";
 import logo from "@/assets/logo3.png";
 
 const initialState = {
@@ -18,12 +18,45 @@ const initialState = {
   shoulderLength: "",
 };
 
+// Total number of fields to track progress
+const TOTAL_FIELDS = 8;
+
 function AuthRegister() {
   const [formData, setFormData] = useState(initialState);
   const [isFormValid, setIsFormValid] = useState(false);
+  const [filledFieldsCount, setFilledFieldsCount] = useState(0);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { setFormProgress } = useOutletContext() || {};
+
+  // Calculate form progress and update the mannequin
+  const updateFormProgress = useCallback(() => {
+    let count = 0;
+    if (formData.userName.trim()) count++;
+    if (formData.email.trim()) count++;
+    if (formData.password.trim()) count++;
+    if (formData.age) count++;
+    if (formData.height) count++;
+    if (formData.chestSize) count++;
+    if (formData.bodyLength) count++;
+    if (formData.shoulderLength) count++;
+
+    setFilledFieldsCount(count);
+
+    // Update the mannequin rotation via context or event
+    const progress = count / TOTAL_FIELDS;
+    if (setFormProgress) {
+      setFormProgress(progress);
+    } else {
+      // Fallback to custom event if context is not available
+      window.dispatchEvent(
+        new CustomEvent('form-progress', {
+          detail: { progress }
+        })
+      );
+    }
+  }, [formData, setFormProgress]);
 
   // Validate that all required fields are non-empty
   useEffect(() => {
@@ -41,6 +74,9 @@ function AuthRegister() {
     } else {
       setIsFormValid(false);
     }
+
+    // Update form progress for mannequin rotation
+    updateFormProgress();
   }, [
     formData.userName,
     formData.email,
@@ -49,7 +85,8 @@ function AuthRegister() {
     formData.height,
     formData.chestSize,
     formData.bodyLength,
-    formData.shoulderLength
+    formData.shoulderLength,
+    updateFormProgress
   ]);
 
   function onSubmit(event) {
@@ -76,10 +113,17 @@ function AuthRegister() {
 
     dispatch(registerUser(processedFormData)).then((data) => {
       if (data?.payload?.success) {
+        // Set progress to 100% when form is successfully submitted
+        if (setFormProgress) setFormProgress(1);
+
         toast({
           title: data?.payload?.message,
         });
-        navigate("/auth/login");
+
+        // Short delay to show the completed mannequin rotation
+        setTimeout(() => {
+          navigate("/auth/login");
+        }, 1000);
       } else {
         toast({
           title: data?.payload?.message,
@@ -88,6 +132,11 @@ function AuthRegister() {
       }
     });
   }
+
+  // Custom form data handler that updates the mannequin
+  const handleFormDataChange = (newFormData) => {
+    setFormData(newFormData);
+  };
 
   return (
     <div className="-mt-16 mx-auto w-full max-w-md space-y-6">
@@ -107,12 +156,15 @@ function AuthRegister() {
             Login
           </Link>
         </p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          {filledFieldsCount} of {TOTAL_FIELDS} fields completed
+        </p>
       </div>
       <CommonForm
         formControls={registerFormControls}
         buttonText={"Sign Up"}
         formData={formData}
-        setFormData={setFormData}
+        setFormData={handleFormDataChange}
         onSubmit={onSubmit}
         disabled={!isFormValid}
       />

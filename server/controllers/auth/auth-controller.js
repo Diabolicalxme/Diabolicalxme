@@ -407,11 +407,75 @@ const getIncognitoUsers = async (req, res) => {
   }
 };
 
+const loginAsMainUser = async (req, res) => {
+  // The client sends the stored mainAccessToken in the authorization header.
+  const mainToken = req.headers.authorization ? req.headers.authorization.split(" ")[1] : null;
+  if (!mainToken) {
+    return res.status(401).json({
+      success: false,
+      message: "Main account credentials not provided.",
+    });
+  }
+
+  try {
+    // Verify the provided main token.
+    const decoded = jwt.verify(mainToken, CLIENT_SECRET_KEY);
+    // Find the main user by id.
+    const mainUser = await User.findById(decoded.id);
+    if (!mainUser) {
+      return res.status(404).json({
+        success: false,
+        message: "Main user not found.",
+      });
+    }
+    // Generate new tokens for the main user.
+    const accessToken = jwt.sign(
+      {
+        id: mainUser._id,
+        role: mainUser.role,
+        email: mainUser.email,
+        userName: mainUser.userName,
+        category: mainUser.category,
+        isIncognito: false,
+      },
+      CLIENT_SECRET_KEY,
+      { expiresIn: "1d" }
+    );
+    const refreshToken = jwt.sign(
+      { id: mainUser._id, isIncognito: false },
+      CLIENT_SECRET_KEY,
+      { expiresIn: "7d" }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Switched to main account successfully.",
+      accessToken,
+      refreshToken,
+      user: {
+        email: mainUser.email,
+        role: mainUser.role,
+        id: mainUser._id,
+        userName: mainUser.userName,
+        category: mainUser.category,
+        isIncognito: false,
+      },
+    });
+  } catch (err) {
+    console.error("Error in loginAsMainUser:", err.message);
+    return res.status(401).json({
+      success: false,
+      message: "Invalid or expired main account credentials.",
+    });
+  }
+};
+
+
 // Login as an incognito user
 const loginAsIncognitoUser = async (req, res) => {
   try {
     const { incognitoUserId } = req.body;
-
+console.log('Received incognitoUserId:', incognitoUserId);
     // Verify the user is authenticated
     if (!req.user || !req.user.id) {
       return res.status(401).json({
@@ -488,5 +552,6 @@ module.exports = {
   resetPassword,
   registerIncognitoUser,
   getIncognitoUsers,
-  loginAsIncognitoUser
+  loginAsIncognitoUser,
+  loginAsMainUser,
 };

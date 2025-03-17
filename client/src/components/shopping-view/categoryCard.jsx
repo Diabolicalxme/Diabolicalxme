@@ -32,7 +32,7 @@ const CategoryCard = ({ categoryItem, index, variant = "default" }) => {
 
   return (
     <motion.div
-      className={`group relative overflow-hidden rounded-lg ${getCardHeight()} cursor-pointer`}
+      className={`group relative overflow-hidden  ${getCardHeight()} cursor-pointer`}
       onClick={handleClick}
       whileHover={{ y: -5 }}
       transition={{ duration: 0.3 }}

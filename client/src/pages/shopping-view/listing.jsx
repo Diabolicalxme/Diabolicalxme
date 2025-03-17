@@ -12,7 +12,7 @@ import { sortOptions } from "@/config";
 import { Helmet } from "react-helmet-async";
 import { fetchCategories } from "@/store/shop/categories-slice";
 import ShoppingProductTile from "@/components/shopping-view/product-tile";
-import banner from '@/assets/allproducts.png';
+import banner from '@/assets/account.jpg';
 
 function ShoppingListing() {
   const dispatch = useDispatch();

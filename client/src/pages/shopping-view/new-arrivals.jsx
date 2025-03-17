@@ -19,7 +19,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { Loader } from "@/components/ui/loader";
 import { Helmet } from "react-helmet-async";
-import newArrivalsBanner from "@/assets/newarrivals.png";
+import newArrivalsBanner from "@/assets/account.jpg";
 
 function NewArrivals() {
   const dispatch = useDispatch();

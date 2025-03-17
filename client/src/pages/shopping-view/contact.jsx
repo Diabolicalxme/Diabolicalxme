@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Facebook, Instagram, Mail, Phone, MessageSquare } from "lucide-react";
-import banner from "../../assets/contactus.png";
+import banner from "../../assets/account.jpg";
 import { createContact } from "@/store/shop/contact-slice";
 import { useToast } from "@/components/ui/use-toast";
 import { Helmet } from "react-helmet-async";

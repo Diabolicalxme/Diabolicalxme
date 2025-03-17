@@ -1,3 +1,4 @@
+
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import axios from "axios";
 
@@ -7,6 +8,8 @@ const initialState = {
   user: null,
   incognitoUsers: [],
   loadingIncognitoUsers: false,
+  // Optionally store main account info so we can switch back
+  mainAccount: null,
 };
 
 // Register User
@@ -28,14 +31,12 @@ export const registerUser = createAsyncThunk(
 // Register Incognito User (for a friend)
 export const registerIncognitoUser = createAsyncThunk(
   "/auth/register-incognito",
-  async (formData, { rejectWithValue, getState, dispatch }) => {
+  async (formData, { rejectWithValue, dispatch }) => {
     const url = `${import.meta.env.VITE_BACKEND_URL}/auth/register-incognito`;
     const accessToken = localStorage.getItem("accessToken");
-
     if (!accessToken) {
       return rejectWithValue("Authentication required");
     }
-
     try {
       const response = await axios.post(url, formData, {
         headers: {
@@ -43,12 +44,9 @@ export const registerIncognitoUser = createAsyncThunk(
         },
         withCredentials: true,
       });
-
-      // After successful registration, fetch the updated list of incognito users
       if (response.data.success) {
         dispatch(fetchIncognitoUsers());
       }
-
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -62,16 +60,12 @@ export const fetchIncognitoUsers = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     const url = `${import.meta.env.VITE_BACKEND_URL}/auth/incognito-users`;
     const accessToken = localStorage.getItem("accessToken");
-
     if (!accessToken) {
       return rejectWithValue("Authentication required");
     }
-
     try {
       const response = await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
       return response.data;
     } catch (error) {
@@ -80,35 +74,61 @@ export const fetchIncognitoUsers = createAsyncThunk(
   }
 );
 
-// Login as an Incognito User
+// Login as an Incognito User and store main credentials if not already stored
 export const loginAsIncognitoUser = createAsyncThunk(
   "/auth/login-as-incognito",
-  async (incognitoUserId, { rejectWithValue }) => {
+  async (incognitoUserId, { rejectWithValue, getState }) => {
     const url = `${import.meta.env.VITE_BACKEND_URL}/auth/login-as-incognito`;
     const accessToken = localStorage.getItem("accessToken");
-
     if (!accessToken) {
       return rejectWithValue("Authentication required");
     }
-
     try {
+      // Before switching, if we haven't saved the main account info, save the current token.
+      if (!localStorage.getItem("mainAccessToken")) {
+        localStorage.setItem("mainAccessToken", accessToken);
+      }
       const response = await axios.post(url,
         { incognitoUserId },
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
+          headers: { Authorization: `Bearer ${accessToken}` },
         }
       );
-
       const { accessToken: newAccessToken, refreshToken, user } = response.data;
-
-      // Store tokens in localStorage
       if (newAccessToken && refreshToken) {
         localStorage.setItem("accessToken", newAccessToken);
         localStorage.setItem("refreshToken", refreshToken);
       }
+      return response.data;
+    } catch (error) {
+      return rejectWithValue(error.response?.data || error.message);
+    }
+  }
+);
 
+// New thunk: Login as Main User (switch back)
+export const loginAsMainUser = createAsyncThunk(
+  "/auth/login-as-main",
+  async (_, { rejectWithValue }) => {
+    const url = `${import.meta.env.VITE_BACKEND_URL}/auth/login-as-main`;
+    // Retrieve the main account credentials (for example, mainAccessToken)
+    const mainToken = localStorage.getItem("mainAccessToken");
+    if (!mainToken) {
+      return rejectWithValue("Main account credentials not found");
+    }
+    try {
+      const response = await axios.post(url, {},
+        {
+          headers: { Authorization: `Bearer ${mainToken}` },
+        }
+      );
+      const { accessToken: newAccessToken, refreshToken, user } = response.data;
+      if (newAccessToken && refreshToken) {
+        localStorage.setItem("accessToken", newAccessToken);
+        localStorage.setItem("refreshToken", refreshToken);
+      }
+      // Optionally remove the stored main token (or leave it for future switches)
+      localStorage.removeItem("mainAccessToken");
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -124,13 +144,10 @@ export const loginUser = createAsyncThunk(
     try {
       const response = await axios.post(url, formData);
       const { accessToken, refreshToken, user } = response.data;
-
-      // Store tokens in localStorage
       if (accessToken && refreshToken) {
         localStorage.setItem("accessToken", accessToken);
         localStorage.setItem("refreshToken", refreshToken);
       }
-
       return response.data;
     } catch (error) {
       return rejectWithValue(error.response?.data || error.message);
@@ -143,21 +160,16 @@ export const refreshToken = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     const url = `${import.meta.env.VITE_BACKEND_URL}/auth/refresh`;
     const refreshToken = localStorage.getItem("refreshToken");
-
     if (!refreshToken) {
       return rejectWithValue("No refresh token found");
     }
-
     try {
       const response = await axios.post(url, { refreshToken });
       const { accessToken } = response.data;
-
-      // Store the new access token in localStorage
       localStorage.setItem("accessToken", accessToken);
-
       return { accessToken };
     } catch (error) {
-      localStorage.removeItem("refreshToken"); // Clear refresh token if invalid
+      localStorage.removeItem("refreshToken");
       return rejectWithValue(error.response?.data || error.message);
     }
   }
@@ -169,42 +181,29 @@ export const checkAuth = createAsyncThunk(
   async (_, { rejectWithValue, dispatch }) => {
     const url = `${import.meta.env.VITE_BACKEND_URL}/auth/check-auth`;
     let accessToken = localStorage.getItem("accessToken");
-
     if (!accessToken) {
       return rejectWithValue("No access token found");
     }
-
     try {
       const response = await axios.get(url, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-        },
+        headers: { Authorization: `Bearer ${accessToken}` },
       });
-
       return response.data;
     } catch (error) {
       if (error.response?.status === 401) {
-        // Attempt to refresh the token on expiration
         try {
           const refreshResponse = await dispatch(refreshToken()).unwrap();
-
           accessToken = refreshResponse.accessToken;
-
           if (accessToken) {
-            // Retry the check-auth request with the new access token
             const retryResponse = await axios.get(url, {
-              headers: {
-                Authorization: `Bearer ${accessToken}`,
-              },
+              headers: { Authorization: `Bearer ${accessToken}` },
             });
-
             return retryResponse.data;
           }
         } catch (refreshError) {
           return rejectWithValue(refreshError.response?.data || refreshError.message);
         }
       }
-
       localStorage.removeItem("accessToken");
       localStorage.removeItem("refreshToken");
       return rejectWithValue(error.response?.data || error.message);
@@ -214,12 +213,11 @@ export const checkAuth = createAsyncThunk(
 
 // Logout User
 export const logoutUser = createAsyncThunk("/auth/logout", async () => {
-  // Remove tokens from localStorage
   localStorage.removeItem("accessToken");
   localStorage.removeItem("refreshToken");
+  localStorage.removeItem("mainAccessToken");
   return { success: true };
 });
-
 
 export const forgotPassword = createAsyncThunk(
   "/auth/forgot-password",
@@ -247,10 +245,6 @@ export const resetPassword = createAsyncThunk(
   }
 );
 
-
-
-
-
 const authSlice = createSlice({
   name: "auth",
   initialState,
@@ -262,130 +256,38 @@ const authSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder
-      // Register User
-      .addCase(registerUser.pending, (state) => {
-        state.isLoading = true;
-      })
-      .addCase(registerUser.fulfilled, (state) => {
-        state.isLoading = false;
-        state.user = null;
-        state.isAuthenticated = false;
-      })
-      .addCase(registerUser.rejected, (state) => {
-        state.isLoading = false;
-        state.user = null;
-        state.isAuthenticated = false;
-      })
-      // Register Incognito User
-      .addCase(registerIncognitoUser.pending, (state) => {
-        state.isLoading = true;
-      })
-      .addCase(registerIncognitoUser.fulfilled, (state) => {
-        state.isLoading = false;
-      })
-      .addCase(registerIncognitoUser.rejected, (state) => {
-        state.isLoading = false;
-      })
-
-      // Fetch Incognito Users
-      .addCase(fetchIncognitoUsers.pending, (state) => {
-        state.loadingIncognitoUsers = true;
-      })
-      .addCase(fetchIncognitoUsers.fulfilled, (state, action) => {
-        state.loadingIncognitoUsers = false;
-        state.incognitoUsers = action.payload.incognitoUsers || [];
-      })
-      .addCase(fetchIncognitoUsers.rejected, (state) => {
-        state.loadingIncognitoUsers = false;
-        state.incognitoUsers = [];
-      })
-
-      // Login as Incognito User
-      .addCase(loginAsIncognitoUser.pending, (state) => {
-        state.isLoading = true;
-      })
-      .addCase(loginAsIncognitoUser.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.user = action.payload.user || null;
-        state.isAuthenticated = action.payload.success;
-      })
-      .addCase(loginAsIncognitoUser.rejected, (state) => {
-        state.isLoading = false;
-      })
-      // Login User
-      .addCase(loginUser.pending, (state) => {
-        state.isLoading = true;
-      })
-      .addCase(loginUser.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.user = action.payload.user || null;
-        state.isAuthenticated = action.payload.success;
-      })
-      .addCase(loginUser.rejected, (state) => {
-        state.isLoading = false;
-        state.user = null;
-        state.isAuthenticated = false;
-      })
-      // Refresh Token
-      .addCase(refreshToken.pending, (state) => {
-        state.isLoading = true;
-      })
-      .addCase(refreshToken.fulfilled, (state) => {
-        state.isLoading = false;
-      })
-      .addCase(refreshToken.rejected, (state) => {
-        state.isLoading = false;
-        state.user = null;
-        state.isAuthenticated = false;
-      })
-      // Check Auth
-      .addCase(checkAuth.pending, (state) => {
-        state.isLoading = true;
-      })
-      .addCase(checkAuth.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.user = action.payload.user || null;
-        state.isAuthenticated = action.payload.success;
-      })
-      .addCase(checkAuth.rejected, (state) => {
-        state.isLoading = false;
-        state.user = null;
-        state.isAuthenticated = false;
-      })
-
-      .addCase(forgotPassword.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(forgotPassword.fulfilled, (state) => {
-        state.isLoading = false;
-      })
-      .addCase(forgotPassword.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload;
-      })
-
-      .addCase(resetPassword.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-
-      .addCase(resetPassword.fulfilled, (state) => {
-        state.isLoading = false;
-      })
-
-      .addCase(resetPassword.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload;
-      })
-
-      
-      // Logout User
-      .addCase(logoutUser.fulfilled, (state) => {
-        state.isLoading = false;
-        state.user = null;
-        state.isAuthenticated = false;
-      });
+      // Handle register, login and other thunks as before...
+      .addCase(registerUser.pending, (state) => { state.isLoading = true; })
+      .addCase(registerUser.fulfilled, (state) => { state.isLoading = false; state.user = null; state.isAuthenticated = false; })
+      .addCase(registerUser.rejected, (state) => { state.isLoading = false; state.user = null; state.isAuthenticated = false; })
+      .addCase(registerIncognitoUser.pending, (state) => { state.isLoading = true; })
+      .addCase(registerIncognitoUser.fulfilled, (state) => { state.isLoading = false; })
+      .addCase(registerIncognitoUser.rejected, (state) => { state.isLoading = false; })
+      .addCase(fetchIncognitoUsers.pending, (state) => { state.loadingIncognitoUsers = true; })
+      .addCase(fetchIncognitoUsers.fulfilled, (state, action) => { state.loadingIncognitoUsers = false; state.incognitoUsers = action.payload.incognitoUsers || []; })
+      .addCase(fetchIncognitoUsers.rejected, (state) => { state.loadingIncognitoUsers = false; state.incognitoUsers = []; })
+      .addCase(loginAsIncognitoUser.pending, (state) => { state.isLoading = true; })
+      .addCase(loginAsIncognitoUser.fulfilled, (state, action) => { state.isLoading = false; state.user = action.payload.user || null; state.isAuthenticated = action.payload.success; })
+      .addCase(loginAsIncognitoUser.rejected, (state) => { state.isLoading = false; })
+      .addCase(loginAsMainUser.pending, (state) => { state.isLoading = true; })
+      .addCase(loginAsMainUser.fulfilled, (state, action) => { state.isLoading = false; state.user = action.payload.user || null; state.isAuthenticated = action.payload.success; })
+      .addCase(loginAsMainUser.rejected, (state) => { state.isLoading = false; })
+      .addCase(loginUser.pending, (state) => { state.isLoading = true; })
+      .addCase(loginUser.fulfilled, (state, action) => { state.isLoading = false; state.user = action.payload.user || null; state.isAuthenticated = action.payload.success; })
+      .addCase(loginUser.rejected, (state) => { state.isLoading = false; state.user = null; state.isAuthenticated = false; })
+      .addCase(refreshToken.pending, (state) => { state.isLoading = true; })
+      .addCase(refreshToken.fulfilled, (state) => { state.isLoading = false; })
+      .addCase(refreshToken.rejected, (state) => { state.isLoading = false; state.user = null; state.isAuthenticated = false; })
+      .addCase(checkAuth.pending, (state) => { state.isLoading = true; })
+      .addCase(checkAuth.fulfilled, (state, action) => { state.isLoading = false; state.user = action.payload.user || null; state.isAuthenticated = action.payload.success; })
+      .addCase(checkAuth.rejected, (state) => { state.isLoading = false; state.user = null; state.isAuthenticated = false; })
+      .addCase(forgotPassword.pending, (state) => { state.isLoading = true; state.error = null; })
+      .addCase(forgotPassword.fulfilled, (state) => { state.isLoading = false; })
+      .addCase(forgotPassword.rejected, (state, action) => { state.isLoading = false; state.error = action.payload; })
+      .addCase(resetPassword.pending, (state) => { state.isLoading = true; state.error = null; })
+      .addCase(resetPassword.fulfilled, (state) => { state.isLoading = false; })
+      .addCase(resetPassword.rejected, (state, action) => { state.isLoading = false; state.error = action.payload; })
+      .addCase(logoutUser.fulfilled, (state) => { state.isLoading = false; state.user = null; state.isAuthenticated = false; });
   },
 });
 

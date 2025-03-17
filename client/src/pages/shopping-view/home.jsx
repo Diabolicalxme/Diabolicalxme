@@ -25,6 +25,8 @@ import InstagramFeed from "@/components/shopping-view/instagramFeed";
 import Testimonials from "@/components/shopping-view/testimonials-new";
 import Banner from "@/components/shopping-view/banner";
 import ProductSlider from "@/components/shopping-view/product-slider";
+import CategoryPicks from "@/components/shopping-view/category-picks";
+import BackgroundImage from "@/components/shopping-view/background-image";
 import banner from "../../assets/banner.jpg";
 import { Loader } from "../../components/ui/loader";
 
@@ -101,7 +103,6 @@ function ShoppingHome() {
 console.log(categoriesList  )
   return (
     <>
-
       <Helmet>
         <title>Best Sarees Online - Buy Now | Rachana Boutique</title>
         <meta name="description" content="Discover the finest sarees with exclusive designs. Shop now for the best collections at Rachana Boutique!" />
@@ -119,18 +120,23 @@ console.log(categoriesList  )
         <meta name="twitter:image" content="https://example.com/path-to-your-saree-image.jpg" />
       </Helmet>
 
+      {/* Full-page background image that changes with theme */}
+      <BackgroundImage />
 
-      <div className="flex flex-col min-h-screen">
-        <div className="relative w-full h-[400px] md:h-[700px] mb-0">
-          <Carousel bannersList={bannersList} />
-        </div>
-      
-        <section className="pt-8 pb-16 bg-white">
+      <div className="flex flex-col min-h-screen relative z-10">
+        {/* Category-based Product Picks */}
+        <CategoryPicks
+          products={productList}
+          handleGetProductDetails={handleGetProductDetails}
+          handleAddtoCart={handleAddtoCart}
+        />
+
+        <section className="pt-8 pb-16">
           <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4">Shop by Category</h2>
-              <div className="w-24 h-1 bg-black mx-auto mb-6"></div>
-              <p className="text-gray-600">Discover our curated collections designed for every style and occasion</p>
+            <div className="max-w-3xl mx-auto text-center mb-12 backdrop-blur-sm p-6 rounded-lg">
+              <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4 text-foreground">Shop by Category</h2>
+              <div className="w-24 h-1 bg-foreground mx-auto mb-6"></div>
+              <p className="text-foreground">Discover our curated collections designed for every style and occasion</p>
             </div>
 
             {/* Masonry layout container */}
@@ -162,7 +168,7 @@ console.log(categoriesList  )
             <div className="text-center mt-12">
               <button
                 onClick={() => navigate("/shop/collections")}
-                className="inline-block px-8 py-3 border-2 border-black hover:bg-black hover:text-white transition-colors duration-300 uppercase tracking-wider text-sm font-medium"
+                className="inline-block px-8 py-3 border-2 border-foreground hover:bg-foreground hover:text-background transition-colors duration-300 uppercase tracking-wider text-sm font-medium backdrop-blur-sm"
               >
                 View All Collections
               </button>
@@ -170,50 +176,6 @@ console.log(categoriesList  )
           </div>
         </section>
 
-      {/*   <section className="pt-0 pb-8 md:py-16 bg-white">
-          <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto text-center mb-2 md:mb-12">
-              <h2 className="text-xl md:text-4xl font-light uppercase tracking-wide mb-1 md:mb-4">Shop by Category</h2>
-              <div className="w-12 md:w-24 h-1 bg-black mx-auto mb-1 md:mb-6"></div>
-              <p className="text-xs md:text-base text-gray-600">Discover our curated collections designed for every style and occasion</p>
-            </div>
-
-        
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              {categoriesList && categoriesList.map((categoryItem, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: false, amount: 0.1 }}
-                  transition={{
-                    duration: 0.5,
-                    delay: index * 0.1,
-                    type: "spring",
-                    stiffness: 50,
-                  }}
-                  className="w-full"
-                >
-                  <CategoryCard
-                    categoryItem={categoryItem}
-                    index={index}
-                    variant="masonry"
-                  />
-                </motion.div>
-              ))}
-            </div>
-
-      
-            <div className="text-center mt-12">
-              <button
-                onClick={() => navigate('/shop/collections')}
-                className="inline-block px-8 py-3 border-2 border-black hover:bg-black hover:text-white transition-colors duration-300 uppercase tracking-wider text-sm font-medium"
-              >
-                View All Collections
-              </button>
-            </div>
-          </div>
-        </section> */}
         {/* Featured Products Slider */}
         {productList && productList.filter(product => product?.isFeatured).length > 0 && (
           <ProductSlider
@@ -222,7 +184,7 @@ console.log(categoriesList  )
             handleAddtoCart={handleAddtoCart}
             title="Featured Collection"
             description="Discover our most popular styles and seasonal favorites"
-            bgColor="bg-card/50"
+            bgColor="backdrop-blur-sm"
           />
         )}
 
@@ -234,61 +196,9 @@ console.log(categoriesList  )
             handleAddtoCart={handleAddtoCart}
             title="New Arrivals"
             description="Explore our latest additions and be the first to wear them"
-            bgColor="bg-background"
+            bgColor="backdrop-blur-sm"
           />
         )}
-
-        {/* <section className="py-6 md:py-12">
-          <div className="container mx-auto px-4">
-            <h2 className="text-2xl md:text-3xl font-bold text-center mb-8">Watch And Buy</h2>
-          </div>
-          <div className="flex h-full w-full items-center justify-center px-2">
-            <div className="container mx-auto px-4">
-              <ul
-                ref={wrapperRef}
-                className="group flex flex-col gap-3 md:h-[640px] md:flex-row md:gap-[1.5%]"
-              >
-                {productList &&
-                  productList.length > 0 &&
-                  productList
-                    .filter((productItem) => productItem?.isWatchAndBuy)
-                    .map((productItem, index) => (
-                      <motion.li
-                        key={productItem._id}
-                        ref={ref}
-                        onClick={() => setActiveItem(index)}
-                        aria-current={activeItem === index}
-                        initial={{ x: -100, opacity: 0 }}
-                        animate={{
-                          x: inView ? 0 : -100,
-                          opacity: inView ? 1 : 0,
-                        }}
-                        transition={{
-                          type: "spring",
-                          stiffness: 50,
-                          damping: 25,
-                        }}
-                        className={classNames(
-                          "relative cursor-pointer md:w-[16%] md:first:w-[16%] md:last:w-[16%] md:[&[aria-current='true']]:w-[40%]",
-                          "md:[transition:width_var(--transition,200ms_ease-in)]",
-                          "md:before-block before:absolute before:bottom-0 before:left-[-10px] before:right-[-10px] before:top-0 before:hidden before:bg-white",
-                          "md:[&:not(:hover),&:not(:first),&:not(:last)]:group-hover:w-[14%] md:hover:w-[20%]",
-                          "first:pointer-events-auto last:pointer-events-auto",
-                          "md:[&_img]:opacity-100"
-                        )}
-                      >
-                        <FastMovingCard
-                          item={productItem}
-                          index={index}
-                          activeItem={activeItem}
-                          handleAddtoCart={handleAddtoCart}
-                        />
-                      </motion.li>
-                    ))}
-              </ul>
-            </div>
-          </div>
-        </section> */}
 
         <section>
           <Banner
@@ -300,10 +210,10 @@ console.log(categoriesList  )
 
         <section className="py-16">
           <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4">Follow Our Style</h2>
+            <div className="max-w-3xl mx-auto text-center mb-12 backdrop-blur-sm p-6 rounded-lg">
+              <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4 text-foreground">Follow Our Style</h2>
               <div className="w-24 h-1 bg-foreground mx-auto mb-6"></div>
-              <p className="text-muted-foreground">Get inspired by our Instagram feed and share your looks with #OurFashionStyle</p>
+              <p className="text-foreground">Get inspired by our Instagram feed and share your looks with #OurFashionStyle</p>
             </div>
             <InstagramFeed posts={instaFeedPosts} />
 
@@ -312,7 +222,7 @@ console.log(categoriesList  )
                 href="https://instagram.com"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm uppercase tracking-wider font-medium hover:underline"
+                className="inline-flex items-center gap-2 text-sm uppercase tracking-wider font-medium hover:underline backdrop-blur-sm px-4 py-2 rounded text-foreground"
               >
                 Follow us on Instagram
                 <ArrowUpRight className="h-4 w-4" />
@@ -321,12 +231,12 @@ console.log(categoriesList  )
           </div>
         </section>
 
-        <section className="py-16 bg-card/50">
+        <section className="py-16">
           <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4">Customer Stories</h2>
+            <div className="max-w-3xl mx-auto text-center mb-12 backdrop-blur-sm p-6 rounded-lg">
+              <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4 text-foreground">Customer Stories</h2>
               <div className="w-24 h-1 bg-foreground mx-auto mb-6"></div>
-              <p className="text-muted-foreground">Hear what our customers have to say about their experience</p>
+              <p className="text-foreground">Hear what our customers have to say about their experience</p>
             </div>
             <Testimonials />
           </div>
