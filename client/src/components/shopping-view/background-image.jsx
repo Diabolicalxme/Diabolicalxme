@@ -26,7 +26,7 @@ function BackgroundImage() {
 
   return (
     <div
-      className="fixed inset-0 w-full h-full z-0 bg-cover  "
+      className="fixed inset-0 w-full h-full z-0 bg-cover pointer-events-none"
       style={{
         backgroundImage: `url(${getBackgroundImage()})`,
         backgroundAttachment: 'fixed',
@@ -38,7 +38,7 @@ function BackgroundImage() {
     >
       {/* Subtle overlay for better text readability */}
       <div
-        className="absolute inset-0 z-0 opacity-20"
+        className="absolute inset-0 z-0 opacity-20 pointer-events-none"
         style={{
           backgroundColor: currentTheme === THEMES.DARK ? '#000' :
                           currentTheme === THEMES.EMERALD ? '#064e3b' :

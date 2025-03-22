@@ -128,7 +128,7 @@ const Footer = () => {
           </div>
         </div>
       </div>
-      <footer className="bg-card text-card-foreground">
+      <footer className="bg-card text-card-foreground relative z-20">
         <div className="container mx-auto pt-6 pb-3 px-4">
           {/* Flex Container */}
           <div className="flex flex-col md:flex-row md:justify-between md:gap-x-12 gap-y-8">

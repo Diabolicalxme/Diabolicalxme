@@ -8,10 +8,13 @@ function ShoppingLayout() {
       {/* common header */}
       <ShoppingHeader />
       {/* Add padding-top to account for fixed header */}
-      <main className="flex flex-col w-full pt-[104px] md:pt-[104px] flex-grow">
+      <main className="flex flex-col w-full pt-[104px] md:pt-[104px] flex-grow relative">
         <Outlet />
       </main>
-      <Footer />
+      {/* Footer with higher z-index to ensure visibility */}
+      <div className="relative z-20">
+        <Footer />
+      </div>
     </div>
   );
 }

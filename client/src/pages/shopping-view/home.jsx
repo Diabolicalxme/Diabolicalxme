@@ -123,7 +123,7 @@ console.log(categoriesList  )
       {/* Full-page background image that changes with theme */}
       <BackgroundImage />
 
-      <div className="flex flex-col min-h-screen relative z-10">
+      <div className="flex flex-col relative z-10">
         {/* Category-based Product Picks */}
         <CategoryPicks
           products={productList}
@@ -241,6 +241,9 @@ console.log(categoriesList  )
             <Testimonials />
           </div>
         </section>
+
+        {/* Add extra space to ensure footer visibility */}
+        <div className="h-16"></div>
       </div>
     </>
   );
