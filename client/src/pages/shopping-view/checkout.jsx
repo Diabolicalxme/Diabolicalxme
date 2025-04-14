@@ -8,7 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader } from "../../components/ui/loader";
 import { Helmet } from "react-helmet-async";
-import { ChevronRight, ShoppingBag, MapPin, CreditCard } from "lucide-react";
+import { ShoppingBag, MapPin, CreditCard } from "lucide-react";
 
 function ShoppingCheckout() {
   const { cartItems } = useSelector((state) => state.shopCart);
@@ -140,7 +140,7 @@ function ShoppingCheckout() {
             contact: user?.phone,
           },
           theme: {
-            color: "#000000",
+            color: "#093624", // Bottle green for Hector theme
           },
         };
 
@@ -178,7 +178,7 @@ function ShoppingCheckout() {
         <meta name="description" content="Complete your purchase at Rachana Boutique. Secure checkout process for your selected items." />
       </Helmet>
 
-      <div className="bg-white">
+      <div className="bg-background">
         {/* Banner */}
         <div className="relative w-full h-[250px] md:h-[300px] overflow-hidden">
           <img
@@ -186,7 +186,7 @@ function ShoppingCheckout() {
             alt="Checkout"
             className="w-full h-full object-cover object-center"
           />
-          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-primary/50 flex items-center justify-center">
             <div className="text-center">
               <h1 className="text-4xl md:text-5xl font-light uppercase tracking-wide text-white mb-4">
                 Checkout
@@ -196,7 +196,7 @@ function ShoppingCheckout() {
           </div>
         </div>
 
-   
+
 
         {/* Checkout Content */}
         <div className="container mx-auto px-4 py-8 md:py-16">
@@ -205,24 +205,24 @@ function ShoppingCheckout() {
             <div className="mb-12">
               <div className="flex justify-between items-center max-w-md mx-auto">
                 <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center mb-2">
+                  <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center mb-2">
                     <ShoppingBag className="h-5 w-5" />
                   </div>
-                  <span className="text-xs uppercase tracking-wide">Cart</span>
+                  <span className="text-xs uppercase tracking-wide text-foreground">Cart</span>
                 </div>
-                <div className="flex-1 h-0.5 bg-gray-300 mx-2"></div>
+                <div className="flex-1 h-0.5 bg-muted mx-2"></div>
                 <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 rounded-full bg-black text-white flex items-center justify-center mb-2">
+                  <div className="w-10 h-10 rounded-full bg-primary text-primary-foreground flex items-center justify-center mb-2">
                     <MapPin className="h-5 w-5" />
                   </div>
-                  <span className="text-xs uppercase tracking-wide">Address</span>
+                  <span className="text-xs uppercase tracking-wide text-foreground">Address</span>
                 </div>
-                <div className="flex-1 h-0.5 bg-gray-300 mx-2"></div>
+                <div className="flex-1 h-0.5 bg-muted mx-2"></div>
                 <div className="flex flex-col items-center">
-                  <div className="w-10 h-10 rounded-full bg-gray-200 text-gray-500 flex items-center justify-center mb-2">
+                  <div className="w-10 h-10 rounded-full bg-muted text-muted-foreground flex items-center justify-center mb-2">
                     <CreditCard className="h-5 w-5" />
                   </div>
-                  <span className="text-xs uppercase tracking-wide">Payment</span>
+                  <span className="text-xs uppercase tracking-wide text-foreground">Payment</span>
                 </div>
               </div>
             </div>
@@ -230,9 +230,9 @@ function ShoppingCheckout() {
             {/* Main Content */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Left Side: Address Selection */}
-              <div className="bg-white border border-gray-200 p-6 md:p-8 rounded-md shadow-sm">
+              <div className="bg-card text-card-foreground border border-input p-6 md:p-8 rounded-md shadow-sm">
                 <h2 className="text-2xl font-light uppercase tracking-wide mb-4">Shipping Address</h2>
-                <div className="w-16 h-0.5 bg-black mb-6"></div>
+                <div className="w-16 h-0.5 bg-primary mb-6"></div>
                 <Address
                   selectedId={currentSelectedAddress}
                   setCurrentSelectedAddress={setCurrentSelectedAddress}
@@ -240,9 +240,9 @@ function ShoppingCheckout() {
               </div>
 
               {/* Right Side: Order Summary */}
-              <div className="bg-white border border-gray-200 p-6 md:p-8 rounded-md shadow-sm">
+              <div className="bg-card text-card-foreground border border-input p-6 md:p-8 rounded-md shadow-sm">
                 <h2 className="text-2xl font-light uppercase tracking-wide mb-4">Order Summary</h2>
-                <div className="w-16 h-0.5 bg-black mb-6"></div>
+                <div className="w-16 h-0.5 bg-primary mb-6"></div>
 
                 {/* Cart Items */}
                 <div className="space-y-4 mb-8">
@@ -251,23 +251,23 @@ function ShoppingCheckout() {
                       <UserCartItemsContent key={index} cartItem={item} />
                     ))
                   ) : (
-                    <div className="text-center py-8 text-gray-500">
+                    <div className="text-center py-8 text-muted-foreground">
                       Your cart is empty
                     </div>
                   )}
                 </div>
 
                 {/* Order Totals */}
-                <div className="border-t border-gray-200 pt-4 space-y-3">
-                  <div className="flex justify-between text-gray-600">
+                <div className="border-t border-input pt-4 space-y-3">
+                  <div className="flex justify-between text-foreground">
                     <span>Subtotal</span>
                     <span>₹{formattedTotal}</span>
                   </div>
-                  <div className="flex justify-between text-gray-600">
+                  <div className="flex justify-between text-foreground">
                     <span>Shipping</span>
                     <span>Free</span>
                   </div>
-                  <div className="flex justify-between font-medium text-lg pt-3 border-t border-gray-200">
+                  <div className="flex justify-between font-medium text-lg pt-3 border-t border-input">
                     <span>Total</span>
                     <span>₹{formattedTotal}</span>
                   </div>
@@ -278,12 +278,12 @@ function ShoppingCheckout() {
                   <button
                     onClick={handleInitiateRazorpayPayment}
                     disabled={isPaymentStart || cartItems.length === 0}
-                    className="w-full px-8 py-4 border-2 border-black bg-black text-white hover:bg-white hover:text-black transition-colors duration-300 uppercase tracking-wider text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full px-8 py-4 border-2 border-primary bg-primary text-primary-foreground hover:bg-transparent hover:text-foreground transition-colors duration-300 uppercase tracking-wider text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {isPaymentStart ? "Processing Payment..." : "Proceed to Payment"}
                   </button>
 
-                  <p className="text-xs text-center text-gray-500 mt-4">
+                  <p className="text-xs text-center text-muted-foreground mt-4">
                     By proceeding, you agree to our Terms of Service and Privacy Policy
                   </p>
                 </div>

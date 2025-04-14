@@ -36,7 +36,7 @@ function AdminBanners() {
   const [imageLoadingState, setImageLoadingState] = useState(false);
   const [currentEditedId, setCurrentEditedId] = useState(null);
 
-  const { bannerList } = useSelector((state) => state.adminBanners);
+  const { bannerList, isLoading } = useSelector((state) => state.adminBanners);
 
   const dispatch = useDispatch();
   const { toast } = useToast();
@@ -129,6 +129,13 @@ function AdminBanners() {
         </Button>
       </div>
 
+      {isLoading ? (
+      <div className="flex items-center justify-center w-full mt-16 mb-1">
+      
+        <span className="text-lg whitespace-nowrap px-2">Loading banners...</span>
+       
+      </div>
+    ) : (
       <div className="flex flex-col gap-5">
         {bannerList && bannerList.length > 0
           ? bannerList.map((bannerItem) => (
@@ -142,6 +149,8 @@ function AdminBanners() {
           ))
           : null}
       </div>
+      )}
+
       <Sheet
         open={openCreateBannersDialog}
         onOpenChange={() => {

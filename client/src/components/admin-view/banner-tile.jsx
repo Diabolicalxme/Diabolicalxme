@@ -11,7 +11,6 @@ function AdminBannerTile({ image, description, handleEdit, handleDelete }) {
     setModalOpen(false);
   };
 
-  console.log("AdminBannerTile -> image", image);
 
   return (
     <div className="relative w-full h-[350px] rounded-t-lg">

@@ -44,7 +44,7 @@ function ShoppingAccount() {
             alt="My Account"
             className="w-full h-full object-cover object-center"
           />
-          <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-primary/50 flex items-center justify-center">
             <div className="text-center">
               <h1 className="text-4xl md:text-5xl font-light uppercase tracking-wide text-white mb-4">
                 My Account
@@ -54,29 +54,29 @@ function ShoppingAccount() {
           </div>
         </div>
 
-     
+
 
         {/* Account Content */}
         <div className="container mx-auto px-4 py-8 md:py-16">
           <div className="max-w-4xl mx-auto">
             <div className="mb-8">
               <h2 className="text-2xl font-light uppercase tracking-wide mb-4">Welcome, {user?.userName || 'Customer'}</h2>
-              <div className="w-16 h-0.5 bg-foreground mb-6"></div>
+              <div className="w-16 h-0.5 bg-primary mb-6"></div>
               <p className="text-muted-foreground">Manage your orders and shipping addresses.</p>
             </div>
 
             <Tabs defaultValue="orders" className="w-full">
-              <TabsList className="flex items-center w-full mb-8 border-b border-border overflow-x-auto">
+              <TabsList className="flex items-center w-full mb-8 border-b border-input overflow-x-auto">
                 <TabsTrigger
                   value="orders"
-                  className="flex items-center gap-2 px-6 py-3 text-sm uppercase tracking-wide font-medium data-[state=active]:border-b-2 data-[state=active]:border-foreground data-[state=active]:text-background rounded-none"
+                  className="flex items-center gap-2 px-6 py-3 text-sm uppercase tracking-wide font-medium data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none hover:bg-muted/10 transition-colors"
                 >
                   <Package className="h-4 w-4" />
                   <span>Orders</span>
                 </TabsTrigger>
                 <TabsTrigger
                   value="address"
-                  className="flex items-center gap-2 px-6 py-3 text-sm uppercase tracking-wide font-medium data-[state=active]:border-b-2 data-[state=active]:border-foreground data-[state=active]:text-background rounded-none"
+                  className="flex items-center gap-2 px-6 py-3 text-sm uppercase tracking-wide font-medium data-[state=active]:border-b-2 data-[state=active]:border-primary data-[state=active]:text-primary rounded-none hover:bg-muted/10 transition-colors"
                 >
                   <MapPin className="h-4 w-4" />
                   <span>Addresses</span>

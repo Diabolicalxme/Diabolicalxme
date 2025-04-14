@@ -13,11 +13,17 @@ function BackgroundImage() {
   const getBackgroundImage = () => {
     switch (currentTheme) {
       case THEMES.DARK:
-        return lightBg; // For now using same image, you can replace with theme-specific images
+        return lightBg; // Legacy theme
       case THEMES.EMERALD:
-        return lightBg; // For now using same image, you can replace with theme-specific images
+        return lightBg; // Legacy theme
       case THEMES.WINE:
-        return lightBg; // For now using same image, you can replace with theme-specific images
+        return lightBg; // Legacy theme
+      case THEMES.BOTTLE_GREEN:
+        return lightBg; // Bottle green theme for Hector
+      case THEMES.BEIGE:
+        return lightBg; // Beige theme for Author
+      case THEMES.BLACK:
+        return lightBg; // Black theme for Bravo
       case THEMES.LIGHT:
       default:
         return lightBg;
@@ -33,7 +39,10 @@ function BackgroundImage() {
         backgroundSize: 'cover',
         filter: currentTheme === THEMES.DARK ? 'brightness(0.7)' :
                 currentTheme === THEMES.EMERALD ? 'hue-rotate(120deg) brightness(0.9)' :
-                currentTheme === THEMES.WINE ? 'hue-rotate(320deg) brightness(0.9)' : 'none'
+                currentTheme === THEMES.WINE ? 'hue-rotate(320deg) brightness(0.9)' :
+                currentTheme === THEMES.BOTTLE_GREEN ? 'hue-rotate(140deg) brightness(0.7)' :
+                currentTheme === THEMES.BEIGE ? 'sepia(0.3) brightness(1.1)' :
+                currentTheme === THEMES.BLACK ? 'brightness(0.6) contrast(1.2)' : 'none'
       }}
     >
       {/* Subtle overlay for better text readability */}
@@ -42,7 +51,10 @@ function BackgroundImage() {
         style={{
           backgroundColor: currentTheme === THEMES.DARK ? '#000' :
                           currentTheme === THEMES.EMERALD ? '#064e3b' :
-                          currentTheme === THEMES.WINE ? '#7f1d1d' : '#000'
+                          currentTheme === THEMES.WINE ? '#7f1d1d' :
+                          currentTheme === THEMES.BOTTLE_GREEN ? '#093624' :
+                          currentTheme === THEMES.BEIGE ? '#EDE8D0' :
+                          currentTheme === THEMES.BLACK ? '#000000' : '#000'
         }}
       />
     </div>

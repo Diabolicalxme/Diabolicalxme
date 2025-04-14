@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { X, Loader2 } from "lucide-react";
-import { Button } from "../ui/button";
+import { X } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import UserCartItemsContent from "./cart-items-content";
 import { memo } from "react";
@@ -57,7 +56,6 @@ const CustomCartDrawer = memo(function CustomCartDrawer({
     }
 
     // If we have cart items, we're ready for checkout regardless of loading state
-    const hasCartItems = cartItems.length > 0;
 
     if (isLoading) {
       // Only show loading indicator for updates, not initial loads
@@ -161,7 +159,7 @@ const CustomCartDrawer = memo(function CustomCartDrawer({
       <CartOverlay isOpen={isOpen} onClose={onClose} />
       <div
         ref={drawerRef}
-        className={`fixed inset-y-0 right-0 z-50 w-full sm:max-w-md bg-playground p-4 shadow-lg transform transition-transform duration-300 ease-in-out overflow-y-auto ${
+        className={`fixed inset-y-0 right-0 z-50 w-full sm:max-w-md bg-card text-card-foreground p-4 shadow-lg transform transition-transform duration-300 ease-in-out overflow-y-auto ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >
@@ -181,12 +179,12 @@ const CustomCartDrawer = memo(function CustomCartDrawer({
           {/* Only show updating message when items are being modified, not on initial load */}
           {isUpdating && !isInitialLoad.current && cartItems.length > 0 && (
             <div className="flex items-center justify-center w-full mt-2 mb-1">
-              <div className="h-[1px] bg-black/10 w-full relative overflow-hidden">
-                <div className="h-full bg-black absolute animate-loading-bar"></div>
+              <div className="h-[1px] bg-foreground/10 w-full relative overflow-hidden">
+                <div className="h-full bg-foreground absolute animate-loading-bar"></div>
               </div>
-              <span className="text-xs text-gray-500 whitespace-nowrap px-2">Updating cart</span>
-              <div className="h-[1px] bg-black/10 w-full relative overflow-hidden">
-                <div className="h-full bg-black absolute animate-loading-bar"></div>
+              <span className="text-xs text-muted-foreground whitespace-nowrap px-2">Updating cart</span>
+              <div className="h-[1px] bg-foreground/10 w-full relative overflow-hidden">
+                <div className="h-full bg-foreground absolute animate-loading-bar"></div>
               </div>
             </div>
           )}
@@ -197,8 +195,8 @@ const CustomCartDrawer = memo(function CustomCartDrawer({
           {/* Show loading spinner only when cart is empty and we're fetching initial data */}
           {isLoading && cartItems.length === 0 ? (
             <div className="flex flex-col justify-center items-center py-8">
-              <div className="mb-4 h-10 w-10 border-2 border-t-black border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
-              <p className="text-sm text-gray-500">Loading your cart...</p>
+              <div className="mb-4 h-10 w-10 border-2 border-t-foreground border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+              <p className="text-sm text-muted-foreground">Loading your cart...</p>
             </div>
           ) : (
             /* Otherwise show cart items - they'll update automatically when data changes */
@@ -208,17 +206,17 @@ const CustomCartDrawer = memo(function CustomCartDrawer({
 
         {/* Total */}
         <div className="mt-8 space-y-3">
-          <div className="flex justify-between text-gray-600">
+          <div className="flex justify-between text-foreground">
             <span>Subtotal</span>
             <span>₹{formattedTotal}</span>
           </div>
-          <div className="flex justify-between text-gray-600">
+          <div className="flex justify-between text-foreground">
             <span>Shipping</span>
             <span>Free</span>
           </div>
-          <div className="flex justify-between font-medium text-lg pt-3 border-t border-gray-200">
-            <span>Total</span>
-            <span>₹{formattedTotal}</span>
+          <div className="flex justify-between font-medium text-lg pt-3 border-t border-input">
+            <span className="text-foreground">Total</span>
+            <span className="text-foreground">₹{formattedTotal}</span>
           </div>
         </div>
 
@@ -226,12 +224,12 @@ const CustomCartDrawer = memo(function CustomCartDrawer({
         <button
           onClick={handleCheckout}
           disabled={cartItems.length === 0}
-          className="w-full mt-6 px-6 py-3 border-2 border-black bg-black text-white hover:bg-white hover:text-black transition-colors duration-300 uppercase tracking-wider text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full mt-6 px-6 py-3 border-2 border-primary bg-primary text-primary-foreground hover:bg-transparent hover:text-foreground transition-colors duration-300 uppercase tracking-wider text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {/* Only show loading state in the button when we're actually processing a checkout */}
           {isUpdating && cartItems.length > 0 ? (
             <span className="flex items-center justify-center">
-              <div className="mr-2 h-4 w-4 border-2 border-t-white border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
+              <div className="mr-2 h-4 w-4 border-2 border-t-primary-foreground border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
               Checkout
             </span>
           ) : (

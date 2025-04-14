@@ -1,5 +1,5 @@
 const Order = require("../../models/Order");
-
+const User = require("../../models/User");
 const getAllOrdersOfAllUsers = async (req, res) => {
   try {
     const orders = await Order.find({});
@@ -27,7 +27,6 @@ const getAllOrdersOfAllUsers = async (req, res) => {
 const getOrderDetailsForAdmin = async (req, res) => {
   try {
     const { id } = req.params;
-
     const order = await Order.findById(id);
 
     if (!order) {
@@ -37,9 +36,18 @@ const getOrderDetailsForAdmin = async (req, res) => {
       });
     }
 
+    // Retrieve user info from order's userId.
+    const user = await User.findById(order.userId);
+
+    // Append user's name and email if available.
+    const orderData = {
+      ...order._doc, // assuming Mongoose document structure
+      user: user ? { name: user.userName, email: user.email } : null,
+    };
+
     res.status(200).json({
       success: true,
-      data: order,
+      data: orderData,
     });
   } catch (e) {
     console.log(e);

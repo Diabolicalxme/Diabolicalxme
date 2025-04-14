@@ -26,7 +26,7 @@ export function Switch({ checked = false, onCheckedChange, className, ...props }
       ></div>
       <div
         className={cn(
-          "absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform",
+          "absolute top-1 left-1 w-4 h-4 bg-background rounded-full transition-transform",
           checked ? "transform translate-x-5" : "transform translate-x-0"
         )}
       ></div>

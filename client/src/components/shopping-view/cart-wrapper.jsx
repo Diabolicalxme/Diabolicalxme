@@ -56,32 +56,43 @@ const UserCartWrapper = memo(function UserCartWrapper({ cartItems, isLoading, on
   };
 
   return (
-    <div className="cart-wrapper">
+    <div className="cart-wrapper bg-card text-card-foreground p-4 rounded-md border border-input">
       {/* Cart Items */}
-      <div className="mt-8 space-y-4">
+      <div className="mt-8 space-y-4 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
         {isLoading && cartItems.length === 0 ? (
           <div className="flex justify-center items-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : cartItemElements.length === 0 ? (
+          <div className="text-center py-8 bg-muted/10 rounded-md border border-input">
+            <h3 className="text-lg font-medium mb-2">Your Cart is Empty</h3>
+            <p className="text-muted-foreground mb-4">Add items to your cart to see them here</p>
+            <Button
+              onClick={() => navigate('/shop')}
+              className="bg-primary text-primary-foreground hover:bg-transparent hover:text-foreground border border-primary transition-colors duration-300"
+            >
+              Browse Products
+            </Button>
           </div>
         ) : cartItemElements}
       </div>
 
       {/* Total */}
       <div className="mt-8 space-y-4">
-        <div className="flex justify-between">
-          <span className="font-bold">Total</span>
-          <span className="font-bold">₹{formattedTotal}</span>
+        <div className="flex justify-between p-3 bg-muted/20 rounded-md">
+          <span className="font-bold text-foreground">Total</span>
+          <span className="font-bold text-foreground text-lg">₹{formattedTotal}</span>
         </div>
       </div>
 
       <Button
         onClick={handleCheckout}
-        className="w-full mt-6"
+        className="w-full mt-6 bg-primary text-primary-foreground hover:bg-primary/90 border border-primary"
         disabled={isLoading || cartItems.length === 0}
       >
         {isLoading ? (
           <span className="flex items-center">
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+            <Loader2 className="h-4 w-4 mr-2 animate-spin text-primary-foreground" />
             Processing...
           </span>
         ) : (

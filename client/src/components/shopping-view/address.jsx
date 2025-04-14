@@ -133,7 +133,7 @@ function Address({ setCurrentSelectedAddress, selectedId }) {
         <div className="flex justify-between items-center mb-6">
           <div>
             <h2 className="text-2xl font-light uppercase tracking-wide mb-2">Your Addresses</h2>
-            <div className="w-12 h-0.5 bg-black"></div>
+            <div className="w-12 h-0.5 bg-primary"></div>
           </div>
           {!showForm && addressList.length < 3 && (
             <button
@@ -142,7 +142,7 @@ function Address({ setCurrentSelectedAddress, selectedId }) {
                 setFormData(initialAddressFormData);
                 setShowForm(true);
               }}
-              className="flex items-center gap-2 px-4 py-2 border-2 border-black hover:bg-black hover:text-white transition-colors duration-300 text-sm font-medium"
+              className="flex items-center gap-2 px-4 py-2 border-2 border-primary hover:bg-primary hover:text-primary-foreground transition-colors duration-300 text-sm font-medium"
             >
               <Plus className="h-4 w-4" />
               <span>Add New Address</span>
@@ -164,12 +164,12 @@ function Address({ setCurrentSelectedAddress, selectedId }) {
             ))}
           </div>
         ) : (
-          <div className="text-center py-12 bg-gray-50 border border-gray-200 rounded-md mb-8">
-            <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center rounded-full bg-gray-100">
-              <MapPin className="h-8 w-8 text-gray-400" />
+          <div className="text-center py-12 bg-muted/10 border border-input rounded-md mb-8">
+            <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center rounded-full bg-muted/20">
+              <MapPin className="h-8 w-8 text-muted-foreground" />
             </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No Addresses Found</h3>
-            <p className="text-gray-500 mb-6">You haven't added any addresses yet.</p>
+            <h3 className="text-lg font-medium text-foreground mb-2">No Addresses Found</h3>
+            <p className="text-muted-foreground mb-6">You haven't added any addresses yet.</p>
             {!showForm && (
               <button
                 onClick={() => {
@@ -177,7 +177,7 @@ function Address({ setCurrentSelectedAddress, selectedId }) {
                   setFormData(initialAddressFormData);
                   setShowForm(true);
                 }}
-                className="inline-block px-6 py-3 border-2 border-black hover:bg-black hover:text-white transition-colors duration-300 uppercase tracking-wider text-sm font-medium"
+                className="inline-block px-6 py-3 border-2 border-primary hover:bg-primary hover:text-primary-foreground transition-colors duration-300 uppercase tracking-wider text-sm font-medium"
               >
                 Add Your First Address
               </button>
@@ -186,12 +186,12 @@ function Address({ setCurrentSelectedAddress, selectedId }) {
         )}
 
         {showForm && (
-          <div className="border border-gray-200 rounded-md p-6 bg-white">
+          <div className="border border-input rounded-md p-6 bg-card text-card-foreground">
             <div className="mb-6">
               <h3 className="text-xl font-light uppercase tracking-wide mb-2">
                 {currentEditedId !== null ? "Edit Address" : "Add New Address"}
               </h3>
-              <div className="w-12 h-0.5 bg-black mb-6"></div>
+              <div className="w-12 h-0.5 bg-primary mb-6"></div>
             </div>
 
             <CommonForm
@@ -201,7 +201,7 @@ function Address({ setCurrentSelectedAddress, selectedId }) {
               buttonText={currentEditedId !== null ? "Update Address" : "Save Address"}
               onSubmit={handleManageAddress}
               isBtnDisabled={!isFormValid()}
-              buttonClassName="px-6 py-3 border-2 border-black hover:bg-black hover:text-white transition-colors duration-300 uppercase tracking-wider text-sm font-medium"
+              buttonClassName="px-6 py-3 border-2 border-primary hover:bg-primary hover:text-primary-foreground transition-colors duration-300 uppercase tracking-wider text-sm font-medium"
             />
 
             <div className="mt-4 text-center">
@@ -211,7 +211,7 @@ function Address({ setCurrentSelectedAddress, selectedId }) {
                   setCurrentEditedId(null);
                   setFormData(initialAddressFormData);
                 }}
-                className="text-sm text-gray-500 hover:text-black transition-colors"
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
               >
                 Cancel
               </button>

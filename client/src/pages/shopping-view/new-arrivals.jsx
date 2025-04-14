@@ -9,11 +9,8 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { sortOptions } from "@/config";
 import { addToCart, fetchCartItems } from "@/store/shop/cart-slice";
-import {
-  fetchAllFilteredProducts,
-  fetchProductDetails,
-} from "@/store/shop/products-slice";
-import { ArrowUpDownIcon, ChevronRight, ShoppingBag } from "lucide-react";
+import { fetchAllFilteredProducts } from "@/store/shop/products-slice";
+import { ArrowUpDownIcon, ShoppingBag } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams, useNavigate } from "react-router-dom";
@@ -24,7 +21,7 @@ import newArrivalsBanner from "@/assets/account.jpg";
 function NewArrivals() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { productList, productDetails, isLoading } = useSelector(
+  const { productList, isLoading } = useSelector(
     (state) => state.shopProducts
   );
   const { cartItems } = useSelector((state) => state.shopCart);
@@ -129,31 +126,32 @@ function NewArrivals() {
           </div>
         </div>
 
-       
+
 
         {/* Main Content */}
         <div className="container mx-auto px-4 py-8">
-          <div className="bg-card">
-            <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 pb-4 border-b">
+          <div className="p-6 rounded-md shadow-sm ">
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 pb-4 border-b border-input">
               <div>
                 <h2 className="text-2xl font-light uppercase tracking-wide mb-2">
                   New Arrivals
                 </h2>
+                <div className="w-16 h-0.5 bg-primary mb-3"></div>
                 <p className="text-muted-foreground">
                   Showing {newArrivalProducts.length} products
                 </p>
               </div>
               <div className="mt-4 md:mt-0">
                 <DropdownMenu>
-                  <DropdownMenuTrigger className="flex items-center gap-2 px-4 py-2 border border-border rounded-md hover:bg-muted/30 transition-colors">
-                    <ArrowUpDownIcon className="h-4 w-4" />
+                  <DropdownMenuTrigger className="flex items-center gap-2 px-4 py-2 border border-input rounded-md hover:bg-muted/30 transition-colors">
+                    <ArrowUpDownIcon className="h-4 w-4 text-muted-foreground" />
                     <span>Sort by: {sortOptions.find(option => option.id === sort)?.label || 'Default'}</span>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="mt-2 bg-card p-2 rounded-md shadow-lg border border-border">
+                  <DropdownMenuContent align="end" className="mt-2 bg-card p-2 rounded-md shadow-lg border border-input">
                     <DropdownMenuRadioGroup value={sort} onValueChange={handleSort}>
                       {sortOptions.map((sortItem) => (
                         <DropdownMenuRadioItem
-                          className="hover:bg-muted/30 cursor-pointer px-4 py-2 rounded-md"
+                          className="hover:bg-muted/30 cursor-pointer px-4 py-2 rounded-md text-foreground"
                           value={sortItem.id}
                           key={sortItem.id}
                         >
@@ -167,7 +165,7 @@ function NewArrivals() {
             </div>
 
             {/* Products Grid - Using Original ShoppingProductTile */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-8">
               {newArrivalProducts && newArrivalProducts.length > 0 ? (
                 newArrivalProducts.map((productItem) => (
                   <ShoppingProductTile
@@ -184,6 +182,12 @@ function NewArrivals() {
                   </div>
                   <h3 className="text-xl font-medium mb-2">No New Arrivals Found</h3>
                   <p className="text-muted-foreground mb-6">Check back soon for our latest products</p>
+                  <button
+                    onClick={() => navigate('/shop')}
+                    className="px-6 py-2 border-2 border-primary hover:bg-primary hover:text-primary-foreground transition-colors duration-300 uppercase tracking-wider text-sm font-medium"
+                  >
+                    Browse All Products
+                  </button>
                 </div>
               )}
             </div>

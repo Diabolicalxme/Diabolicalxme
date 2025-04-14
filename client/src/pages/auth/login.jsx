@@ -66,7 +66,7 @@ function AuthLogin() {
         <p className="mt-2">
           Don't have an account?
           <Link
-            className="font-medium ml-2 text-primary hover:underline"
+            className="font-medium ml-2 text-muted-foreground hover:underline"
             to="/auth/register"
           >
             Register
@@ -84,7 +84,7 @@ function AuthLogin() {
         disabled={!isFormValid}
       />
       <div className="text-center">
-        <Link className="text-sm text-primary hover:underline" to="/auth/forgot-password">
+        <Link className="text-sm text-muted-foreground hover:underline" to="/auth/forgot-password">
           Forgot Password?
         </Link>
       </div>

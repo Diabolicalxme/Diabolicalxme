@@ -49,7 +49,7 @@ const Carousel = ({ bannersList }) => {
 
   return (
     <div
-      className="relative w-full h-full bg-white"
+      className="relative w-full h-full bg-background"
       onMouseEnter={() => setIsPaused(true)}
       onMouseLeave={() => setIsPaused(false)}
     >

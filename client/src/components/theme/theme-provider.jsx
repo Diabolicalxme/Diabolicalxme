@@ -1,12 +1,14 @@
 import { useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { THEMES, setTheme } from "@/store/theme-slice";
+import { useLocation } from "react-router-dom";
+import { THEMES, setTheme, setAdminRoute } from "@/store/theme-slice";
 
 // ThemeProvider applies the current theme to the document
 function ThemeProvider({ children }) {
   const { currentTheme } = useSelector((state) => state.theme);
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
+  const location = useLocation();
 
   // Set theme based on user category when user logs in or changes
   useEffect(() => {
@@ -16,13 +18,13 @@ function ThemeProvider({ children }) {
 
       switch (user.category) {
         case "Author":
-          themeToSet = THEMES.EMERALD;
+          themeToSet = THEMES.BEIGE; // Changed from EMERALD to BEIGE
           break;
         case "Bravo":
-          themeToSet = THEMES.WINE;
+          themeToSet = THEMES.BLACK; // Changed from WINE to BLACK
           break;
         case "Hector":
-          themeToSet = THEMES.DARK;
+          themeToSet = THEMES.BOTTLE_GREEN; // Changed from DARK to BOTTLE_GREEN
           break;
         default:
           themeToSet = THEMES.LIGHT;
@@ -34,13 +36,40 @@ function ThemeProvider({ children }) {
     }
   }, [isAuthenticated, user?.id, user?.category, dispatch]);
 
+  // Check if current route is in admin section
+  useEffect(() => {
+    const isAdmin = location.pathname.startsWith('/admin');
+    dispatch(setAdminRoute(isAdmin));
+
+    // If entering admin section, set admin theme
+    if (isAdmin) {
+      // Only change theme if not already on an admin theme
+      if (currentTheme !== THEMES.ADMIN_LIGHT && currentTheme !== THEMES.ADMIN_DARK) {
+        // Default to admin light theme
+        dispatch(setTheme(THEMES.ADMIN_LIGHT));
+      }
+    } else {
+      // If leaving admin section and on admin theme, restore saved theme
+      if (currentTheme === THEMES.ADMIN_LIGHT || currentTheme === THEMES.ADMIN_DARK) {
+        // Get saved theme from localStorage or default to light
+        const savedTheme = localStorage.getItem("theme") || THEMES.LIGHT;
+        dispatch(setTheme(savedTheme));
+      }
+    }
+  }, [location.pathname, dispatch, currentTheme]);
+
   // Apply theme to document
   useEffect(() => {
     // Remove all theme classes first
     document.documentElement.classList.remove(
       THEMES.DARK,
       THEMES.EMERALD,
-      THEMES.WINE
+      THEMES.WINE,
+      THEMES.BEIGE,
+      THEMES.BLACK,
+      THEMES.BOTTLE_GREEN,
+      THEMES.ADMIN_LIGHT,
+      THEMES.ADMIN_DARK
     );
 
     // Add the current theme class if it's not the default light theme
@@ -59,11 +88,20 @@ function ThemeProvider({ children }) {
         case THEMES.DARK:
           metaThemeColor.setAttribute('content', '#121212');
           break;
-        case THEMES.EMERALD:
-          metaThemeColor.setAttribute('content', '#064e3b');
+        case THEMES.BOTTLE_GREEN:
+          metaThemeColor.setAttribute('content', '#093624');
           break;
-        case THEMES.WINE:
-          metaThemeColor.setAttribute('content', '#7f1d1d');
+        case THEMES.BEIGE:
+          metaThemeColor.setAttribute('content', '#EDE8D0');
+          break;
+        case THEMES.BLACK:
+          metaThemeColor.setAttribute('content', '#000000');
+          break;
+        case THEMES.ADMIN_LIGHT:
+          metaThemeColor.setAttribute('content', '#f5f5f5');
+          break;
+        case THEMES.ADMIN_DARK:
+          metaThemeColor.setAttribute('content', '#1a1a1a');
           break;
         default:
           metaThemeColor.setAttribute('content', '#ffffff');

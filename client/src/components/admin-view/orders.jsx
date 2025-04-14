@@ -22,7 +22,7 @@ import { Badge } from "../ui/badge";
 function AdminOrdersView() {
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const { orderList, orderDetails } = useSelector((state) => state.adminOrder);
+  const { orderList, orderDetails, isLoading } = useSelector((state) => state.adminOrder);
   const dispatch = useDispatch();
 
   // Fetch order details on clicking view details button
@@ -60,6 +60,15 @@ function AdminOrdersView() {
     : [];
 
   return (
+    
+   <>
+    {isLoading ? (
+      <div className="flex items-center justify-center w-full mt-36 mb-1">
+      
+        <span className="text-lg whitespace-nowrap px-2">Loading orders...</span>
+       
+      </div>
+    ) : (
     <Card>
       <CardHeader>
         <CardTitle>All Orders</CardTitle>
@@ -142,7 +151,8 @@ function AdminOrdersView() {
           </TableBody>
         </Table>
       </CardContent>
-    </Card>
+    </Card> ) }
+   </>
   );
 }
 

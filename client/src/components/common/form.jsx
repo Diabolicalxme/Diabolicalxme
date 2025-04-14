@@ -25,19 +25,24 @@ function CommonForm({ formControls, formData, setFormData, onSubmit, buttonText,
     setColorsUploadStatus((prevStatus) => ({ ...prevStatus, [idx]: "uploading" }));
     const data = new FormData();
     data.append("my_file", file);
+  
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/admin/products/upload-image`,
         data
       );
+  
       if (response?.data?.success) {
+        const secureUrl = response.data.result[0].secure_url; // Use secure_url for HTTPS
         const colorsArray = Array.isArray(formData[controlItem.name]) ? formData[controlItem.name] : [];
         const updatedColors = [...colorsArray];
-        updatedColors[idx] = { ...updatedColors[idx], image: response.data.result[0].url };
+        updatedColors[idx] = { ...updatedColors[idx], image: secureUrl };
+  
         setFormData({
           ...formData,
           [controlItem.name]: updatedColors,
         });
+  
         setColorsUploadStatus((prevStatus) => ({ ...prevStatus, [idx]: "uploaded" }));
       }
     } catch (err) {
@@ -45,6 +50,7 @@ function CommonForm({ formControls, formData, setFormData, onSubmit, buttonText,
       setColorsUploadStatus((prevStatus) => ({ ...prevStatus, [idx]: "idle" }));
     }
   };
+  
 
   // Helper function for uploading video to Cloudinary.
   const uploadVideo = async (file) => {

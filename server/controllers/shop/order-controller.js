@@ -110,48 +110,50 @@ const capturePayment = async (req, res) => {
         <p><strong>Order ID:</strong> ${order._id}</p>
         <p><strong>Total Amount:</strong> ₹${order.totalAmount}</p>
         <p><strong>Payment ID:</strong> ${order.paymentId}</p>
-        
+
         ${order.cartItems && order.cartItems.length ? `
           <h4 style="margin-top: 20px;">Items Ordered</h4>
-          <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
-            <thead>
-              <tr>
-                <th style="border-bottom: 2px solid #fed1d6; padding: 12px; background-color: #f0f0f0; text-align: left;">Product</th>
-                <th style="border-bottom: 2px solid #fed1d6; padding: 12px; background-color: #f0f0f0; text-align: center;">Quantity</th>
-                <th style="border-bottom: 2px solid #fed1d6; padding: 12px; background-color: #f0f0f0; text-align: center;">Price</th>
-                <th style="border-bottom: 2px solid #fed1d6; padding: 12px; background-color: #f0f0f0; text-align: center;">Color</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${order.cartItems.map(item => `
+          <div style="width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch;">
+            <table style="width: 100%; min-width: 500px; border-collapse: collapse; margin-top: 10px;">
+              <thead>
                 <tr>
-                  <td style="border-bottom: 1px solid #ddd; padding: 12px;">
-  <div style="display: flex; align-items: center; justify-content: flex-start; gap: 16px;">
-    <img src="${item?.image}" alt="${item?.title}" 
-      style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px; flex-shrink: 0;">
-    <span style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 8px; padding-top: 16px;">${item?.title}</span>
-  </div>
-</td>
-
-                  <td style="border-bottom: 1px solid #ddd; padding: 12px; text-align: center; font-weight: 600;">${item?.quantity}</td>
-                  <td style="border-bottom: 1px solid #ddd; padding: 12px; text-align: center; font-weight: 600;">₹${item?.price}</td>
-            
-         
-
-                   <td style="border-bottom: 1px solid #ddd; padding: 12px;">
-  <div style="display: flex; align-items: center; justify-content: center; gap: 16px;">
-    <img src="${item?.colors?.image}" alt="${item?.colors?.title}" 
-      style="width: 35px; height: 35px; border-radius: 50%;">
-     <span style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 8px; padding-top: 9px;">${item?.colors?.title}</span>
-  </div>
-</td>
-
+                  <th style="border-bottom: 2px solid #fed1d6; padding: 12px; background-color: #f0f0f0; text-align: left;">Product</th>
+                  <th style="border-bottom: 2px solid #fed1d6; padding: 12px; background-color: #f0f0f0; text-align: center;">Quantity</th>
+                  <th style="border-bottom: 2px solid #fed1d6; padding: 12px; background-color: #f0f0f0; text-align: center;">Price</th>
+                  <th style="border-bottom: 2px solid #fed1d6; padding: 12px; background-color: #f0f0f0; text-align: center;">Color</th>
                 </tr>
-              `).join('')}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                ${order.cartItems.map(item => `
+                  <tr>
+                    <td style="border-bottom: 1px solid #ddd; padding: 12px;">
+    <div style="display: flex; align-items: center; justify-content: flex-start; gap: 16px;">
+      <img src="${item?.image}" alt="${item?.title}"
+        style="width: 50px; height: 50px; object-fit: cover; border-radius: 5px; flex-shrink: 0;">
+      <span style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 8px; padding-top: 16px;">${item?.title}</span>
+    </div>
+  </td>
+
+                    <td style="border-bottom: 1px solid #ddd; padding: 12px; text-align: center; font-weight: 600;">${item?.quantity}</td>
+                    <td style="border-bottom: 1px solid #ddd; padding: 12px; text-align: center; font-weight: 600;">₹${item?.price}</td>
+
+
+
+                     <td style="border-bottom: 1px solid #ddd; padding: 12px;">
+    <div style="display: flex; align-items: center; justify-content: center; gap: 16px;">
+      <img src="${item?.colors?.image || ""}" alt="${item?.colors?.title}"
+        style="width: 35px; height: 35px; border-radius: 50%;">
+       <span style="font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; padding-left: 8px; padding-top: 9px;">${item?.colors?.title || "-"}</span>
+    </div>
+  </td>
+
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
         ` : ''}
-  
+
         <div style="text-align: center; margin-top: 30px;">
           <a href="${process.env.FRONTEND_URL}/shop/account" style="display: inline-block; background-color: #fed1d6; color: #2c3315; padding: 14px 28px; font-size: 16px; text-decoration: none; border-radius: 4px; font-weight: bold;"> View Your Order</a>
         </div>

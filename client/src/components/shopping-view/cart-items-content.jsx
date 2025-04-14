@@ -1,4 +1,4 @@
-import { Minus, Plus, Trash, ChevronDown, Loader2 } from "lucide-react";
+import { Minus, Plus, Trash, ChevronDown } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { deleteCartItem, updateCartQuantity, fetchCartItems } from "@/store/shop/cart-slice";
 import { useToast } from "../ui/use-toast";
@@ -48,7 +48,7 @@ const UserCartItemsContent = function UserCartItemsContent({ cartItem }) {
   const dropdownRef = useRef(null);
 
   // Find the product in productList to get available colors - memoize this calculation
-  const { currentProduct, availableColors } = useMemo(() => {
+  const { availableColors } = useMemo(() => {
     const product = productList.find(p => p._id === cartItem.productId);
     return {
       currentProduct: product,
@@ -282,14 +282,14 @@ const UserCartItemsContent = function UserCartItemsContent({ cartItem }) {
   };
 
   return (
-    <div className="flex flex-col w-full border-b border-gray-200 last:border-b-0 py-4 px-2">
+    <div className="flex flex-col w-full border-b border-input last:border-b-0 py-4 px-2 hover:bg-muted/10 transition-colors rounded-sm">
       <div className="flex items-start gap-3">
         {/* Product Image */}
         <div className="w-16 h-16 flex-shrink-0">
           <img
             src={selectedColor?.image || selectedImage || cartItem?.image?.[0] || "default-image-url.jpg"}
             alt={cartItem?.title || "Product"}
-            className="w-full h-full object-cover border border-gray-200"
+            className="w-full h-full object-cover border border-input rounded-sm"
             onError={(e) => {
               // If image fails to load, try the first image from cartItem
               if (cartItem?.image?.[0] && e.target.src !== cartItem.image[0]) {
@@ -305,12 +305,12 @@ const UserCartItemsContent = function UserCartItemsContent({ cartItem }) {
         {/* Product Details */}
         <div className="flex-1 min-w-0">
           <div className="flex justify-between items-start w-full">
-            <h3 className="text-sm font-medium mb-1 line-clamp-2 pr-6">{cartItem?.title}</h3>
+            <h3 className="text-sm font-medium mb-1 line-clamp-2 pr-6 text-foreground">{cartItem?.title}</h3>
 
             {/* Delete Button - Top Right */}
             <button
               type="button"
-              className="p-1 text-gray-400 hover:text-black transition-colors flex-shrink-0"
+              className="p-1 text-muted-foreground hover:text-destructive transition-colors flex-shrink-0"
               onClick={handleCartItemDelete}
               disabled={isDeleting}
               aria-label="Remove item"
@@ -325,11 +325,11 @@ const UserCartItemsContent = function UserCartItemsContent({ cartItem }) {
 
           {/* Price - Show single item price and total */}
           <div className="flex justify-between items-center mb-2">
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-foreground">
               {formatCurrency(cartItem?.salePrice > 0 ? parseFloat(cartItem.salePrice) : parseFloat(cartItem?.price || 0))}
-              {cartItem?.quantity > 1 && <span> × {cartItem?.quantity}</span>}
+              {cartItem?.quantity > 1 && <span className="text-muted-foreground"> × {cartItem?.quantity}</span>}
             </p>
-            <p className="text-sm font-medium">
+            <p className="text-sm font-medium text-foreground">
               {formatCurrency((cartItem?.salePrice > 0 ? parseFloat(cartItem.salePrice) : parseFloat(cartItem?.price || 0)) *
                 parseInt(cartItem?.quantity || 0, 10))}
             </p>
@@ -347,18 +347,18 @@ const UserCartItemsContent = function UserCartItemsContent({ cartItem }) {
                       setDropdownOpen(!dropdownOpen);
                     }
                   }}
-                  className="flex items-center justify-between w-28 px-2 py-1 border border-gray-300 rounded-sm hover:border-black transition-colors"
+                  className="flex items-center justify-between w-28 px-2 py-1 border border-input rounded-sm hover:border-primary transition-colors bg-card"
                   disabled={isColorUpdating}
                 >
                   {isColorUpdating ? (
                     <div className="flex items-center justify-center w-full">
-                      <span className="text-xs text-gray-500 animate-pulse">Updating...</span>
+                      <span className="text-xs text-muted-foreground animate-pulse">Updating...</span>
                     </div>
                   ) : (
                     <>
                       <div className="flex items-center gap-1.5">
                         {selectedColor?.image ? (
-                          <div className="relative w-4 h-4 overflow-hidden rounded-sm border border-gray-300">
+                          <div className="relative w-4 h-4 overflow-hidden rounded-sm border border-input">
                             <img
                               src={selectedColor.image}
                               alt={selectedColor.title}
@@ -367,7 +367,7 @@ const UserCartItemsContent = function UserCartItemsContent({ cartItem }) {
                           </div>
                         ) : (
                           <div
-                            className="w-4 h-4 rounded-sm border border-gray-300"
+                            className="w-4 h-4 rounded-sm border border-input"
                             style={{ backgroundColor: selectedColor?.colorCode || '#ccc' }}
                           ></div>
                         )}
@@ -379,10 +379,10 @@ const UserCartItemsContent = function UserCartItemsContent({ cartItem }) {
                 </button>
 
                 {dropdownOpen && (
-                  <div className="absolute left-0 w-40 mt-1 bg-white border border-gray-200 rounded-sm shadow-lg z-50">
+                  <div className="absolute left-0 w-40 mt-1 bg-card border border-input rounded-sm shadow-lg z-50">
                     <div className="py-1">
-                      <div className="px-2 pb-1 mb-1 border-b border-gray-100">
-                        <span className="text-xs text-gray-500 uppercase tracking-wider">Select Color</span>
+                      <div className="px-2 pb-1 mb-1 border-b border-input">
+                        <span className="text-xs text-muted-foreground uppercase tracking-wider">Select Color</span>
                       </div>
 
                       <div className="max-h-40 overflow-y-auto">
@@ -394,23 +394,23 @@ const UserCartItemsContent = function UserCartItemsContent({ cartItem }) {
                               e.stopPropagation();
                               handleColorChange(color);
                             }}
-                            className="w-full text-left flex items-center gap-2 px-2 py-1.5 cursor-pointer hover:bg-gray-50 transition-colors"
+                            className="w-full text-left flex items-center gap-2 px-2 py-1.5 cursor-pointer hover:bg-muted/30 transition-colors"
                           >
                             <div className="relative flex items-center">
                               {color.image ? (
-                                <div className="relative w-6 h-6 overflow-hidden rounded-sm border border-gray-200">
+                                <div className="relative w-6 h-6 overflow-hidden rounded-sm border border-input">
                                   <img
                                     src={color.image}
                                     alt={color.title}
                                     className="w-full h-full object-cover"
                                   />
                                   {selectedColor?._id === color._id && (
-                                    <div className="absolute inset-0 border-2 border-black"></div>
+                                    <div className="absolute inset-0 border-2 border-primary"></div>
                                   )}
                                 </div>
                               ) : (
                                 <div
-                                  className={`w-6 h-6 rounded-sm ${selectedColor?._id === color._id ? 'border-2 border-black' : 'border border-gray-300'}`}
+                                  className={`w-6 h-6 rounded-sm ${selectedColor?._id === color._id ? 'border-2 border-primary' : 'border border-input'}`}
                                   style={{ backgroundColor: color?.colorCode || '#ccc' }}
                                 ></div>
                               )}
@@ -431,12 +431,12 @@ const UserCartItemsContent = function UserCartItemsContent({ cartItem }) {
             <div className="flex items-center gap-1">
               {isQuantityUpdating ? (
                 <div className="flex items-center justify-center w-20">
-                  <span className="text-xs text-gray-500 animate-pulse">Updating...</span>
+                  <span className="text-xs text-muted-foreground animate-pulse">Updating...</span>
                 </div>
               ) : (
                 <>
                   <button
-                    className="w-6 h-6 flex items-center justify-center border border-gray-300 hover:border-black transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-6 h-6 flex items-center justify-center border border-input hover:border-primary hover:bg-muted/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     disabled={cartItem?.quantity === 1}
                     onClick={() => handleQuantityChange(cartItem?.quantity - 1)}
                   >
@@ -444,7 +444,7 @@ const UserCartItemsContent = function UserCartItemsContent({ cartItem }) {
                   </button>
                   <span className="w-6 text-center text-xs">{cartItem?.quantity}</span>
                   <button
-                    className="w-6 h-6 flex items-center justify-center border border-gray-300 hover:border-black transition-colors"
+                    className="w-6 h-6 flex items-center justify-center border border-input hover:border-primary hover:bg-muted/20 transition-colors"
                     onClick={() => handleQuantityChange(cartItem?.quantity + 1)}
                   >
                     <Plus className="w-2.5 h-2.5" />

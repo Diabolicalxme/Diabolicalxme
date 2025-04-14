@@ -51,7 +51,10 @@ function ShoppingHome() {
     threshold: 0.2,
   });
 
-
+  const filteredCategoryList = categoriesList.filter(category => 
+    !['author', 'bravo', 'hector'].includes(category.name.trim().toLowerCase())
+  );
+  console.log(filteredCategoryList)
   useEffect(() => {
     if (!wrapperRef.current) return;
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
@@ -100,7 +103,7 @@ function ShoppingHome() {
 
   const isAnyLoading = productsLoading || bannersLoading || categoriesLoading || instaFeedLoading;
   if (isAnyLoading) return <Loader />;
-console.log(categoriesList  )
+
   return (
     <>
       <Helmet>
@@ -123,7 +126,7 @@ console.log(categoriesList  )
       {/* Full-page background image that changes with theme */}
       <BackgroundImage />
 
-      <div className="flex flex-col relative z-10">
+      <div className="mt-32 flex flex-col relative z-10">
         {/* Category-based Product Picks */}
         <CategoryPicks
           products={productList}
@@ -131,18 +134,20 @@ console.log(categoriesList  )
           handleAddtoCart={handleAddtoCart}
         />
 
-        <section className="pt-8 pb-16">
+   
+        {/* Masonry layout desktop */}
+        <section className="hidden md:block py-8 ">
           <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto text-center mb-12 backdrop-blur-sm p-6 rounded-lg">
-              <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4 text-foreground">Shop by Category</h2>
-              <div className="w-24 h-1 bg-foreground mx-auto mb-6"></div>
-              <p className="text-foreground">Discover our curated collections designed for every style and occasion</p>
+            <div className="max-w-3xl mx-auto text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4">Shop by Category</h2>
+              <div className="w-24 h-1 bg-black mx-auto mb-6"></div>
+              <p className="text-gray-600">Discover our curated collections designed for every style and occasion</p>
             </div>
 
             {/* Masonry layout container */}
             <div className="columns-1 sm:columns-2 md:columns-3 gap-4">
-              {categoriesList &&
-                categoriesList.map((categoryItem, index) => (
+              {filteredCategoryList &&
+                filteredCategoryList.map((categoryItem, index) => (
                   <motion.div
                     key={index}
                     initial={{ opacity: 0, y: 20 }}
@@ -168,7 +173,114 @@ console.log(categoriesList  )
             <div className="text-center mt-12">
               <button
                 onClick={() => navigate("/shop/collections")}
-                className="inline-block px-8 py-3 border-2 border-foreground hover:bg-foreground hover:text-background transition-colors duration-300 uppercase tracking-wider text-sm font-medium backdrop-blur-sm"
+                className="inline-block px-8 py-3 border-2 border-black hover:bg-black hover:text-white transition-colors duration-300 uppercase tracking-wider text-sm font-medium"
+              >
+                View All Collections
+              </button>
+            </div>
+          </div>
+        </section>
+        {/* Mobile layout */}
+        <section className="py-8  md:hidden">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mx-auto text-center mb-6">
+              <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4">Shop by Category</h2>
+              <div className="w-24 h-1 bg-black mx-auto mb-6"></div>
+              <p className="text-gray-600">Discover our curated collections designed for every style and occasion</p>
+            </div>
+
+            {/* Custom layout container - mobile: first card full width, rest in 2 columns; desktop: masonry */}
+            <div className="hidden sm:block columns-2 md:columns-3 gap-4">
+              {filteredCategoryList &&
+                filteredCategoryList.map((categoryItem, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: false, amount: 0.1 }}
+                    transition={{
+                      duration: 0.5,
+                      delay: index * 0.1,
+                      type: "spring",
+                      stiffness: 50,
+                    }}
+                    className="break-inside-avoid mb-4"
+                  >
+                    <CategoryCard
+                      categoryItem={categoryItem}
+                      index={index}
+                      variant="masonry"
+                    />
+                  </motion.div>
+                ))}
+            </div>
+
+            {/* Mobile layout - first card full width, rest in 2 columns, pattern repeats every 5 cards */}
+            <div className="sm:hidden">
+              {filteredCategoryList && filteredCategoryList.length > 0 &&
+                Array.from({ length: Math.ceil(filteredCategoryList.length / 5) }).map((_, groupIndex) => {
+                  const startIndex = groupIndex * 5;
+                  const groupItems = filteredCategoryList.slice(startIndex, startIndex + 5);
+
+                  return (
+                    <div key={`group-${groupIndex}`} className="mb-4">
+                      {/* First item in group - full width */}
+                      {groupItems[0] && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: false, amount: 0.1 }}
+                          transition={{
+                            duration: 0.5,
+                            delay: 0.1,
+                            type: "spring",
+                            stiffness: 50,
+                          }}
+                          className="mb-4"
+                        >
+                          <CategoryCard
+                            categoryItem={groupItems[0]}
+                            index={startIndex}
+                            variant="masonry"
+                          />
+                        </motion.div>
+                      )}
+
+                      {/* Remaining items in group - 2 column grid */}
+                      {groupItems.length > 1 && (
+                        <div className="grid grid-cols-2 gap-4">
+                          {groupItems.slice(1).map((categoryItem, idx) => (
+                            <motion.div
+                              key={startIndex + idx + 1}
+                              initial={{ opacity: 0, y: 20 }}
+                              whileInView={{ opacity: 1, y: 0 }}
+                              viewport={{ once: false, amount: 0.1 }}
+                              transition={{
+                                duration: 0.5,
+                                delay: (idx + 1) * 0.1,
+                                type: "spring",
+                                stiffness: 50,
+                              }}
+                            >
+                              <CategoryCard
+                                categoryItem={categoryItem}
+                                index={startIndex + idx + 1}
+                                variant="masonry"
+                              />
+                            </motion.div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              }
+            </div>
+
+            <div className="text-center mt-12">
+              <button
+                onClick={() => navigate("/shop/collections")}
+                className="inline-block px-8 py-3 border-2 border-black hover:bg-black hover:text-white transition-colors duration-300 uppercase tracking-wider text-sm font-medium"
               >
                 View All Collections
               </button>

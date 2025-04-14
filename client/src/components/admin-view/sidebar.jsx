@@ -14,7 +14,7 @@ import {
 import { Fragment } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
-import logo from "../../assets/logo.png";
+// import logo from "../../assets/logo.png";
 
 const adminSidebarMenuItems = [
   {
@@ -53,12 +53,12 @@ const adminSidebarMenuItems = [
     path: "/admin/instafeed",
     icon: <Film />,
   },
-  // {
-  //   id: "reviews",
-  //   label: "Reviews",
-  //   path: "/admin/reviews",
-  //   icon: <Star />,
-  // },
+   {
+     id: "reviews",
+    label: "Reviews",
+     path: "/admin/reviews",
+    icon: <Star />,
+   },
   {
     id: "feedback",
     label: "Feedback",
@@ -95,8 +95,8 @@ function MenuItems({ setOpen }) {
         // Determine if this menu item is active by comparing location.pathname and menuItem.path
         const isActive = location.pathname === menuItem.path;
         const baseClasses = "flex cursor-pointer text-xl items-center gap-2 rounded-md px-3 py-2";
-        const activeClasses = "bg-foreground text-white";
-        const inactiveClasses = "text-muted-foreground hover:bg-gray-500 hover:text-white";
+        const activeClasses = "bg-accent text-accent-foreground";
+        const inactiveClasses = "text-muted-foreground hover:bg-muted";
         return (
           <div
             key={menuItem.id}
@@ -117,7 +117,7 @@ function MenuItems({ setOpen }) {
 
 function AdminSideBar({ open, setOpen }) {
   const navigate = useNavigate();
-  const location = useLocation();
+  // const location = useLocation();
 
   return (
     <Fragment>
@@ -140,8 +140,9 @@ function AdminSideBar({ open, setOpen }) {
           className="flex cursor-pointer items-center gap-2"
         >
           <ChartNoAxesCombined size={30} />
-      <img src={logo} alt="Logo" className="w-full h-11" />
-          
+          <h2 className="font-bold text-lg">DiabolicalXme</h2>
+      {/* <img src={logo} alt="Logo" className="w-full h-11" /> */}
+
         </div>
         <MenuItems />
       </aside>

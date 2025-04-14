@@ -10,7 +10,8 @@ const ProductSlider = ({
   handleAddtoCart,
   title,
   description,
-  bgColor = "bg-gray-50"
+  bgColor = "bg-transparent",
+  hideTitle = false
 }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
@@ -37,14 +38,14 @@ const ProductSlider = ({
 
   const goToNextProduct = () => {
     setDirection(1);
-    setCurrentIndex((prevIndex) => 
+    setCurrentIndex((prevIndex) =>
       prevIndex >= products.length - 1 ? 0 : prevIndex + 1
     );
   };
 
   const goToPrevProduct = () => {
     setDirection(-1);
-    setCurrentIndex((prevIndex) => 
+    setCurrentIndex((prevIndex) =>
       prevIndex <= 0 ? products.length - 1 : prevIndex - 1
     );
   };
@@ -52,7 +53,7 @@ const ProductSlider = ({
   // Smooth wheel handling with momentum
   const handleWheel = (e) => {
     if (isMobile) return;
-    
+
     e.preventDefault();
     scrollDeltaRef.current += e.deltaY;
 
@@ -165,7 +166,7 @@ const ProductSlider = ({
 
   if (products.length <= visibleProducts) {
     return (
-      <section className={`py-16 ${bgColor}`}>
+      <section className={`py-16`}>
         <div className="container mx-auto px-4">
           <div className="max-w-3xl mx-auto text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4">{title}</h2>
@@ -211,11 +212,13 @@ const ProductSlider = ({
   return (
     <section className={`py-16 ${bgColor}`}>
       <div className="container mx-auto px-4">
-        <div className="max-w-3xl mx-auto text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4">{title}</h2>
-          <div className="w-24 h-1 bg-foreground mx-auto mb-6"></div>
-          <p className="text-muted-foreground">{description}</p>
-        </div>
+        {!hideTitle && (
+          <div className="max-w-3xl mx-auto text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4">{title}</h2>
+            <div className="w-24 h-1 bg-primary mx-auto mb-6"></div>
+            <p className="text-muted-foreground">{description}</p>
+          </div>
+        )}
         <div
           ref={sliderRef}
           className="relative"
@@ -263,7 +266,7 @@ const ProductSlider = ({
               </motion.div>
             </AnimatePresence>
           </div>
-          
+
           {!isMobile && (
             <>
               <button

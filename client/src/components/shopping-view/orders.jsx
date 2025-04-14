@@ -96,25 +96,25 @@ function ShoppingOrders() {
           <div className="mb-6">
             <div className="relative">
               <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                <Search className="h-4 w-4 text-gray-400" />
+                <Search className="h-4 w-4 text-muted-foreground" />
               </div>
               <Input
                 type="text"
                 placeholder="Search by order ID or date..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 pr-10 py-2 border-gray-300 focus:border-black focus:ring-black w-full"
+                className="pl-10 pr-10 py-2 border-input focus:border-primary focus:ring-primary w-full"
               />
               {searchTerm && (
                 <button
                   className="absolute inset-y-0 right-0 flex items-center pr-3"
                   onClick={() => setSearchTerm("")}
                 >
-                  <X className="h-4 w-4 text-gray-400 hover:text-gray-600" />
+                  <X className="h-4 w-4 text-muted-foreground hover:text-foreground" />
                 </button>
               )}
             </div>
-            <div className="flex gap-2 mt-2 text-xs text-gray-500">
+            <div className="flex gap-2 mt-2 text-xs text-muted-foreground">
               <span className="flex items-center gap-1">
                 <Tag className="h-3 w-3" />
                 <span>Search by Order ID</span>
@@ -130,12 +130,12 @@ function ShoppingOrders() {
           <div className="overflow-x-auto">
             <Table className="w-full border-collapse">
               <TableHeader>
-                <TableRow className="bg-gray-50 border-b border-gray-200">
-                  <TableHead className="py-4 px-4 text-left text-xs uppercase tracking-wider font-medium text-gray-500">Order ID</TableHead>
-                  <TableHead className="py-4 px-4 text-left text-xs uppercase tracking-wider font-medium text-gray-500">Date</TableHead>
-                  <TableHead className="py-4 px-4 text-left text-xs uppercase tracking-wider font-medium text-gray-500">Status</TableHead>
-                  <TableHead className="py-4 px-4 text-left text-xs uppercase tracking-wider font-medium text-gray-500">Total</TableHead>
-                  <TableHead className="py-4 px-4 text-left text-xs uppercase tracking-wider font-medium text-gray-500">
+                <TableRow className="bg-muted/10 border-b border-input">
+                  <TableHead className="py-4 px-4 text-left text-xs uppercase tracking-wider font-medium text-muted-foreground">Order ID</TableHead>
+                  <TableHead className="py-4 px-4 text-left text-xs uppercase tracking-wider font-medium text-muted-foreground">Date</TableHead>
+                  <TableHead className="py-4 px-4 text-left text-xs uppercase tracking-wider font-medium text-muted-foreground">Status</TableHead>
+                  <TableHead className="py-4 px-4 text-left text-xs uppercase tracking-wider font-medium text-muted-foreground">Total</TableHead>
+                  <TableHead className="py-4 px-4 text-left text-xs uppercase tracking-wider font-medium text-muted-foreground">
                     <span className="sr-only">Actions</span>
                   </TableHead>
                 </TableRow>
@@ -145,12 +145,12 @@ function ShoppingOrders() {
                   filteredOrders.map((orderItem) => (
                     <TableRow
                       key={orderItem?._id}
-                      className="border-b border-gray-200 hover:bg-gray-50 transition-colors"
+                      className="border-b border-input hover:bg-muted/10 transition-colors"
                     >
                       <TableCell className="py-4 px-4 text-sm">
                         <button
                           onClick={() => toggleOrderIdExpansion(orderItem._id)}
-                          className="font-medium text-gray-900 hover:text-black focus:outline-none"
+                          className="font-medium text-foreground hover:text-primary focus:outline-none"
                         >
                           {expandedOrderId === orderItem._id
                             ? orderItem._id
@@ -158,7 +158,7 @@ function ShoppingOrders() {
                           }
                         </button>
                       </TableCell>
-                      <TableCell className="py-4 px-4 text-sm text-gray-600">
+                      <TableCell className="py-4 px-4 text-sm text-muted-foreground">
                         {formatDate(orderItem?.orderDate)}
                       </TableCell>
                       <TableCell className="py-4 px-4">
@@ -181,7 +181,7 @@ function ShoppingOrders() {
                         >
                           <button
                             onClick={() => handleFetchOrderDetails(orderItem?._id)}
-                            className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm leading-4 font-medium rounded-sm text-gray-700 bg-white hover:bg-gray-50 hover:border-black transition-colors"
+                            className="inline-flex items-center px-3 py-1.5 border border-input text-sm leading-4 font-medium rounded-sm text-foreground bg-card hover:bg-muted/10 hover:border-primary transition-colors"
                           >
                             <Eye className="h-3.5 w-3.5 mr-1" />
                             Details
@@ -193,7 +193,7 @@ function ShoppingOrders() {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell colSpan={5} className="py-8 text-center text-gray-500">
+                    <TableCell colSpan={5} className="py-8 text-center text-muted-foreground">
                       No orders match your search. Try a different search term.
                     </TableCell>
                   </TableRow>
@@ -203,15 +203,15 @@ function ShoppingOrders() {
           </div>
         </>
       ) : (
-        <div className="text-center py-12 bg-gray-50 border border-gray-200 rounded-md">
-          <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center rounded-full bg-gray-100">
-            <ShoppingBag className="h-8 w-8 text-gray-400" />
+        <div className="text-center py-12 bg-muted/10 border border-input rounded-md">
+          <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center rounded-full bg-muted/20">
+            <ShoppingBag className="h-8 w-8 text-muted-foreground" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Orders Found</h3>
-          <p className="text-gray-500 mb-6">You haven't placed any orders yet.</p>
+          <h3 className="text-lg font-medium text-foreground mb-2">No Orders Found</h3>
+          <p className="text-muted-foreground mb-6">You haven't placed any orders yet.</p>
           <a
             href="/shop"
-            className="inline-block px-6 py-3 border-2 border-black hover:bg-black hover:text-white transition-colors duration-300 uppercase tracking-wider text-sm font-medium"
+            className="inline-block px-6 py-3 border-2 border-primary hover:bg-primary hover:text-primary-foreground transition-colors duration-300 uppercase tracking-wider text-sm font-medium"
           >
             Start Shopping
           </a>

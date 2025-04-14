@@ -1,10 +1,10 @@
 const { imageUploadUtil, videoUploadUtil } = require("../../helpers/cloudinary");
 const Product = require("../../models/Product");
 const ProductReview = require("../../models/Review");
-
+const sharp = require('sharp');
 
 // Handles image upload for both single and multiple files
-const handleImageUpload = async (req, res) => {
+/* const handleImageUpload = async (req, res) => {
   try {
     let results = [];
     // Check if multiple files were uploaded
@@ -32,8 +32,54 @@ const handleImageUpload = async (req, res) => {
       message: "Error occurred",
     });
   }
-};
+}; */
 
+
+const handleImageUpload = async (req, res) => {
+  try {
+    let results = [];
+
+    const processImage = async (file) => {
+      let outputFormat = "avif"; // Default to AVIF
+
+      // Check browser support (if applicable, or based on client request)
+      const supportedFormats = ["avif", "webp", "jpeg", "png", "jpg"];
+      if (!supportedFormats.includes(outputFormat)) {
+        outputFormat = "webp"; // Fallback to WebP if AVIF is not widely supported
+      }
+
+      // Compress and convert the image
+      const compressedBuffer = await sharp(file.buffer)
+        .resize({ width: 1024 }) // Resize to optimize storage
+        .toFormat(outputFormat, { quality: 80 }) // Convert with 80% quality
+        .toBuffer();
+
+      const b64 = compressedBuffer.toString("base64");
+      const url = `data:image/${outputFormat};base64,${b64}`;
+      return await imageUploadUtil(url);
+    };
+
+    // Handle multiple file uploads
+    if (req.files && req.files.length > 0) {
+      results = await Promise.all(req.files.map(processImage));
+    }
+    // Handle single file upload
+    else if (req.file) {
+      results.push(await processImage(req.file));
+    }
+
+    return res.json({
+      success: true,
+      result: results,
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Error occurred",
+    });
+  }
+};
 const handleVideoUpload = async (req, res) => {
   try {
     // Check if a video file was uploaded
@@ -41,10 +87,10 @@ const handleVideoUpload = async (req, res) => {
       // Convert the video file buffer to a base64 string
       const b64 = Buffer.from(req.file.buffer).toString("base64");
       const url = "data:" + req.file.mimetype + ";base64," + b64;
-      
+
       // Upload the video using the videoUploadUtil (internal organization util)
       const result = await videoUploadUtil(url);
-      
+
       return res.json({
         success: true,
         result: result
@@ -71,6 +117,8 @@ const addProduct = async (req, res) => {
       image,
       title,
       description,
+      secondTitle,
+      productCode,
       category,
       isNewArrival,
       isFeatured,
@@ -78,9 +126,9 @@ const addProduct = async (req, res) => {
       salePrice,
       totalStock,
       averageReview,
-      colors,      
-      isWatchAndBuy, 
-      video      
+      colors,
+      isWatchAndBuy,
+      video
     } = req.body;
 
     // Ensure that image is an array; if not, convert it to one.
@@ -92,6 +140,8 @@ const addProduct = async (req, res) => {
       image: images,
       title,
       description,
+      secondTitle,
+      productCode,
       category,
       isNewArrival,
       isFeatured,
@@ -162,6 +212,8 @@ const editProduct = async (req, res) => {
       image,
       title,
       description,
+      secondTitle,
+      productCode,
       category,
       isNewArrival,
       isFeatured,
@@ -185,6 +237,8 @@ const editProduct = async (req, res) => {
         image: images,
         title,
         description,
+        secondTitle,
+        productCode,
         category,
         isNewArrival,
         isFeatured,

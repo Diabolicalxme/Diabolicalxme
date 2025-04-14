@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import { Input } from "@/components/ui/input";
+
 import ShoppingProductTile from "@/components/shopping-view/product-tile";
 import { useToast } from "@/components/ui/use-toast";
 import { addToCart, fetchCartItems } from "@/store/shop/cart-slice";
@@ -21,7 +21,6 @@ function SearchProducts() {
   const inputRef = useRef(null);
 
   const { productList } = useSelector((state) => state.shopProducts);
-  const { cartItems } = useSelector((state) => state.shopCart);
   const { user } = useSelector((state) => state.auth);
 
   const { toast } = useToast();
@@ -59,6 +58,7 @@ function SearchProducts() {
     } else {
       setSuggestions([]);
       setSearchParams({});
+      setIsLoading(false); // Reset loading state when search text is cleared
     }
   }, [keyword, productList, setSearchParams]);
 
@@ -69,7 +69,7 @@ function SearchProducts() {
     }
   }, []);
 
-  function handleAddtoCart(getCurrentProductId, totalStock, product) {
+  function handleAddtoCart(getCurrentProductId, _, product) {
     // Find the product in the product list
     const currentProduct = product || productList.find((p) => p._id === getCurrentProductId);
 
@@ -136,8 +136,8 @@ function SearchProducts() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-2xl mx-auto">
-        <h2 className="text-2xl font-light mb-6 text-center">Search our store</h2>
-        <form onSubmit={handleSearch} className="flex items-center border-b border-gray-300 pb-2 mb-6">
+        <h2 className="text-2xl font-light mb-6 text-center text-foreground">Search our store</h2>
+        <form onSubmit={handleSearch} className="flex items-center border-b border-input pb-2 mb-6">
           <input
             ref={inputRef}
             type="text"
@@ -148,17 +148,17 @@ function SearchProducts() {
             }}
             onKeyDown={handleKeyDown}
             placeholder="Search for products..."
-            className="w-full bg-transparent text-lg outline-none"
+            className="w-full bg-transparent text-lg outline-none text-foreground placeholder:text-muted-foreground focus:ring-0"
             autoFocus
           />
-          <button type="submit" className="text-gray-700 hover:text-black transition-colors">
+          <button type="submit" className="text-muted-foreground hover:text-primary transition-colors">
             <Search className="h-5 w-5" />
           </button>
         </form>
 
         {/* Popular Searches */}
         <div className="mb-8">
-          <h3 className="text-sm uppercase tracking-wider text-gray-500 mb-3">Popular Searches</h3>
+          <h3 className="text-sm uppercase tracking-wider text-muted-foreground mb-3">Popular Searches</h3>
           <div className="flex flex-wrap gap-2">
             {popularSearches.map((term) => (
               <button
@@ -166,7 +166,7 @@ function SearchProducts() {
                 onClick={() => {
                   setKeyword(term);
                 }}
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-sm rounded-full transition-colors"
+                className="px-4 py-2 bg-muted/10 hover:bg-muted/20 text-sm rounded-full transition-colors text-foreground border border-input hover:border-primary"
               >
                 {term}
               </button>
@@ -178,27 +178,33 @@ function SearchProducts() {
       {/* Loading indicator */}
       {isLoading && (
         <div className="flex justify-center items-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       )}
 
       {/* No results message */}
       {!isLoading && keyword.trim().length > 0 && suggestions.length === 0 && (
-        <div className="text-center py-12">
-          <h1 className="text-3xl font-bold mb-2">No results found</h1>
-          <p className="text-gray-600">
+        <div className="text-center py-12 bg-card p-8 rounded-md shadow-sm border border-input max-w-2xl mx-auto">
+          <h1 className="text-3xl font-bold mb-4 text-foreground">No results found</h1>
+          <p className="text-foreground mb-4">
             We couldn't find any products matching "{keyword}"
           </p>
-          <p className="text-sm text-gray-500 mt-2">
+          <p className="text-muted-foreground mb-6">
             Try a different search term or browse our categories
           </p>
+          <Button
+            onClick={() => navigate('/shop/collections')}
+            className="bg-primary text-primary-foreground hover:bg-transparent hover:text-foreground border border-primary transition-colors duration-300"
+          >
+            Browse Collections
+          </Button>
         </div>
       )}
 
       {/* Products Grid */}
       {!isLoading && keyword.trim().length > 0 && suggestions.length > 0 && (
         <div>
-          <h3 className="text-xl font-medium mb-4">
+          <h3 className="text-xl font-medium mb-6 text-foreground border-b border-input pb-4">
             {suggestions.length} {suggestions.length === 1 ? 'result' : 'results'} for "{keyword}"
           </h3>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">

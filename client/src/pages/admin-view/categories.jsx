@@ -34,7 +34,7 @@ function AdminCategories() {
   const [imageLoadingState, setImageLoadingState] = useState(false);
   const [currentEditedId, setCurrentEditedId] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
-  const { categoryList } = useSelector((state) => state.adminCategories);
+  const { categoryList, isLoading } = useSelector((state) => state.adminCategories);
   const dispatch = useDispatch();
   const { toast } = useToast();
 
@@ -69,7 +69,10 @@ function AdminCategories() {
       name: category.name,
       description: category.description,
     });
-    setUploadedImageUrls([category.image]);
+    // Reset all image-related states to ensure clean state
+    setImageFiles([]);
+    setImageLoadingStates([]);
+    setUploadedImageUrls(category.image ? [category.image] : []);
     setOpenCreateCategoriesDialog(true);
   }
 
@@ -113,8 +116,9 @@ function AdminCategories() {
 
   function resetForm() {
     setFormData(initialFormData);
-    setUploadedImageUrls("");
-    setImageFiles(null);
+    setUploadedImageUrls([]);
+    setImageFiles([]);
+    setImageLoadingStates([]);
     setCurrentEditedId(null);
     setOpenCreateCategoriesDialog(false);
   }
@@ -158,6 +162,15 @@ function AdminCategories() {
           </Button>
         </div>
       </div>
+
+      
+      {isLoading ? (
+      <div className="flex items-center justify-center w-full mt-16 mb-1">
+      
+        <span className="text-lg whitespace-nowrap px-2">Loading categories...</span>
+       
+      </div>
+    ) : (
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
         {filteredCategoryList && filteredCategoryList.length > 0
           ? filteredCategoryList.map((categoryItem) => (
@@ -172,6 +185,8 @@ function AdminCategories() {
             ))
           : <p className="text-center col-span-full">No categories found.</p>}
       </div>
+      )}
+
       <Sheet
         open={openCreateCategoriesDialog}
         onOpenChange={() => {

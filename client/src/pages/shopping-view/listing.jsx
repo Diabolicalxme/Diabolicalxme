@@ -177,8 +177,8 @@ function ShoppingListing() {
   return (
     <>
       <Helmet>
-        <title>{currentCategory ? `${currentCategory.title} Collection` : 'All Products'} | Rachana Boutique</title>
-        <meta name="description" content={`Explore our ${currentCategory ? currentCategory.title : 'exclusive'} collection of premium sarees and ethnic wear at Rachana Boutique.`} />
+        <title>{currentCategory ? `${currentCategory?.name} Collection` : 'All Products'} | Rachana Boutique</title>
+        <meta name="description" content={`Explore our ${currentCategory ? currentCategory?.name : 'exclusive'} collection of premium sarees and ethnic wear at Rachana Boutique.`} />
       </Helmet>
 
       <div className="bg-background">
@@ -192,22 +192,20 @@ function ShoppingListing() {
           <div className="absolute inset-0 bg-black bg-opacity-35 flex items-center justify-center">
             <div className="text-center">
               <h1 className="text-4xl md:text-5xl font-light uppercase tracking-wide text-white mb-4">
-                {currentCategory?.title || "All Products"}
+                {currentCategory?.name || "All Products"}
               </h1>
               <div className="w-24 h-1 bg-white mx-auto"></div>
             </div>
           </div>
         </div>
 
-      
+
 
         {/* Main Content */}
         <div className="container mx-auto px-4 py-8 ">
           <div className="grid grid-cols-1 md:grid-cols-[250px_1fr] gap-8">
             {/* Filter Component */}
-            <div className="bg-card p-6 border border-border rounded-md shadow-sm">
-              <h2 className="text-xl font-light uppercase tracking-wide mb-4">Filters</h2>
-              <div className="w-12 h-0.5 bg-foreground mb-6"></div>
+            <div className="relative">
               <ProductFilter
                 filters={filters}
                 setFilters={setFilters}
@@ -216,12 +214,13 @@ function ShoppingListing() {
             </div>
 
             {/* Product Listing */}
-            <div className="bg-card">
+            <div className="">
               <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 pb-4 border-b">
                 <div>
                   <h2 className="text-2xl font-light uppercase tracking-wide mb-2">
                     {currentCategory?.title || "All Products"}
                   </h2>
+                  <div className="w-16 h-0.5 bg-primary mb-3"></div>
                   <p className="text-muted-foreground">
                     Showing {filteredProducts.length} products
                   </p>
@@ -274,7 +273,7 @@ function ShoppingListing() {
                       setFilters({});
                       setSort(null);
                     }}
-                    className="px-6 py-2 border-2 border-foreground hover:bg-foreground hover:text-background transition-colors duration-300 uppercase tracking-wider text-sm font-medium"
+                    className="px-6 py-2 border-2 border-primary hover:bg-primary hover:text-primary-foreground transition-colors duration-300 uppercase tracking-wider text-sm font-medium"
                   >
                     Clear All Filters
                   </button>

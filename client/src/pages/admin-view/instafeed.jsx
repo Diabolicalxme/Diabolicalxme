@@ -31,7 +31,7 @@ function AdminInstafeed() {
   const [isModalOpen, setModalOpen] = useState(false);
   const [selectedPostId, setSelectedPostId] = useState(null);
 
-  const { instaFeedPosts } = useSelector((state) => state.adminInstaFeed);
+  const { instaFeedPosts, isLoading } = useSelector((state) => state.adminInstaFeed);
 
   const dispatch = useDispatch();
   const { toast } = useToast();
@@ -101,6 +101,14 @@ function AdminInstafeed() {
           Add New Post
         </Button>
       </div>
+      
+      {isLoading ? (
+      <div className="flex items-center justify-center w-full mt-16 mb-1">
+      
+        <span className="text-lg whitespace-nowrap px-2">Loading posts...</span>
+       
+      </div>
+    ) : (
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {instaFeedPosts &&
         instaFeedPosts.posts &&
@@ -114,6 +122,8 @@ function AdminInstafeed() {
             ))
           : null}
       </div>
+      )}
+
       <Sheet
         open={openCreatePostDialog}
         onOpenChange={() => {

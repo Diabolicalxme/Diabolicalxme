@@ -5,15 +5,18 @@ import ProductImageUpload from "@/components/admin-view/image-upload";
 import AdminProductTile from "@/components/admin-view/product-tile";
 import CommonForm from "@/components/common/form";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { fetchCategories } from "@/store/shop/categories-slice";
 import { useToast } from "@/components/ui/use-toast";
 import { addProductFormElements } from "@/config";
 import { addNewProduct, deleteProduct, editProduct, fetchAllProducts } from "@/store/admin/products-slice";
 
-// Updated initial form data with new fields and without isFastMoving.
+// Updated initial form data with new fields
 const initialFormData = {
   image: "",
   title: "",
+  secondTitle: "",
+  productCode: "",
   description: "",
   category: "",
   isNewArrival: false,
@@ -35,10 +38,11 @@ function AdminProducts() {
   const [imageLoadingState, setImageLoadingState] = useState(false);
   const [imageLoadingStates, setImageLoadingStates] = useState([]);
   const [currentEditedId, setCurrentEditedId] = useState(null);
-  const { productList } = useSelector((state) => state.adminProducts);
+  const { productList, isLoading } = useSelector((state) => state.adminProducts);
   const { categoriesList } = useSelector((state) => state.shopCategories);
   const [searchQuery, setSearchQuery] = useState("");
-  
+  const [filterOption, setFilterOption] = useState("all");
+
   const dispatch = useDispatch();
   const { toast } = useToast();
 
@@ -111,6 +115,9 @@ function AdminProducts() {
           setImageFiles([]);
           setOpenCreateProductsDialog(false);
           setCurrentEditedId(null);
+          toast({
+            title: "Product updated successfully",
+          });
         }
       });
     } else {
@@ -142,12 +149,14 @@ function AdminProducts() {
     setFormData({
       image: product.image,
       title: product.title,
+      secondTitle: product.secondTitle || "",
+      productCode: product.productCode || "",
       description: product.description,
       category: product.category,
       isNewArrival: product.isNewArrival,
       isFeatured: product.isFeatured,
       price: product.price,
-      salePrice: product.salePrice,
+      salePrice: product.salePrice || "",
       totalStock: product.totalStock,
       averageReview: product.averageReview || 0,
       colors: product.colors || [],
@@ -163,7 +172,17 @@ function AdminProducts() {
   };
 
   function isFormValid() {
-    const optionalFields = ["isNewArrival", "isFeatured", "isWatchAndBuy", "video", "image"];
+    const optionalFields = [
+      "productCode",
+      "isNewArrival",
+      "isFeatured",
+      "isWatchAndBuy",
+      "video",
+      "image",
+      "salePrice",
+      "secondTitle"
+    ];
+
     if (imageLoadingStates?.includes(true)) return false;
 
     return Object.keys(formData)
@@ -172,28 +191,67 @@ function AdminProducts() {
       .every((item) => item);
   }
 
-  // Filter the productList based on the search query (by product title).
-  const filteredProductList = searchQuery
-    ? productList.filter((productItem) =>
-        productItem.title.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    : productList;
+  // Handle filter change
+  const handleFilterChange = (value) => {
+    setFilterOption(value);
+  };
+
+  // Filter the productList based on the search query and filter option
+  const filteredProductList = productList.filter((productItem) => {
+    // First apply search filter
+    const matchesSearch = !searchQuery ||
+      productItem.title.toLowerCase().includes(searchQuery.toLowerCase());
+
+    // Then apply category filter
+    let matchesFilter = true;
+    if (filterOption !== "all") {
+      switch (filterOption) {
+        case "newArrivals":
+          matchesFilter = productItem.isNewArrival === true;
+          break;
+        case "featured":
+          matchesFilter = productItem.isFeatured === true;
+          break;
+        case "outOfStock":
+          matchesFilter = productItem.totalStock <= 0;
+          break;
+        default:
+          matchesFilter = true;
+      }
+    }
+
+    return matchesSearch && matchesFilter;
+  });
 
   return (
     <Fragment>
        <h1 className="mb-4 text-2xl font-semibold leading-none tracking-tight">All Products</h1>
-   
-        
-      <div className="mb-4 flex items-center justify-between w-full">
-      <div className="w-1/3">
 
-          <input
-            type="text"
-            placeholder="Search by product name..."
-            value={searchQuery}
-            onChange={handleSearchChange}
-            className="w-full border rounded-md p-2"
-          />
+
+      <div className="mb-4 flex items-center justify-between w-full">
+        <div className="flex items-center gap-3 w-2/3">
+          <div className="w-1/2">
+            <input
+              type="text"
+              placeholder="Search by product name..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+              className="w-full border rounded-md p-2"
+            />
+          </div>
+          <div className="w-1/2">
+            <Select value={filterOption} onValueChange={handleFilterChange}>
+              <SelectTrigger className="w-full border rounded-md">
+                <SelectValue placeholder="Filter products" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Products</SelectItem>
+                <SelectItem value="newArrivals">New Arrivals</SelectItem>
+                <SelectItem value="featured">Featured Products</SelectItem>
+                <SelectItem value="outOfStock">Out of Stock</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
         <Button
           className="bg-primary hover:bg-accent"
@@ -206,8 +264,16 @@ function AdminProducts() {
         >
           Add New Product
         </Button>
-        </div>
+      </div>
 
+
+        {isLoading ? (
+      <div className="flex items-center justify-center w-full mt-16 mb-1">
+
+        <span className="text-lg whitespace-nowrap px-2">Loading products...</span>
+
+      </div>
+    ) : (
       <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4">
         {filteredProductList && filteredProductList.length > 0
           ? filteredProductList.map((productItem) => (
@@ -222,6 +288,8 @@ function AdminProducts() {
             ))
           : <p className="text-center col-span-full">No products found.</p>}
       </div>
+      )}
+
       <Sheet
         open={openCreateProductsDialog}
         onOpenChange={() => {
@@ -247,6 +315,7 @@ function AdminProducts() {
             imageLoadingStates={imageLoadingStates}
             setImageLoadingStates={setImageLoadingStates}
             setImageLoadingState={setImageLoadingState}
+            isSingleImage={false}
           />
           <div className="py-6">
             <CommonForm

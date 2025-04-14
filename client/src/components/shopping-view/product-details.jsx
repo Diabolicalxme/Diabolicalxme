@@ -1,4 +1,4 @@
-import { StarIcon } from "lucide-react";
+import { Star } from "lucide-react";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent } from "../ui/dialog";
@@ -143,11 +143,9 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
             ) : null}
           </div>
           <div className="flex items-center gap-2 mt-2">
-            <div className="flex items-center gap-0.5">
-              <StarRatingComponent rating={averageReview} />
-            </div>
-            <span className="text-muted-foreground">
-              ({averageReview.toFixed(2)})
+            <StarRatingComponent rating={averageReview} disableHover={true} size="small" />
+            <span className="text-muted-foreground text-sm">
+              ({averageReview.toFixed(1)})
             </span>
           </div>
           <div className="mt-5 mb-5">
@@ -185,8 +183,18 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
                       <div className="flex items-center gap-2">
                         <h3 className="font-bold">{reviewItem?.userName}</h3>
                       </div>
-                      <div className="flex items-center gap-0.5">
-                        <StarRatingComponent rating={reviewItem?.reviewValue} />
+                      <div className="flex items-center gap-1">
+                        <div className="flex">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <Star 
+                              key={star}
+                              className={`h-3.5 w-3.5 ${star <= reviewItem?.reviewValue ? "fill-yellow-400 text-yellow-400" : "fill-gray-200 text-gray-200"}`}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          ({reviewItem?.reviewValue}/5)
+                        </span>
                       </div>
                       <p className="text-muted-foreground">
                         {reviewItem.reviewMessage}
@@ -198,26 +206,45 @@ function ProductDetailsDialog({ open, setOpen, productDetails }) {
                 <h1>No Reviews</h1>
               )}
             </div>
-            <div className=" mt-10 flex-col flex gap-2">
-              <Label>Write a review</Label>
-              <div className="flex gap-1">
-                <StarRatingComponent
-                  rating={rating}
-                  handleRatingChange={handleRatingChange}
-                />
+            <div className="mt-8 p-4 border border-input rounded-md bg-muted/5">
+              <h3 className="text-sm font-medium mb-3">Write a review</h3>
+              <div className="space-y-3">
+                <div>
+                  <Label className="text-xs text-muted-foreground">Your Rating</Label>
+                  <div className="flex items-center mt-1">
+                    <StarRatingComponent
+                      rating={rating}
+                      handleRatingChange={handleRatingChange}
+                      size="small"
+                    />
+                    <span className="text-xs text-muted-foreground ml-2">
+                      {rating > 0 ? `${rating}/5` : 'Select rating'}
+                    </span>
+                  </div>
+                </div>
+                
+                <div>
+                  <Label className="text-xs text-muted-foreground">Your Review</Label>
+                  <Input
+                    name="reviewMsg"
+                    value={reviewMsg}
+                    onChange={(event) => setReviewMsg(event.target.value)}
+                    placeholder="Share your thoughts..."
+                    className="mt-1 text-sm"
+                  />
+                </div>
+                
+                <div className="flex justify-end">
+                  <Button
+                    size="sm"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 text-xs"
+                    onClick={handleAddReview}
+                    disabled={reviewMsg.trim() === "" || rating === 0}
+                  >
+                    Submit Review
+                  </Button>
+                </div>
               </div>
-              <Input
-                name="reviewMsg"
-                value={reviewMsg}
-                onChange={(event) => setReviewMsg(event.target.value)}
-                placeholder="Write a review..."
-              />
-              <Button
-                onClick={handleAddReview}
-                disabled={reviewMsg.trim() === ""}
-              >
-                Submit
-              </Button>
             </div>
           </div>
         </div>
