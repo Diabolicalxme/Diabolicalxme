@@ -14,9 +14,9 @@ var vite_config_default = defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       manifest: {
-        name: "Rachana Boutique",
-        short_name: "Boutique",
-        description: "Discover trendy ethnic and western wear at Rachana Boutique.",
+        name: "DiabolicalXme",
+        short_name: "DiabolicalXme",
+        description: "Discover bold contemporary fashion at DiabolicalXme.",
         theme_color: "#ffffff",
         icons: [
           {

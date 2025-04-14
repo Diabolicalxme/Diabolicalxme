@@ -62,12 +62,12 @@ const Contact = () => {
     <>
       <Helmet>
         <title>Contact Us | DiabolicalXme</title>
-        <meta name="description" content="Get in touch with DiabolicalXme for any questions or inquiries about our saree collections." />
+        <meta name="description" content="Get in touch with DiabolicalXme for any questions or inquiries about our bold contemporary fashion collections." />
       </Helmet>
 
       <div className="">
         {/* Page Header */}
-        <div className="relative w-full h-[300px] md:h-[400px] overflow-hidden">
+        <div className="relative w-full h-[250px] md:h-[350px] overflow-hidden">
           <img
             src={banner}
             alt="Contact Us"

@@ -8,8 +8,8 @@ function PaymentSuccessPage() {
   return (
     <>
       <Helmet>
-        <title>Payment Successful | Rachana Boutique</title>
-        <meta name="description" content="Your payment has been successfully processed. Thank you for shopping with Rachana Boutique." />
+        <title>Payment Successful | DiabolicalXme</title>
+        <meta name="description" content="Your payment has been successfully processed. Thank you for shopping with DiabolicalXme." />
       </Helmet>
 
       <div className="bg-background min-h-[80vh] flex flex-col">

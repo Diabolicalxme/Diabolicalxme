@@ -104,8 +104,8 @@ function NewArrivals() {
   return (
     <>
       <Helmet>
-        <title>New Arrivals | DiabolicalXMe</title>
-        <meta name="description" content="Discover our latest arrivals - fresh designs and styles just added to our collection at Rachana Boutique." />
+        <title>New Arrivals | DiabolicalXme</title>
+        <meta name="description" content="Discover our latest arrivals - fresh designs and bold styles just added to our collection at DiabolicalXme." />
       </Helmet>
 
       <div className="bg-background">

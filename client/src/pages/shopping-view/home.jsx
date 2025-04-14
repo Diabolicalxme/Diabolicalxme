@@ -51,7 +51,7 @@ function ShoppingHome() {
     threshold: 0.2,
   });
 
-  const filteredCategoryList = categoriesList.filter(category => 
+  const filteredCategoryList = categoriesList.filter(category =>
     !['author', 'bravo', 'hector'].includes(category.name.trim().toLowerCase())
   );
   console.log(filteredCategoryList)
@@ -107,20 +107,20 @@ function ShoppingHome() {
   return (
     <>
       <Helmet>
-        <title>Best Sarees Online - Buy Now | Rachana Boutique</title>
-        <meta name="description" content="Discover the finest sarees with exclusive designs. Shop now for the best collections at Rachana Boutique!" />
-        <meta name="keywords" content="sarees, buy sarees online, silk sarees, wedding sarees, designer sarees, traditional sarees" />
-        <meta name="author" content="Mohan Raj A" />
+        <title>Bold Contemporary Fashion | DiabolicalXme</title>
+        <meta name="description" content="Discover bold, avant-garde clothing with exclusive designs. Shop now for the best collections at DiabolicalXme!" />
+        <meta name="keywords" content="fashion, clothing brand, contemporary fashion, designer wear, streetwear" />
+        <meta name="author" content="DiabolicalXme" />
         <meta name="robots" content="index, follow" />
-        <meta property="og:title" content="Best Sarees Online - Buy Now | Rachana Boutique" />
-        <meta property="og:description" content="Explore a wide range of premium sarees at Rachana Boutique. Perfect for every occasion!" />
-        <meta property="og:image" content="https://example.com/path-to-your-saree-image.jpg" />
-        <meta property="og:url" content="https://rachana-boutique.com" />
+        <meta property="og:title" content="Bold Contemporary Fashion | DiabolicalXme" />
+        <meta property="og:description" content="Explore a wide range of bold contemporary fashion at DiabolicalXme. Perfect for every occasion!" />
+        <meta property="og:image" content="https://example.com/path-to-your-image.jpg" />
+        <meta property="og:url" content="https://diabolicalxme.com" />
         <meta property="og:type" content="website" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Best Sarees Online - Buy Now | Rachana Boutique" />
-        <meta name="twitter:description" content="Shop the best sarees online with exclusive offers at Rachana Boutique!" />
-        <meta name="twitter:image" content="https://example.com/path-to-your-saree-image.jpg" />
+        <meta name="twitter:title" content="Bold Contemporary Fashion | DiabolicalXme" />
+        <meta name="twitter:description" content="Shop the best contemporary fashion with exclusive offers at DiabolicalXme!" />
+        <meta name="twitter:image" content="https://example.com/path-to-your-image.jpg" />
       </Helmet>
 
       {/* Full-page background image that changes with theme */}
@@ -134,7 +134,7 @@ function ShoppingHome() {
           handleAddtoCart={handleAddtoCart}
         />
 
-   
+
         {/* Masonry layout desktop */}
         <section className="hidden md:block py-8 ">
           <div className="container mx-auto px-4">

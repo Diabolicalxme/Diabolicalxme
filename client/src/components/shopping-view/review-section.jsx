@@ -104,7 +104,7 @@ const ReviewSection = ({
             <div className="p-6 hover:bg-muted/5 transition-colors" key={reviewItem._id}>
               <div className="flex gap-4">
                 <Avatar className="w-10 h-10 border border-input">
-                  <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
+                  <AvatarFallback className="bg-primary/10 text-muted-foreground text-sm font-medium">
                     {reviewItem?.userName?.[0]?.toUpperCase() || 'U'}
                   </AvatarFallback>
                 </Avatar>

@@ -29,10 +29,10 @@ export default defineConfig({
     VitePWA({
       registerType: "autoUpdate",
       manifest: {
-        name: "Rachana Boutique",
-        short_name: "Boutique",
-        description: "Discover trendy ethnic and western wear at Rachana Boutique.",
-        theme_color: "#ffffff",
+        name: "DiabolicalXme",
+        short_name: "DiabolicalXme",
+        description: "Discover bold contemporary fashion at DiabolicalXme.",
+        theme_color: "#093624",
         icons: [
           {
             src: "/icon-192x192.png",
@@ -71,5 +71,5 @@ export default defineConfig({
     strictPort: true, // Prevents port conflicts
     cors: true, // Ensures CORS works properly
   },
-  
+
 });

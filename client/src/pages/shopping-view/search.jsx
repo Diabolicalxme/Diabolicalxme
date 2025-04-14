@@ -25,13 +25,13 @@ function SearchProducts() {
 
   const { toast } = useToast();
 
-  // Popular saree searches
+  // Popular fashion searches
   const popularSearches = [
-    "Silk Sarees",
-    "Banarasi Sarees",
-    "Cotton Sarees",
-    "Kanjivaram Sarees",
-    "Designer Sarees",
+    "Streetwear",
+    "Contemporary Fashion",
+    "Designer Clothing",
+    "Avant-garde",
+    "Bold Fashion",
     "Dresses",
     "Summer Collection"
   ];

@@ -189,7 +189,7 @@ const ShoppingProductTile = ({
             {salePrice && price > salePrice ? (
               <>
                 <span className="font-medium text-md text-foreground">{formatPrice(salePrice)}</span>
-                <span className="ml-2 text-sm text-muted-foreground line-through">{formatPrice(price)}</span>
+               {/*  <span className="ml-2 text-sm text-muted-foreground line-through">{formatPrice(price)}</span> */}
               </>
             ) : (
               <span className="font-medium text-md text-foreground">{formatPrice(price)}</span>

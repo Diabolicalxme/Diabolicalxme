@@ -1,7 +1,7 @@
 import { writeFileSync } from "fs";
 import { SitemapStream, streamToPromise } from "sitemap";
 
-const hostname = "https://rachanaboutique.in";
+const hostname = "https://diabolicalxme.com";
 
 const pages = [
   { url: "/", changefreq: "daily", priority: 1.0 },

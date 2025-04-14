@@ -426,7 +426,7 @@ function ProductDetailsPage() {
     "sku": productDetails.productCode || "",
     "brand": {
       "@type": "Brand",
-      "name": "Rachana Boutique"
+      "name": "DiabolicalXme"
     },
     "offers": {
       "@type": "Offer",
@@ -503,26 +503,26 @@ function ProductDetailsPage() {
   return (
     <>
       <Helmet>
-        <title>{productDetails?.title ? `${productDetails.title} | Rachana Boutique` : 'Product Details | Rachana Boutique'}</title>
+        <title>{productDetails?.title ? `${productDetails.title} | DiabolicalXme` : 'Product Details | DiabolicalXme'}</title>
         <meta
           name="description"
           content={productDetails?.description ?
-            `${productDetails.description.substring(0, 150)}... Buy now at Rachana Boutique.` :
-            "Explore our exclusive collection of premium sarees and ethnic wear at Rachana Boutique."}
+            `${productDetails.description.substring(0, 150)}... Buy now at DiabolicalXme.` :
+            "Explore our exclusive collection of bold contemporary fashion at DiabolicalXme."}
         />
         <meta
           name="keywords"
-          content={`${productDetails?.title || 'saree'}, ${productDetails?.secondTitle || 'ethnic wear'}, ${productDetails?.productCode || ''}, Rachana Boutique, buy sarees online`}
+          content={`${productDetails?.title || 'clothing'}, ${productDetails?.secondTitle || 'contemporary fashion'}, ${productDetails?.productCode || ''}, DiabolicalXme, bold fashion`}
         />
         <meta name="robots" content="index, follow" />
 
         {/* Open Graph tags */}
-        <meta property="og:title" content={productDetails?.title ? `${productDetails.title} | Rachana Boutique` : 'Product Details | Rachana Boutique'} />
+        <meta property="og:title" content={productDetails?.title ? `${productDetails.title} | DiabolicalXme` : 'Product Details | DiabolicalXme'} />
         <meta
           property="og:description"
           content={productDetails?.description ?
-            `${productDetails.description.substring(0, 150)}... Shop now at Rachana Boutique.` :
-            "Discover premium sarees and ethnic wear at Rachana Boutique."}
+            `${productDetails.description.substring(0, 150)}... Shop now at DiabolicalXme.` :
+            "Discover bold contemporary fashion at DiabolicalXme."}
         />
         <meta property="og:image" content={productDetails?.image && productDetails.image.length > 0 ? productDetails.image[0] : ''} />
         <meta property="og:url" content={window.location.href} />
@@ -532,12 +532,12 @@ function ProductDetailsPage() {
 
         {/* Twitter Card tags */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={productDetails?.title ? `${productDetails.title} | Rachana Boutique` : 'Product Details | Rachana Boutique'} />
+        <meta name="twitter:title" content={productDetails?.title ? `${productDetails.title} | DiabolicalXme` : 'Product Details | DiabolicalXme'} />
         <meta
           name="twitter:description"
           content={productDetails?.description ?
-            `${productDetails.description.substring(0, 150)}... Shop now at Rachana Boutique.` :
-            "Discover premium sarees and ethnic wear at Rachana Boutique."}
+            `${productDetails.description.substring(0, 150)}... Shop now at DiabolicalXme.` :
+            "Discover bold contemporary fashion at DiabolicalXme."}
         />
         <meta name="twitter:image" content={productDetails?.image && productDetails.image.length > 0 ? productDetails.image[0] : ''} />
 
@@ -649,7 +649,7 @@ function ProductDetailsPage() {
             )}
 
             {/* Main title with refined styling */}
-            <h1 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-3 relative">
+            <h1 className="text-3xl md:text-4xl font-light uppercase tracking-wide my-3 relative">
               {productDetails?.title}
               <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-2 w-12 h-0.5 bg-primary"></div>
             </h1>
@@ -700,11 +700,11 @@ function ProductDetailsPage() {
                     ₹{productDetails?.price}
                   </p>
                 </div>
-                <div className="flex flex-col items-center">
+               {/*  <div className="flex flex-col items-center">
                   <p className="text-2xl md:text-3xl font-medium text-foreground">
                     ₹{productDetails?.salePrice}
                   </p>
-                </div>
+                </div> */}
               </>
             ) : (
               <div className="flex flex-col items-center">
@@ -755,7 +755,7 @@ function ProductDetailsPage() {
           <div className="mt-6 flex flex-col gap-6">
             <div className="flex justify-center">
               {productDetails?.totalStock === 0 ? (
-                <div className="w-full max-w-md px-8 py-3 opacity-60 cursor-not-allowed text-gray-500 uppercase tracking-wider text-sm font-medium flex items-center justify-center gap-2 border-b-2 border-gray-300">
+                <div className="w-full max-w-md px-8 py-3 opacity-60 cursor-not-allowed text-muted-foreground uppercase tracking-wider text-sm font-medium flex items-center justify-center gap-2 border-b-2 border-input">
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
                   </svg>
@@ -770,14 +770,14 @@ function ProductDetailsPage() {
                         {/* Circular quantity display with creative styling */}
                         <div className="relative w-20 h-20 flex items-center justify-center">
                           <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
-                            <circle cx="50" cy="50" r="45" fill="none" stroke="#f3f4f6" strokeWidth="2" />
-                            <circle cx="50" cy="50" r="45" fill="none" stroke="#000" strokeWidth="2"
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="var(--muted)" strokeWidth="2" />
+                            <circle cx="50" cy="50" r="45" fill="none" stroke="var(--primary)" strokeWidth="2"
                               strokeDasharray="283"
                               strokeDashoffset={283 - (283 * (quantity / (productDetails.totalStock > 10 ? 10 : productDetails.totalStock)))}
                               transform="rotate(-90 50 50)"
                             />
                           </svg>
-                          <span className="text-2xl font-medium">{quantity}</span>
+                          <span className="text-2xl font-medium text-foreground">{quantity}</span>
                         </div>
 
                         {/* Decrease button positioned to the left with more spacing */}
@@ -787,7 +787,7 @@ function ProductDetailsPage() {
                           aria-label="Decrease quantity"
                           disabled={quantity <= 1}
                         >
-                          <Minus className={`h-5 w-5 ${quantity <= 1 ? 'text-gray-300' : 'text-black'}`} />
+                          <Minus className={`h-5 w-5 text-muted-foreground`} />
                         </button>
 
                         {/* Increase button positioned to the right with more spacing */}
@@ -797,7 +797,7 @@ function ProductDetailsPage() {
                           aria-label="Increase quantity"
                           disabled={quantity >= productDetails.totalStock}
                         >
-                          <Plus className={`h-5 w-5 ${quantity >= productDetails.totalStock ? 'text-gray-300' : 'text-black'}`} />
+                          <Plus className={`h-5 w-5 text-muted-foreground`} />
                         </button>
                       </div>
                     </div>
@@ -875,8 +875,8 @@ function ProductDetailsPage() {
       </div>
 
 
-     
-         
+
+
           <div className="-mx-3.5">
             {relatedProducts && relatedProducts.length > 0 && (
               <ProductSlider
@@ -888,7 +888,7 @@ function ProductDetailsPage() {
             description="Discover more items that complement your style"
               />
             )}
-         
+
       </div>
     </div>
     </>

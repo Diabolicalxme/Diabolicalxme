@@ -109,7 +109,7 @@ function ShoppingCheckout() {
           key: import.meta.env.VITE_RAZORPAY_KEY_ID,
           amount,
           currency,
-          name: "Rachana Boutique",
+          name: "DiabolicalXme",
           description: "Order Payment",
           order_id: razorpayOrderId,
           handler: function (response) {
@@ -174,8 +174,8 @@ function ShoppingCheckout() {
   return (
     <>
       <Helmet>
-        <title>Checkout | Rachana Boutique</title>
-        <meta name="description" content="Complete your purchase at Rachana Boutique. Secure checkout process for your selected items." />
+        <title>Checkout | DiabolicalXme</title>
+        <meta name="description" content="Complete your purchase at DiabolicalXme. Secure checkout process for your selected items." />
       </Helmet>
 
       <div className="bg-background">

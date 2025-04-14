@@ -177,8 +177,8 @@ function ShoppingListing() {
   return (
     <>
       <Helmet>
-        <title>{currentCategory ? `${currentCategory?.name} Collection` : 'All Products'} | Rachana Boutique</title>
-        <meta name="description" content={`Explore our ${currentCategory ? currentCategory?.name : 'exclusive'} collection of premium sarees and ethnic wear at Rachana Boutique.`} />
+        <title>{currentCategory ? `${currentCategory?.name} Collection` : 'All Products'} | DiabolicalXme</title>
+        <meta name="description" content={`Explore our ${currentCategory ? currentCategory?.name : 'exclusive'} collection of bold contemporary fashion at DiabolicalXme.`} />
       </Helmet>
 
       <div className="bg-background">

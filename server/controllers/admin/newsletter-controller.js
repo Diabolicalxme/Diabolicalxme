@@ -33,7 +33,7 @@ const sendNewsletter = async (req, res) => {
     // Ensure `message` is formatted correctly
     const emailContent = `
     <div style="max-width:600px; margin:0 auto; background: #fdf6f0; border: 1px solid #ddd; border-radius: 8px; padding: 20px; font-family: 'Helvetica Neue', Arial, sans-serif;">
-      <h2 style="color: #d45d79; text-align: center; margin-bottom: 10px;">Rachana Boutique</h2>
+      <h2 style="color: #d45d79; text-align: center; margin-bottom: 10px;">DiabolicalXme Newsletter</h2>
       <div style="text-align: center; margin-top: 10px;">
         <p style="font-size:16px; color:#333;">
           ${message || "Check out our latest update!"}
