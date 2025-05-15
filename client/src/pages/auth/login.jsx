@@ -5,7 +5,7 @@ import { loginUser } from "@/store/auth-slice";
 import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { Link } from "react-router-dom";
-import logo from "@/assets/logo3.png";
+import logo from "@/assets/logo.png";
 
 const initialState = {
   email: "",

@@ -33,6 +33,9 @@ function ThemeProvider({ children }) {
 
       // Always update when user changes (don't compare with currentTheme)
       dispatch(setTheme(themeToSet));
+    } else if (!isAuthenticated) {
+      // If user is logged out, set theme to light
+      dispatch(setTheme(THEMES.LIGHT));
     }
   }, [isAuthenticated, user?.id, user?.category, dispatch]);
 

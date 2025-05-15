@@ -556,25 +556,25 @@ function ProductDetailsPage() {
       </Helmet>
 
       <div className="container mx-auto px-4 py-8 md:py-16">
-        {/* Product Details Section */}
-        <div className="grid grid-cols-1 md:grid-cols-[2fr_1.5fr] gap-12 md:gap-16">
+        {/* Product Details Section - Centered Layout */}
+        <div className="flex flex-col items-center gap-12 md:gap-16 max-w-5xl mx-auto">
 
-        <div className="flex items-start gap-4">
-          {/* Left Arrow - Desktop Only */}
-          {productDetails?.image && productDetails.image.length > 1 && (
-            <button
-              onClick={() => handleImageNavigation('prev')}
-              className="mt-72 hidden md:block bg-card hover:bg-muted/30 rounded-full p-2 shadow-md transition-all duration-300 hover:scale-110 border border-input"
-              aria-label="Previous image"
-            >
-              <ChevronLeft className="h-6 w-6 text-foreground" />
-            </button>
-          )}
-
-          <div className="flex flex-col gap-4">
+        {/* Centered Product Image Container */}
+        <div className="w-full max-w-2xl mx-auto relative">
+          <div className="flex justify-center relative">
+            {/* Left Arrow */}
+            {productDetails?.image && productDetails.image.length > 1 && (
+              <button
+                onClick={() => handleImageNavigation('prev')}
+                className="absolute left-2 top-1/2 -translate-y-1/2 z-10 bg-card/80 hover:bg-card rounded-full p-2 shadow-md transition-all duration-300 hover:scale-110 border border-input"
+                aria-label="Previous image"
+              >
+                <ChevronLeft className="h-6 w-6 text-foreground" />
+              </button>
+            )}
 
             {/* Main Image Container */}
-            <div className="flex-1 relative">
+            <div className="w-full relative">
               <div className={`${getSlideAnimationClass()}`}>
                 <ZoomableImage
                   imageSrc={selectedImage}
@@ -584,57 +584,36 @@ function ProductDetailsPage() {
                   images={productDetails?.image}
                 />
               </div>
+            </div>
 
-              {/* Mobile Arrows - Only visible on mobile */}
-              {productDetails?.image && productDetails.image.length > 1 && (
-                <div className="md:hidden">
-                  <button
-                    onClick={() => handleImageNavigation("prev")}
-                    className="absolute left-1 top-1/2 -translate-y-1/2 bg-card/80 hover:bg-card rounded-full p-2 shadow-md transition-all duration-300"
-                    aria-label="Previous image"
-                  >
-                    <ChevronLeft className="h-5 w-5 text-foreground" />
-                  </button>
-                  <button
-                    onClick={() => handleImageNavigation("next")}
-                    className="absolute right-1 top-1/2 -translate-y-1/2 bg-card/80 hover:bg-card rounded-full p-2 shadow-md transition-all duration-300"
-                    aria-label="Next image"
-                  >
-                    <ChevronRight className="h-5 w-5 text-foreground" />
-                  </button>
-                </div>
-              )}
-            </div>
-            {/* Render all images as thumbnails */}
-            <div className="grid grid-cols-4 gap-2">
-              {productDetails?.image?.map((image, index) => (
-                <img
-                  key={index}
-                  src={image}
-                  alt={`Thumbnail ${index}`}
-                  className={`w-full h-24 md:h-32 object-cover cursor-pointer transition-all duration-300 ${selectedImage === image ? "border-4 border-primary" : "border border-input hover:border-muted-foreground"}`}
-                  onClick={() => setSelectedImage(image)}
-                />
-              ))}
-            </div>
+            {/* Right Arrow */}
+            {productDetails?.image && productDetails.image.length > 1 && (
+              <button
+                onClick={() => handleImageNavigation('next')}
+                className="absolute right-2 top-1/2 -translate-y-1/2 z-10 bg-card/80 hover:bg-card rounded-full p-2 shadow-md transition-all duration-300 hover:scale-110 border border-input"
+                aria-label="Next image"
+              >
+                <ChevronRight className="h-6 w-6 text-foreground" />
+              </button>
+            )}
           </div>
 
-          {/* Right Arrow - Desktop Only */}
-          {productDetails?.image && productDetails.image.length > 1 && (
-            <button
-              onClick={() => handleImageNavigation('next')}
-              className="mt-72 hidden md:block bg-card hover:bg-muted/30 rounded-full p-2 shadow-md transition-all duration-300 hover:scale-110 border border-input"
-              aria-label="Next image"
-            >
-              <ChevronRight className="h-6 w-6 text-foreground" />
-            </button>
-          )}
+          {/* Thumbnails Row */}
+          <div className="grid grid-cols-4 gap-2 mt-4 max-w-xl mx-auto">
+            {productDetails?.image?.map((image, index) => (
+              <img
+                key={index}
+                src={image}
+                alt={`Thumbnail ${index}`}
+                className={`w-full h-20 md:h-24 object-cover cursor-pointer transition-all duration-300 ${selectedImage === image ? "border-4 border-primary" : "border border-input hover:border-muted-foreground"}`}
+                onClick={() => setSelectedImage(image)}
+              />
+            ))}
+          </div>
         </div>
 
-
-
-
-        <div className="flex flex-col gap-8 relative">
+        {/* Product Details Below Image */}
+        <div className="flex flex-col gap-8 w-full max-w-3xl mx-auto">
           {/* Enhanced Product Title Section with elegant styling */}
           <div className="text-center flex flex-col items-center relative">
             {/* Subtle decorative element */}
@@ -834,13 +813,10 @@ function ProductDetailsPage() {
           </div>
         </div>
 
-
-
-
-        {/* Zoom preview container */}
+        {/* Zoom preview container - Repositioned for centered layout */}
         {zoomData.isHovering && (
           <div
-            className="hidden md:block absolute top-[3.3%] left-[52%] z-10 w-[40%] h-[920px] overflow-hidden border shadow-lg bg-white"
+            className="hidden md:block fixed top-1/2 right-8 transform -translate-y-1/2 z-20 w-[30%] h-[80vh] overflow-hidden border shadow-lg bg-white"
             style={{
               backgroundImage: `url(${zoomData.imageSrc})`,
               backgroundPosition: `${zoomData.zoomPosition.x}% ${zoomData.zoomPosition.y}%`,

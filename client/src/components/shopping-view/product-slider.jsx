@@ -1,302 +1,415 @@
-import React, { useState, useEffect, useRef } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+// import React, { useRef, useState, useEffect } from "react";
+// import { useNavigate } from "react-router-dom";
+// import "@/styles/main.css";
+
+// const ProductImageCard = ({ product, scale }) => {
+//   return (
+//     <div
+//       style={{
+//         width: "250px",
+//         height: "350px", // fixed max height for container
+//         overflow: "visible", // allow image to scale inside container
+//         backgroundColor: "transparent",
+//         userSelect: "none",
+//         position: "relative",
+//       }}
+//     >
+//       <img
+//         src={
+//           product.image && product.image.length > 0
+//             ? product.image[0]
+//             : "https://placehold.co/250x350/EDE8D0/093624?text=No+Image"
+//         }
+//         alt={product.title || "Product"}
+//         style={{
+//           width: "100%",
+//           height: "100%",
+//           objectFit: "contain", // keep entire image visible, no cropping
+//           transform: `scale(${scale})`, // scale image smoothly
+//           transition: "transform 0.3s ease",
+//           display: "block",
+//           userSelect: "none",
+//           pointerEvents: "none",
+//           margin: "0 auto",
+//         }}
+//         draggable={false}
+//       />
+//     </div>
+//   );
+// };
+
+// const ProductSlider = ({
+//   products,
+//   handleGetProductDetails,
+//   title,
+//   description,
+// }) => {
+//   const navigate = useNavigate();
+//   const containerRef = useRef(null);
+//   const [scrollX, setScrollX] = useState(0);
+//   const [hoveredIndex, setHoveredIndex] = useState(null);
+
+//   const itemWidth = 250;
+//   const spacing = 40;
+//   const totalItemWidth = itemWidth + spacing;
+//   const visibleCount = products.length;
+
+//   // Define the slider height
+//   const sliderHeight = 350; // height of the slider container
+
+//   // Get window width dynamically
+//   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+//   useEffect(() => {
+//     const handleResize = () => setWindowWidth(window.innerWidth);
+//     window.addEventListener("resize", handleResize);
+//     return () => window.removeEventListener("resize", handleResize);
+//   }, []);
+
+//   const handleWheel = (e) => {
+//     e.preventDefault();
+//     setScrollX((prev) => {
+//       const maxScroll = (visibleCount - 1) * totalItemWidth;
+//       let next = prev + e.deltaY * 0.7;
+//       if (next < 0) next = 0;
+//       if (next > maxScroll) next = maxScroll;
+//       return next;
+//     });
+//   };
+
+//   // Touch swipe support
+//   const touchStartX = useRef(0);
+//   const lastScrollX = useRef(scrollX);
+
+//   const handleTouchStart = (e) => {
+//     touchStartX.current = e.touches[0].clientX;
+//     lastScrollX.current = scrollX;
+//   };
+
+//   const handleTouchMove = (e) => {
+//     const touchCurrentX = e.touches[0].clientX;
+//     const deltaX = touchStartX.current - touchCurrentX; // positive = swipe left, negative = swipe right
+//     const maxScroll = (visibleCount - 1) * totalItemWidth;
+
+//     let next = lastScrollX.current + deltaX;
+//     if (next < 0) next = 0;
+//     if (next > maxScroll) next = maxScroll;
+
+//     setScrollX(next);
+//   };
+
+//   useEffect(() => {
+//     const ref = containerRef.current;
+//     if (ref) {
+//       ref.addEventListener("wheel", handleWheel, { passive: false });
+//       ref.addEventListener("touchstart", handleTouchStart, { passive: true });
+//       ref.addEventListener("touchmove", handleTouchMove, { passive: true });
+//     }
+//     return () => {
+//       if (ref) {
+//         ref.removeEventListener("wheel", handleWheel);
+//         ref.removeEventListener("touchstart", handleTouchStart);
+//         ref.removeEventListener("touchmove", handleTouchMove);
+//       }
+//     };
+//   }, [scrollX, visibleCount]);
+
+//   const getItemStyle = (index, isHovered = false) => {
+//     const centerX = windowWidth / 2;
+//     const itemCenterX = index * totalItemWidth + itemWidth / 2;
+//     const relativeX = itemCenterX - scrollX;
+//     const distanceFromCenter = relativeX - centerX;
+//     const maxDistance = windowWidth / 2 + totalItemWidth;
+//     const normalizedDistance = Math.max(
+//       Math.min(distanceFromCenter / maxDistance, 1),
+//       -1
+//     );
+
+//     // Adjust rotation angle (smaller)
+//     const maxRotate = 15; // reduce from 45 to 15 degrees
+//     const rotateY = maxRotate * normalizedDistance;
+
+//     // Increase scale range for stronger effect
+//     const minScale = 0.5;
+//     const maxScale = 1.1;
+//     // Add a slight scale increase on hover, no box shadow though
+//     const hoverBoost = isHovered ? 0.1 : 0;
+//     const scale = minScale + (maxScale - minScale) * Math.abs(normalizedDistance) + hoverBoost;
+
+//     const translateX = distanceFromCenter * 0.8;
+//     const zIndex = Math.round((1 - Math.abs(normalizedDistance)) * 100);
+
+//     return {
+//       position: "absolute",
+//       top: "50%",
+//       left: "50%",
+//       transform: `translateX(${translateX}px) translateY(-50%) perspective(800px) rotateY(${rotateY}deg)`,
+//       cursor: "pointer",
+//       zIndex,
+//       scale,
+//       transition: "transform 0.3s ease",
+//       willChange: "transform",
+//     };
+//   };
+
+//   return (
+//     <section className="py-16 relative">
+//       <div className="container mx-auto px-4 text-center mb-12">
+//         <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4">
+//           {title}
+//         </h2>
+//         <div className="w-24 h-1 bg-primary mx-auto mb-6"></div>
+//         <p className="text-muted-foreground">{description}</p>
+//       </div>
+
+//       <div
+//         className="relative overflow-visible"
+//         ref={containerRef}
+//         style={{ height: `${sliderHeight}px`, userSelect: "none" }}
+//       >
+//         <div
+//           className="relative h-full w-full"
+//           style={{ overflow: "visible", position: "relative" }}
+//         >
+//           {products.slice(0, 20).map((product, index) => {
+//             const isHovered = hoveredIndex === index;
+//             const style = getItemStyle(index, isHovered);
+//             return (
+//               <div
+//                 key={product._id}
+//                 style={{
+//                   position: style.position,
+//                   top: style.top,
+//                   left: style.left,
+//                   transform: style.transform,
+//                   cursor: style.cursor,
+//                   zIndex: style.zIndex,
+//                   transition: style.transition,
+//                   willChange: style.willChange,
+//                 }}
+//                 onMouseEnter={() => setHoveredIndex(index)}
+//                 onMouseLeave={() => setHoveredIndex(null)}
+//                 onClick={() => {
+//                   navigate(`/shop/details/${product._id}`);
+//                   if (handleGetProductDetails) {
+//                     handleGetProductDetails(product._id);
+//                   }
+//                 }}
+//               >
+//                 <ProductImageCard product={product} scale={style.scale} />
+//               </div>
+//             );
+//           })}
+//         </div>
+//       </div>
+//     </section>
+//   );
+// };
+
+// export default ProductSlider;
+
+
+
+import React, { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import ShoppingProductTile from "./product-tile";
-import '@/styles/main.css';
+import "@/styles/main.css";
+
+const ProductImageCard = ({ product, scale }) => {
+  return (
+    <div
+      style={{
+        width: "250px",
+        height: "350px", // fixed max height for container
+        overflow: "visible", // allow image to scale inside container
+        backgroundColor: "transparent",
+        userSelect: "none",
+        position: "relative",
+      }}
+    >
+      <img
+        src={
+          product.image && product.image.length > 0
+            ? product.image[0]
+            : "https://placehold.co/250x350/EDE8D0/093624?text=No+Image"
+        }
+        alt={product.title || "Product"}
+        style={{
+          width: "100%",
+          height: "100%",
+          objectFit: "contain", // keep entire image visible, no cropping
+          transform: `scale(${scale})`, // scale image smoothly
+          transition: "transform 0.3s ease",
+          display: "block",
+          userSelect: "none",
+          pointerEvents: "none",
+          margin: "0 auto",
+        }}
+        draggable={false}
+      />
+    </div>
+  );
+};
 
 const ProductSlider = ({
   products,
   handleGetProductDetails,
-  handleAddtoCart,
   title,
   description,
-  bgColor = "bg-transparent",
-  hideTitle = false
 }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
-  const autoScrollIntervalRef = useRef(null);
-  const sliderRef = useRef(null);
   const navigate = useNavigate();
-  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
-  const [direction, setDirection] = useState(1); // 1 for forward, -1 for backward
+  const containerRef = useRef(null);
+  const [scrollX, setScrollX] = useState(0);
+  const [hoveredIndex, setHoveredIndex] = useState(null);
 
-  // Always show 6 products at a time
-  const visibleProducts = 6;
-  const scrollThreshold = 30; // Lower threshold for more responsive scrolling
-  const scrollDeltaRef = useRef(0);
-  const animationTimeoutRef = useRef(null);
+  const itemWidth = 250;
+  const spacing = 40;
+  const totalItemWidth = itemWidth + spacing;
+  const visibleCount = products.length;
 
+  // Define the slider height
+  const sliderHeight = 350; // height of the slider container
+
+  // Get window width dynamically
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-
+    const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const goToNextProduct = () => {
-    setDirection(1);
-    setCurrentIndex((prevIndex) =>
-      prevIndex >= products.length - 1 ? 0 : prevIndex + 1
-    );
-  };
-
-  const goToPrevProduct = () => {
-    setDirection(-1);
-    setCurrentIndex((prevIndex) =>
-      prevIndex <= 0 ? products.length - 1 : prevIndex - 1
-    );
-  };
-
-  // Smooth wheel handling with momentum
   const handleWheel = (e) => {
-    if (isMobile) return;
-
     e.preventDefault();
-    scrollDeltaRef.current += e.deltaY;
-
-    // Clear any pending animation
-    if (animationTimeoutRef.current) {
-      clearTimeout(animationTimeoutRef.current);
-    }
-
-    animationTimeoutRef.current = setTimeout(() => {
-      if (Math.abs(scrollDeltaRef.current) >= scrollThreshold) {
-        if (scrollDeltaRef.current > 0) {
-          goToNextProduct();
-        } else {
-          goToPrevProduct();
-        }
-        scrollDeltaRef.current = 0;
-      }
-    }, 50); // Small delay to accumulate scroll events
+    setScrollX((prev) => {
+      const maxScroll = (visibleCount - 1) * totalItemWidth;
+      let next = prev + e.deltaY * 0.7;
+      if (next < 0) next = 0;
+      if (next > maxScroll) next = maxScroll;
+      return next;
+    });
   };
 
-  // Touch handling
-  const [touchStart, setTouchStart] = useState(0);
-  const touchDistanceRef = useRef(0);
+  // Touch swipe support
+  const touchStartX = useRef(0);
+  const lastScrollX = useRef(scrollX);
 
   const handleTouchStart = (e) => {
-    setTouchStart(e.targetTouches[0].clientX);
-    touchDistanceRef.current = 0;
+    touchStartX.current = e.touches[0].clientX;
+    lastScrollX.current = scrollX;
   };
 
   const handleTouchMove = (e) => {
-    const currentTouch = e.targetTouches[0].clientX;
-    touchDistanceRef.current = touchStart - currentTouch;
-    e.preventDefault(); // Prevent page scroll
-  };
+    const touchCurrentX = e.touches[0].clientX;
+    const deltaX = touchStartX.current - touchCurrentX; // positive = swipe left, negative = swipe right
+    const maxScroll = (visibleCount - 1) * totalItemWidth;
 
-  const handleTouchEnd = () => {
-    if (touchDistanceRef.current > 50) {
-      goToNextProduct();
-    } else if (touchDistanceRef.current < -50) {
-      goToPrevProduct();
-    }
+    let next = lastScrollX.current + deltaX;
+    if (next < 0) next = 0;
+    if (next > maxScroll) next = maxScroll;
+
+    setScrollX(next);
   };
 
   useEffect(() => {
-    const slider = sliderRef.current;
-    if (slider && !isMobile) {
-      slider.addEventListener('wheel', handleWheel, { passive: false });
-    }
-
-    return () => {
-      if (slider) {
-        slider.removeEventListener('wheel', handleWheel);
-      }
-      if (animationTimeoutRef.current) {
-        clearTimeout(animationTimeoutRef.current);
-      }
-    };
-  }, [isMobile]);
-
-  useEffect(() => {
-    if (products.length > visibleProducts && !isPaused) {
-      if (autoScrollIntervalRef.current) {
-        clearInterval(autoScrollIntervalRef.current);
-      }
-      autoScrollIntervalRef.current = setInterval(goToNextProduct, 3000);
+    const ref = containerRef.current;
+    if (ref) {
+      ref.addEventListener("wheel", handleWheel, { passive: false });
+      ref.addEventListener("touchstart", handleTouchStart, { passive: true });
+      ref.addEventListener("touchmove", handleTouchMove, { passive: true });
     }
     return () => {
-      if (autoScrollIntervalRef.current) {
-        clearInterval(autoScrollIntervalRef.current);
+      if (ref) {
+        ref.removeEventListener("wheel", handleWheel);
+        ref.removeEventListener("touchstart", handleTouchStart);
+        ref.removeEventListener("touchmove", handleTouchMove);
       }
     };
-  }, [products.length, isPaused]);
+  }, [scrollX, visibleCount]);
 
-  const getVisibleProducts = () => {
-    const visible = [];
-    for (let i = 0; i < visibleProducts; i++) {
-      const index = (currentIndex + i) % products.length;
-      visible.push({
-        ...products[index],
-        position: i
-      });
-    }
-    return visible;
-  };
-
-  // Animation variants for smooth transitions
-  const itemVariants = {
-    enter: (direction) => ({
-      x: direction > 0 ? 100 : -100,
-      opacity: 0
-    }),
-    center: {
-      x: 0,
-      opacity: 1
-    },
-    exit: (direction) => ({
-      x: direction > 0 ? -100 : 100,
-      opacity: 0
-    })
-  };
-
-  const scaleVariants = {
-    0: { scale: 1.1, zIndex: 10 },
-    1: { scale: 1.05, zIndex: 5 },
-    2: { scale: 1.0, zIndex: 1 },
-    3: { scale: 1.0, zIndex: 1 },
-    4: { scale: 1.05, zIndex: 5 },
-    5: { scale: 1.1, zIndex: 10 }
-  };
-
-  if (products.length <= visibleProducts) {
-    return (
-      <section className={`py-16`}>
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4">{title}</h2>
-            <div className="w-24 h-1 bg-foreground mx-auto mb-6"></div>
-            <p className="text-muted-foreground">{description}</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-6 md:gap-8">
-            {products.map((product, index) => (
-              <motion.div
-                key={product._id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: false, amount: 0.2 }}
-                transition={{ duration: 0.5, delay: index * 0.1, type: "spring", stiffness: 50 }}
-                className={`
-                  ${index === 0 || index === 5 ? 'md:scale-110 md:z-10' : ''}
-                  ${index === 1 || index === 4 ? 'md:scale-105 md:z-5' : ''}
-                  ${index === 2 || index === 3 ? 'md:scale-100' : ''}
-                  transition-transform duration-300
-                `}
-              >
-                <ShoppingProductTile
-                  handleGetProductDetails={handleGetProductDetails}
-                  product={product}
-                  handleAddtoCart={handleAddtoCart}
-                />
-              </motion.div>
-            ))}
-          </div>
-          <div className="text-center mt-12">
-            <button
-              onClick={() => navigate("/shop/collections")}
-              className="inline-block px-8 py-3 border-2 border-foreground hover:bg-foreground hover:text-background transition-colors duration-300 uppercase tracking-wider text-sm font-medium"
-            >
-              View All Products
-            </button>
-          </div>
-        </div>
-      </section>
+  const getItemStyle = (index, isHovered = false) => {
+    const centerX = windowWidth / 2;
+    const itemCenterX = index * totalItemWidth + itemWidth / 2;
+    const relativeX = itemCenterX - scrollX;
+    const distanceFromCenter = relativeX - centerX;
+    const maxDistance = windowWidth / 2 + totalItemWidth;
+    const normalizedDistance = Math.max(
+      Math.min(distanceFromCenter / maxDistance, 1),
+      -1
     );
-  }
+
+    // Adjust rotation angle (smaller)
+    const maxRotate = 15; // reduce from 45 to 15 degrees
+    const rotateY = maxRotate * normalizedDistance;
+
+    // Increase scale range for stronger effect
+    const minScale = 0.5;
+    const maxScale = 1.1;
+    // Add a slight scale increase on hover, no box shadow though
+    const hoverBoost = isHovered ? 0.1 : 0;
+    const scale = minScale + (maxScale - minScale) * Math.abs(normalizedDistance) + hoverBoost;
+
+    const translateX = distanceFromCenter * 0.8;
+    const zIndex = Math.round((1 - Math.abs(normalizedDistance)) * 100);
+
+    return {
+      position: "absolute",
+      top: "50%",
+      left: "50%",
+      transform: `translateX(${translateX}px) translateY(-50%) perspective(800px) rotateY(${rotateY}deg)`,
+      cursor: "pointer",
+      zIndex,
+      scale,
+      transition: "transform 0.3s ease",
+      willChange: "transform",
+    };
+  };
 
   return (
-    <section className={`py-16 ${bgColor}`}>
-      <div className="container mx-auto px-4">
-        {!hideTitle && (
-          <div className="max-w-3xl mx-auto text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4">{title}</h2>
-            <div className="w-24 h-1 bg-primary mx-auto mb-6"></div>
-            <p className="text-muted-foreground">{description}</p>
-          </div>
-        )}
-        <div
-          ref={sliderRef}
-          className="relative"
-          onMouseEnter={() => setIsPaused(true)}
-          onMouseLeave={() => setIsPaused(false)}
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-        >
-          <div className="overflow-hidden">
-            <AnimatePresence custom={direction} initial={false}>
-              <motion.div
-                key={currentIndex}
-                className={`grid ${isMobile ? "grid-cols-1" : "grid-cols-6"} gap-6 md:gap-8`}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                custom={direction}
-                transition={{ staggerChildren: 0.05 }}
-              >
-                {getVisibleProducts().map((product, index) => (
-                  <motion.div
-                    key={`${product._id}-${currentIndex}-${index}`}
-                    custom={direction}
-                    variants={itemVariants}
-                    initial="enter"
-                    animate="center"
-                    exit="exit"
-                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                  >
-                    <motion.div
-                      variants={scaleVariants}
-                      animate={index.toString()}
-                      transition={{ duration: 0.3 }}
-                      className="transition-all duration-300 ease-in-out"
-                    >
-                      <ShoppingProductTile
-                        handleGetProductDetails={handleGetProductDetails}
-                        product={product}
-                        handleAddtoCart={handleAddtoCart}
-                      />
-                    </motion.div>
-                  </motion.div>
-                ))}
-              </motion.div>
-            </AnimatePresence>
-          </div>
+    <section className="py-16 relative">
+      <div className="container mx-auto px-4 text-center mb-12">
+        <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4">
+          {title}
+        </h2>
+        <div className="w-24 h-1 bg-primary mx-auto mb-6"></div>
+        <p className="text-muted-foreground">{description}</p>
+      </div>
 
-          {!isMobile && (
-            <>
-              <button
-                onClick={goToPrevProduct}
-                className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 bg-background p-2 rounded-full shadow-md hover:bg-foreground hover:text-background transition-colors z-20"
-                aria-label="Previous product"
+      <div
+        className="relative overflow-visible"
+        ref={containerRef}
+        style={{ height: `${sliderHeight}px`, userSelect: "none" }}
+      >
+        <div
+          className="relative h-full w-full"
+          style={{ overflow: "visible", position: "relative" }}
+        >
+          {products.slice(0, 20).map((product, index) => {
+            const isHovered = hoveredIndex === index;
+            const style = getItemStyle(index, isHovered);
+            return (
+              <div
+                key={product._id}
+                style={{
+                  position: style.position,
+                  top: style.top,
+                  left: style.left,
+                  transform: style.transform,
+                  cursor: style.cursor,
+                  zIndex: style.zIndex,
+                  transition: style.transition,
+                  willChange: style.willChange,
+                }}
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
+                onClick={() => {
+                  navigate(`/shop/details/${product._id}`);
+                  if (handleGetProductDetails) {
+                    handleGetProductDetails(product._id);
+                  }
+                }}
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-              </button>
-              <button
-                onClick={goToNextProduct}
-                className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 bg-background p-2 rounded-full shadow-md hover:bg-foreground hover:text-background transition-colors z-20"
-                aria-label="Next product"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
-              </button>
-            </>
-          )}
-        </div>
-        <div className="text-center mt-12">
-          <button
-            onClick={() => navigate("/shop/collections")}
-            className="inline-block px-8 py-3 border-2 border-foreground hover:bg-foreground hover:text-background transition-colors duration-300 uppercase tracking-wider text-sm font-medium"
-          >
-            View All Products
-          </button>
+                <ProductImageCard product={product} scale={style.scale} />
+              </div>
+            );
+          })}
         </div>
       </div>
     </section>

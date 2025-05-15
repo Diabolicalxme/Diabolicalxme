@@ -2,11 +2,11 @@ import React, { useState, useMemo, useEffect } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
-import ProductFilter from "@/components/shopping-view/filter";
-import { fetchProductDetails, fetchAllFilteredProducts } from "@/store/shop/products-slice";
+import FilterDrawer from "@/components/shopping-view/filter-drawer";
+import { fetchAllFilteredProducts } from "@/store/shop/products-slice";
 import { addToCart, fetchCartItems } from "@/store/shop/cart-slice";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { ArrowUpDownIcon, ShoppingBag, ChevronRight } from "lucide-react";
+import { ArrowUpDownIcon, ShoppingBag } from "lucide-react";
 import { Loader } from "@/components/ui/loader";
 import { sortOptions } from "@/config";
 import { Helmet } from "react-helmet-async";
@@ -17,13 +17,14 @@ import banner from '@/assets/account.jpg';
 function ShoppingListing() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { productList, productDetails, isLoading } = useSelector((state) => state.shopProducts);
+  const { productList, isLoading } = useSelector((state) => state.shopProducts);
   const { categoriesList } = useSelector((state) => state.shopCategories);
   const { user } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.shopCart);
   const [searchParams] = useSearchParams();
   const [filters, setFilters] = useState({});
   const [sort, setSort] = useState(null);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const { toast } = useToast();
   const categorySearchParam = searchParams.get("category");
   const [currentCategory, setCurrentCategory] = useState(null);
@@ -38,10 +39,15 @@ function ShoppingListing() {
     }
   }, [categorySearchParam, categoriesList]);
 
-  // Fetch categories
+  // Fetch initial data
   useEffect(() => {
     dispatch(fetchCategories());
-  }, [dispatch]);
+    dispatch(fetchAllFilteredProducts({
+      filterParams: categorySearchParam ? { category: categorySearchParam } : null,
+      sortParams: "price-lowtohigh"
+    }));
+    setInitialLoadComplete(true);
+  }, [dispatch, categorySearchParam]);
 
   const filteredProducts = useMemo(() => {
     let updatedProducts = [...productList];
@@ -86,7 +92,9 @@ function ShoppingListing() {
   }, [productList, filters, sort, categorySearchParam]);
 
   const handleFilter = (filterKey, filterValue) => {
-    const updatedFilters = { ...filters };
+    // Ensure filters is an object
+    const safeFilters = filters || {};
+    const updatedFilters = { ...safeFilters };
 
     // Add or remove filter value
     if (!updatedFilters[filterKey]) {
@@ -153,26 +161,30 @@ function ShoppingListing() {
   }
 
   // Optimize fetching by using a single useEffect for filter/sort changes
+  // Only run after initial load is complete
   useEffect(() => {
-    const filterParams = {};
-    if (categorySearchParam) {
-      filterParams.category = categorySearchParam;
+    if (initialLoadComplete) {
+      const filterParams = {};
+      if (categorySearchParam) {
+        filterParams.category = categorySearchParam;
+      }
+      if (Object.keys(filters).length > 0) {
+        Object.entries(filters).forEach(([key, values]) => {
+          filterParams[key] = values;
+        });
+      }
+      dispatch(
+        fetchAllFilteredProducts({
+          filterParams: Object.keys(filterParams).length > 0 ? filterParams : null,
+          sortParams: sort || "price-lowtohigh",
+        })
+      );
     }
-    if (Object.keys(filters).length > 0) {
-      Object.entries(filters).forEach(([key, values]) => {
-        filterParams[key] = values;
-      });
-    }
-    dispatch(
-      fetchAllFilteredProducts({
-        filterParams: Object.keys(filterParams).length > 0 ? filterParams : null,
-        sortParams: sort,
-      })
-    );
-  }, [dispatch, categorySearchParam, filters, sort]);
+  }, [dispatch, categorySearchParam, filters, sort, initialLoadComplete]);
 
-  // Show loader only when productList is initially loading (i.e. empty)
-  if (isLoading && productList.length === 0) return <Loader />;
+  // Show loader only on initial load, not when filters change
+  const isInitialLoading = !initialLoadComplete && isLoading;
+  if (isInitialLoading) return <Loader />;
 
   return (
     <>
@@ -202,20 +214,10 @@ function ShoppingListing() {
 
 
         {/* Main Content */}
-        <div className="container mx-auto px-4 py-8 ">
-          <div className="grid grid-cols-1 md:grid-cols-[250px_1fr] gap-8">
-            {/* Filter Component */}
-            <div className="relative">
-              <ProductFilter
-                filters={filters}
-                setFilters={setFilters}
-                handleFilter={handleFilter}
-              />
-            </div>
-
-            {/* Product Listing */}
-            <div className="">
-              <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 pb-4 border-b">
+        <div className="container mx-auto px-4 py-8">
+          {/* Product Listing */}
+          <div>
+            <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 pb-4 border-b">
                 <div>
                   <h2 className="text-2xl font-light uppercase tracking-wide mb-2">
                     {currentCategory?.title || "All Products"}
@@ -279,9 +281,14 @@ function ShoppingListing() {
                   </button>
                 </div>
               )}
-            </div>
           </div>
         </div>
+        {/* Filter Drawer */}
+        <FilterDrawer
+          filters={filters}
+          setFilters={setFilters}
+          handleFilter={handleFilter}
+        />
       </div>
     </>
   );

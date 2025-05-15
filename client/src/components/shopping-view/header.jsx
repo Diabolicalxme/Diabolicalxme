@@ -7,8 +7,6 @@ import {
   Phone,
   ChevronDown,
   UserPlus,
-  Instagram,
-  Facebook,
 } from "lucide-react";
 import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
@@ -25,18 +23,18 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "../ui/avatar";
-import { logoutUser, fetchIncognitoUsers, loginAsIncognitoUser, loginAsMainUser } from "@/store/auth-slice";
+import { logoutUser, fetchUserProfile, fetchIncognitoUsers, loginAsIncognitoUser, loginAsMainUser } from "@/store/auth-slice";
 import CustomCartDrawer from "./custom-cart-drawer";
 import { useState, useRef, useEffect } from "react";
 import RotatingMessages from "./rotating-messages.jsx";
-import { fetchCartItems } from "@/store/shop/cart-slice";
+import { fetchCartItems, clearCart } from "@/store/shop/cart-slice";
 import { Label } from "../ui/label";
-import { FaWhatsapp } from "react-icons/fa";
+import { FaWhatsapp, FaInstagram, FaFacebook } from "react-icons/fa";
 import { useToast } from "../ui/use-toast";
 
 
 function ShoppingHeader() {
-  const { isAuthenticated, user, incognitoUsers } = useSelector((state) => state.auth);
+  const { user, incognitoUsers } = useSelector((state) => state.auth);
   const { cartItems, isLoading: cartIsLoading } = useSelector((state) => state.shopCart);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [openCartSheet, setOpenCartSheet] = useState(false);
@@ -100,12 +98,12 @@ function ShoppingHeader() {
         });
     }
   };
-  
+
 
   function MenuItems({ onCloseSheet }) {
     const navigate = useNavigate();
     const location = useLocation();
-    const [searchParams, setSearchParams] = useSearchParams();
+    const [_, setSearchParams] = useSearchParams();
 
     function handleNavigate(getCurrentMenuItem) {
       sessionStorage.removeItem("filters");
@@ -125,14 +123,14 @@ function ShoppingHeader() {
     }
 
     return (
-      <nav className="flex flex-col mb-3 lg:mb-0 lg:items-center gap-6 lg:flex-row">
+      <nav className="flex flex-col mb-3 gap-6">
         {shoppingViewHeaderMenuItems.map((menuItem) => (
           <div className="relative group" key={menuItem.id}>
             <Label onClick={() => handleNavigate(menuItem)} className="text-base uppercase tracking-wider font-medium cursor-pointer flex items-center">
               {menuItem.label}
               {menuItem.hasSubmenu && <ChevronDown className="ml-1 h-4 w-4" />}
             </Label>
-            <span className="hidden md:block absolute left-0 bottom-[-4px] w-0 h-[2px] bg-foreground transition-all duration-300 group-hover:w-full"></span>
+            <span className="absolute left-0 bottom-[-4px] w-0 h-[2px] bg-foreground transition-all duration-300 group-hover:w-full"></span>
           </div>
         ))}
       </nav>
@@ -140,12 +138,39 @@ function ShoppingHeader() {
   }
 
   function HeaderRightContent() {
+    const { isAuthenticated, user } = useSelector((state) => state.auth);
     const navigate = useNavigate();
+
+    // Fetch user profile when authenticated but no user data
+    useEffect(() => {
+      if (isAuthenticated && !user) {
+        dispatch(fetchUserProfile());
+      }
+    }, [isAuthenticated, user, dispatch]);
+
     const handleLogout = () => {
+      // Clear the cart items immediately to prevent them from showing after logout
+      dispatch(clearCart());
+
+      // Force close the cart drawer if it's open
+      if (openCartSheet) {
+        setOpenCartSheet(false);
+      }
+
       dispatch(logoutUser())
         .unwrap()
         .then((result) => {
-          if (result.success) toast({ title: "Logged out successfully" });
+          if (result.success) {
+            // Clear any local storage cart data
+            localStorage.removeItem('cartItems');
+            sessionStorage.removeItem('cartItems');
+
+            // Show success message
+            toast({ title: "Logged out successfully" });
+
+            // Force a reload of the page to ensure all components are reset
+            window.location.reload();
+          }
         })
         .catch((error) => {
           console.error("Logout failed:", error);
@@ -154,7 +179,7 @@ function ShoppingHeader() {
     };
 
     return (
-      <div className="flex lg:items-center lg:flex-row flex-col gap-4">
+      <div className="flex flex-col gap-4">
         <div className="flex items-center gap-4">
           <button onClick={() => navigate('/shop/search')} className="relative group">
             <Search className="h-5 w-5 text-foreground group-hover:opacity-80 transition-colors" />
@@ -162,7 +187,7 @@ function ShoppingHeader() {
           </button>
           <button
             className="relative group flex items-center"
-            onClick={(e) => {
+            onClick={() => {
               if (cartIsLoading) return;
               const now = Date.now();
               if (now - lastCartSheetToggleTime.current > 300) {
@@ -179,7 +204,7 @@ function ShoppingHeader() {
             )}
             <span className="sr-only">Shopping Bag</span>
           </button>
-          <CustomCartDrawer isOpen={openCartSheet} onClose={() => setOpenCartSheet(false)} cartItems={cartItems || []} isLoading={cartItems.length === 0 ? cartIsLoading : false} />
+
         </div>
 
         {user ? (
@@ -303,7 +328,7 @@ function ShoppingHeader() {
     <>
       <header className="fixed top-0 z-40 w-full shadow-sm bg-background/90 backdrop-blur-md transition-colors duration-300">
         {/* Top announcement bar */}
-        <div className="bg-foreground text-background py-2 px-4">
+        {/* <div className="bg-foreground text-background py-2 px-4">
           <div className="max-w-[1440px] mx-auto flex justify-between items-center">
             <div className="hidden md:flex items-center space-x-4">
               <a href="tel:+919944783389" className="text-xs flex items-center hover:opacity-80 transition-colors">
@@ -319,22 +344,22 @@ function ShoppingHeader() {
               <RotatingMessages messages={messages} interval={5000} className="w-full" />
             </div>
             <div className="hidden md:flex items-center space-x-3">
-              <a href="https://www.instagram.com/rachanas_boutique?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-colors">
-                <Instagram className="h-4 w-4" />
+              <a href="https://www.instagram.com/diabolicalxme" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-colors">
+                <FaInstagram size={17} />
               </a>
-              <a href="https://www.facebook.com/profile.php?id=61570600405333" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-colors">
-                <Facebook className="h-4 w-4" />
+              <a href="https://www.facebook.com/diabolicalxme" target="_blank" rel="noopener noreferrer" className="hover:opacity-80 transition-colors">
+                <FaFacebook size={17} />
               </a>
               <a href="https://wa.me/9944783389" className="hover:opacity-80 transition-colors" target="_blank" rel="noopener noreferrer">
                 <FaWhatsapp size={17} />
               </a>
             </div>
           </div>
-        </div>
+        </div> */}
         {/* Main header */}
         <div className="bg-background/80 backdrop-blur-sm border-b border-border">
           <div className="max-w-[1440px] mx-auto flex h-16 items-center justify-between px-4 md:px-6">
-            <div className="lg:hidden">
+            <div>
               <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                 <SheetTrigger asChild>
                   <Button variant="ghost" size="icon" className="text-foreground">
@@ -345,7 +370,7 @@ function ShoppingHeader() {
                 <SheetContent side="left" className="w-full max-w-xs p-0 bg-background text-foreground">
                   <div className="p-6">
                     <Link to="/shop/home" className="block mb-6">
-                      {/* <img src={logo} alt="Fashion Store Logo" className="h-8" /> */}
+                      <img src={logo} alt="Fashion Store Logo" className="h-8" />
                     </Link>
                     <MenuItems onCloseSheet={() => setIsSheetOpen(false)} />
                     <div className="mt-8 pt-6 border-t border-border">
@@ -355,23 +380,19 @@ function ShoppingHeader() {
                 </SheetContent>
               </Sheet>
             </div>
-            <Link to="/shop/home" className="flex items-center">
-              {/* <img src={logo} alt="Fashion Store Logo" className="h-8 md:h-12" /> */}
-            </Link>
-            <div className="hidden lg:block">
-              <MenuItems onCloseSheet={() => {}} />
+            <div className="flex justify-center">
+              <Link to="/shop/home" className="flex items-center">
+                <img src={logo} alt="Fashion Store Logo" className="h-8 md:h-12" />
+              </Link>
             </div>
-            <div className="hidden lg:block">
-              <HeaderRightContent />
-            </div>
-            <div className="flex items-center gap-3 lg:hidden">
+            <div className="flex items-center gap-3">
               <button onClick={() => navigate('/shop/search')} className="relative group p-2">
                 <Search className="h-5 w-5 text-foreground group-hover:opacity-80 transition-colors" />
                 <span className="sr-only">Search</span>
               </button>
               <button
                 className="relative group"
-                onClick={(e) => {
+                onClick={() => {
                   if (cartIsLoading) return;
                   const now = Date.now();
                   if (now - lastCartSheetToggleTime.current > 300) {
@@ -388,11 +409,16 @@ function ShoppingHeader() {
                 )}
                 <span className="sr-only">Shopping Bag</span>
               </button>
+              <CustomCartDrawer isOpen={openCartSheet} onClose={() => setOpenCartSheet(false)} cartItems={cartItems || []} isLoading={cartItems.length === 0 ? cartIsLoading : false} />
             </div>
           </div>
         </div>
       </header>
       <div className="h-[calc(4.9rem)]"></div>
+      {/* Hidden on mobile, visible on desktop */}
+      <div className="hidden">
+        <MenuItems onCloseSheet={() => {}} />
+      </div>
     </>
   );
 }

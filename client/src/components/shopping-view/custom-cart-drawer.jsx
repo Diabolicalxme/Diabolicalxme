@@ -1,9 +1,11 @@
 import { useEffect, useRef, useState, useMemo } from "react";
 import { createPortal } from "react-dom";
-import { X } from "lucide-react";
+import { X, LogIn } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import UserCartItemsContent from "./cart-items-content";
 import { memo } from "react";
+import { useSelector } from "react-redux";
+// Button is used inline instead of the imported component
 
 // Custom overlay component
 const CartOverlay = memo(({ isOpen, onClose }) => {
@@ -29,6 +31,7 @@ const CustomCartDrawer = memo(function CustomCartDrawer({
   const [isUpdating, setIsUpdating] = useState(false);
   const drawerRef = useRef(null);
   const prevCartLength = useRef(cartItems.length);
+  const { isAuthenticated } = useSelector((state) => state.auth);
 
   // Track if this is the initial load or a subsequent update
   const isInitialLoad = useRef(true);
@@ -192,8 +195,24 @@ const CustomCartDrawer = memo(function CustomCartDrawer({
 
         {/* Cart Items */}
         <div className="mt-6 space-y-4 min-h-[200px]">
-          {/* Show loading spinner only when cart is empty and we're fetching initial data */}
-          {isLoading && cartItems.length === 0 ? (
+          {!isAuthenticated ? (
+            <div className="flex flex-col items-center justify-center h-full text-center p-6">
+              <div className="w-16 h-16 bg-muted/20 rounded-full flex items-center justify-center mb-4">
+                <LogIn className="h-8 w-8 text-muted-foreground" />
+              </div>
+              <h3 className="text-lg font-medium text-foreground mb-2">Sign In to View Your Cart</h3>
+              <p className="text-muted-foreground mb-6">Please sign in to view and manage your cart items.</p>
+              <button
+                onClick={() => {
+                  onClose();
+                  navigate('/auth/login');
+                }}
+                className="px-6 py-3 border-2 border-primary bg-primary text-primary-foreground hover:bg-transparent hover:text-foreground transition-colors duration-300 uppercase tracking-wider text-sm font-medium"
+              >
+                Sign In
+              </button>
+            </div>
+          ) : isLoading && cartItems.length === 0 ? (
             <div className="flex flex-col justify-center items-center py-8">
               <div className="mb-4 h-10 w-10 border-2 border-t-foreground border-r-transparent border-b-transparent border-l-transparent rounded-full animate-spin"></div>
               <p className="text-sm text-muted-foreground">Loading your cart...</p>
@@ -223,7 +242,7 @@ const CustomCartDrawer = memo(function CustomCartDrawer({
         {/* Checkout Button */}
         <button
           onClick={handleCheckout}
-          disabled={cartItems.length === 0}
+          disabled={!isAuthenticated || cartItems.length === 0}
           className="w-full mt-6 px-6 py-3 border-2 border-primary bg-primary text-primary-foreground hover:bg-transparent hover:text-foreground transition-colors duration-300 uppercase tracking-wider text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {/* Only show loading state in the button when we're actually processing a checkout */}

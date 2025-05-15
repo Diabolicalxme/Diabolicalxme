@@ -86,20 +86,20 @@ const ShoppingProductTile = ({
 
   return (
     <div className="group relative h-full flex flex-col">
-      {/* Product Image with Hover Effect */}
+      {/* Product Image with Hover Effect - Futuristic Borderless Design */}
       <div
-        className="relative overflow-hidden bg-muted/20 cursor-pointer mb-3"
+        className="relative overflow-hidden cursor-pointer"
         onClick={() => handleViewDetails(product._id)}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
         {/* Main product image */}
         {image && image.length > 0 ? (
-          <div className="h-[220px] md:h-full aspect-[3/4] overflow-hidden">
+          <div className="h-[280px] md:h-full aspect-[3/4] overflow-hidden">
             <img
               src={image[0]}
               alt={name}
-              className="w-full h-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
+              className="w-full h-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
             />
 
             {/* Second image on hover (if available) */}
@@ -107,12 +107,12 @@ const ShoppingProductTile = ({
               <img
                 src={image[1]}
                 alt={`${name} - alternate view`}
-                className="absolute inset-0 w-full h-full object-cover object-center opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+                className="absolute inset-0 w-full h-full object-cover object-center opacity-0 transition-opacity duration-700 group-hover:opacity-100"
               />
             )}
 
-            {/* Gradient overlay on hover */}
-            <div className={`absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 transition-opacity duration-300 ${isHovered ? 'opacity-100' : ''}`}></div>
+            {/* Futuristic overlay on hover */}
+            <div className={`absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 transition-opacity duration-500 ${isHovered ? 'opacity-100' : ''}`}></div>
           </div>
         ) : (
           <div className="aspect-[3/4] bg-muted/30 flex items-center justify-center">
@@ -120,82 +120,57 @@ const ShoppingProductTile = ({
           </div>
         )}
 
-        {/* Discount badge */}
+        {/* Discount badge with futuristic design */}
         {salePrice && price > salePrice && (
-          <div className="absolute top-2 left-2 bg-primary text-primary-foreground text-xs font-medium px-2 py-1 rounded">
+          <div className="absolute top-2 left-2 bg-primary/80 backdrop-blur-sm text-primary-foreground text-xs font-medium px-3 py-1 rounded-full">
             {discount}% OFF
           </div>
         )}
 
-        {/* Product Code Badge (if available) */}
+        {/* Product Code Badge with futuristic design (if available) */}
         {product.productCode && (
-          <div className="hidden md:block absolute top-2 right-2 bg-card text-card-foreground text-xs font-semibold px-2 py-1 rounded">
+          <div className="hidden md:block absolute top-2 right-2 bg-card/80 backdrop-blur-sm text-card-foreground text-xs font-semibold px-3 py-1 rounded-full">
             Code: {product.productCode}
           </div>
         )}
 
-        {/* Stock Status Badge */}
-       {/*  {totalStock === 0 && (
-          <div className="absolute top-10 left-2 bg-red-600 text-white text-xs font-medium px-2 py-1 rounded">
-            Out of Stock
-          </div>
-        )} */}
-
-        <div className="absolute bottom-0 left-0 right-0 p-3 flex justify-between opacity-0 transform translate-y-4 transition-all duration-300 group-hover:opacity-100 group-hover:translate-y-0">
+        {/* Futuristic action buttons */}
+        <div className="absolute bottom-0 left-0 right-0 p-4 flex justify-between opacity-0 transform translate-y-4 transition-all duration-500 group-hover:opacity-100 group-hover:translate-y-0">
           <button
             onClick={(e) => {
               e.stopPropagation();
               handleAddToCartClick(e);
             }}
-            className="bg-card hover:bg-primary hover:text-primary-foreground text-card-foreground p-2 rounded-full shadow-md transition-colors duration-300 relative"
+            className="bg-card/80 backdrop-blur-sm hover:bg-primary hover:text-primary-foreground text-card-foreground p-2 rounded-full shadow-lg transition-all duration-300 relative hover:scale-110"
             aria-label="Add to cart"
             disabled={isAddingToCart}
           >
             <ShoppingBag size={18} className={isAddingToCart ? "opacity-20" : ""} />
-
           </button>
+
           {isAddingToCart && (
-              <span className="text-primary-foreground absolute inset-0 flex items-center justify-center text-md font-medium">
-                Adding...
-              </span>
-            )}
+            <span className="text-primary-foreground absolute inset-0 flex items-center justify-center text-md font-medium">
+              Adding...
+            </span>
+          )}
 
           <button
-            className="bg-card hover:bg-primary hover:text-primary-foreground text-card-foreground p-2 rounded-full shadow-md transition-colors duration-300"
+            className="bg-card/80 backdrop-blur-sm hover:bg-primary hover:text-primary-foreground text-card-foreground p-2 rounded-full shadow-lg transition-all duration-300 hover:scale-110"
             aria-label="Add to wishlist"
           >
             <Heart size={18} />
           </button>
         </div>
-
-
       </div>
 
-      {/* Product Info */}
-      <div className="flex-grow flex flex-col items-center">
+      {/* Product Name - Minimalist Design */}
+      <div className="mt-4 flex-grow flex flex-col items-center">
         <h3
-          className="text-lg font-medium mb-1 line-clamp-2 cursor-pointer hover:text-primary text-center"
+          className="text-lg font-medium cursor-pointer hover:text-primary text-center tracking-wide"
           onClick={() => handleViewDetails(product._id)}
         >
           {name}
         </h3>
-       {/*  {product.productCode && (
-          <p className="text-sm text-gray-500">Code: {product.productCode}</p>
-        )} */}
-
-
-        <div className="mt-auto">
-          <div className="flex items-center justify-center">
-            {salePrice && price > salePrice ? (
-              <>
-                <span className="font-medium text-md text-foreground">{formatPrice(salePrice)}</span>
-               {/*  <span className="ml-2 text-sm text-muted-foreground line-through">{formatPrice(price)}</span> */}
-              </>
-            ) : (
-              <span className="font-medium text-md text-foreground">{formatPrice(price)}</span>
-            )}
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -92,7 +92,7 @@ const Contact = () => {
 
             <div className="max-w-md mx-auto">
               <div className="p-8 text-center shadow-md hover:shadow-lg transition-shadow duration-300 bg-card text-card-foreground">
-                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-muted mb-4">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full  mb-4">
                   <Phone className="h-8 w-8 text-muted-foreground" />
                 </div>
                 <h3 className="text-xl font-medium mb-2">Phone Number</h3>
@@ -123,7 +123,7 @@ const Contact = () => {
                       id="name"
                       type="text"
                       placeholder="Enter your name"
-                      className="w-full border-input bg-white focus:border-primary focus:ring-primary text-black"
+                      className="w-full border-input bg-background focus:border-primary focus:ring-primary text-foreground"
                       value={name}
                       onChange={(e) => setName(e.target.value)}
                     />
@@ -136,7 +136,7 @@ const Contact = () => {
                       id="email"
                       type="email"
                       placeholder="Enter your email"
-                      className="w-full border-input bg-white focus:border-primary focus:ring-primary text-black"
+                      className="w-full border-input bg-background focus:border-primary focus:ring-primary text-foreground"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                     />
@@ -149,7 +149,7 @@ const Contact = () => {
                       id="message"
                       rows="6"
                       placeholder="Write your message here..."
-                      className="w-full border-input bg-white focus:border-primary focus:ring-primary text-black"
+                      className="w-full border-input bg-background focus:border-primary focus:ring-primary text-foreground"
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                     />
@@ -187,7 +187,7 @@ const Contact = () => {
                       <span>Facebook</span>
                     </a>
                     <a
-                      href="https://www.instagram.com/rachanas_boutique?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw=="
+                      href="https://www.instagram.com/diabolicalxme"
                       target="_blank"
                       rel="noopener noreferrer"
                       className="flex items-center gap-2 px-4 py-2 hover:bg-accent hover:text-accent-foreground border border-input rounded-md transition-colors"
@@ -205,7 +205,7 @@ const Contact = () => {
                       <span>WhatsApp</span>
                     </a>
                     <a
-                      href="mailto:rachanaboutique@gmail.com"
+                      href="mailto:diabolicalxme@gmail.com"
                       className="flex items-center gap-2 px-4 py-2 hover:bg-accent hover:text-accent-foreground border border-input rounded-md transition-colors"
                     >
                       <Mail size={20} className="text-red-500" />

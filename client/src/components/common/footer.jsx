@@ -93,7 +93,7 @@ const Footer = () => {
 
     <>
 
-      <div className="bg-background py-6">
+      {/* <div className="bg-background py-6">
         <div className="px-5 md:container flex flex-col gap-4 md:flex-row justify-between  items-center py-12">
           <div className="text-center md:text-left">
             <h1 className="text-3xl md:text-4xl font-semibold ">Join the Elegance Club</h1>
@@ -118,7 +118,7 @@ const Footer = () => {
             </form>
           </div>
         </div>
-      </div>
+      </div> */}
       <footer className="bg-background text-foreground relative z-20 border-t border-muted/30">
         <div className="container mx-auto pt-6 pb-3 px-4">
           {/* Flex Container */}

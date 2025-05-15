@@ -3,7 +3,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { forgotPassword } from "@/store/auth-slice";
-import logo from "@/assets/logo3.png";
+import logo from "@/assets/logo.png";
 
 
 const initialState = {

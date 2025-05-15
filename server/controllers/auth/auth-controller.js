@@ -542,6 +542,40 @@ console.log('Received incognitoUserId:', incognitoUserId);
   }
 };
 
+const getUserProfile = async (req, res) => {
+  try {
+    // req.user is set by the authMiddleware
+    const userId = req.user.id;
+
+    // Find the user by ID but exclude the password field
+    const user = await User.findById(userId).select('-password');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found"
+      });
+    }
+
+    // Return the user profile data
+    res.status(200).json({
+      success: true,
+      user: {
+        id: user._id,
+        userName: user.userName,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching user profile:", error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while fetching user profile."
+    });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -554,4 +588,5 @@ module.exports = {
   getIncognitoUsers,
   loginAsIncognitoUser,
   loginAsMainUser,
+  getUserProfile,
 };

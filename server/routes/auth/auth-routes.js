@@ -11,6 +11,7 @@ const {
   getIncognitoUsers,
   loginAsIncognitoUser,
   loginAsMainUser,
+  getUserProfile,
 } = require("../../controllers/auth/auth-controller");
 
 const router = express.Router();
@@ -33,5 +34,7 @@ router.get("/check-auth", authMiddleware, (req, res) => {
     user,
   });
 });
+router.get("/profile", authMiddleware, getUserProfile);
+
 
 module.exports = router;

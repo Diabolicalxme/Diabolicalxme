@@ -5,9 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "prebuild": "node scripts/cleanup.js",
+    "build": "node scripts/generate-sitemap.js && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "generate-sitemap": "node scripts/generate-sitemap.js",
+    "cleanup": "node scripts/cleanup.js"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.0",

@@ -11,6 +11,7 @@ import { sortOptions } from "@/config";
 import { addToCart, fetchCartItems } from "@/store/shop/cart-slice";
 import { fetchAllFilteredProducts } from "@/store/shop/products-slice";
 import { ArrowUpDownIcon, ShoppingBag } from "lucide-react";
+import FilterDrawer from "@/components/shopping-view/filter-drawer";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSearchParams, useNavigate } from "react-router-dom";
@@ -28,6 +29,7 @@ function NewArrivals() {
   const { user } = useSelector((state) => state.auth);
   const [filters, setFilters] = useState({});
   const [sort, setSort] = useState(null);
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
 
@@ -40,14 +42,23 @@ function NewArrivals() {
     setFilters(storedFilters ? JSON.parse(storedFilters) : {});
   }, [categorySearchParam]);
 
-  // Dispatch the fetch action only when sort and filters are available.
+  // Initial data fetch
   useEffect(() => {
-    if (sort !== null) {
+    dispatch(fetchAllFilteredProducts({
+      filterParams: {},
+      sortParams: "price-lowtohigh"
+    }));
+    setInitialLoadComplete(true);
+  }, [dispatch]);
+
+  // Dispatch the fetch action only when sort and filters change, but after initial load
+  useEffect(() => {
+    if (sort !== null && initialLoadComplete) {
       dispatch(
         fetchAllFilteredProducts({ filterParams: filters, sortParams: sort })
       );
     }
-  }, [dispatch, sort, filters]);
+  }, [dispatch, sort, filters, initialLoadComplete]);
 
   function handleSort(value) {
     setSort(value);
@@ -98,8 +109,9 @@ function NewArrivals() {
     ? productList.filter((product) => product.isNewArrival === true)
     : [];
 
-  // Show loader only when the product list is not yet available
-  if (isLoading && productList.length === 0) return <Loader />;
+  // Show loader only on initial load, not when filters change
+  const isInitialLoading = !initialLoadComplete && isLoading;
+  if (isInitialLoading) return <Loader />;
 
   return (
     <>
@@ -193,6 +205,35 @@ function NewArrivals() {
             </div>
           </div>
         </div>
+        {/* Filter Drawer */}
+        <FilterDrawer
+          filters={filters}
+          setFilters={setFilters}
+          handleFilter={(filterKey, filterValue) => {
+            // Ensure filters is an object
+            const safeFilters = filters || {};
+            const updatedFilters = { ...safeFilters };
+
+            // Add or remove filter value
+            if (!updatedFilters[filterKey]) {
+              updatedFilters[filterKey] = [filterValue];
+            } else {
+              const index = updatedFilters[filterKey].indexOf(filterValue);
+              if (index === -1) {
+                updatedFilters[filterKey].push(filterValue);
+              } else {
+                updatedFilters[filterKey].splice(index, 1);
+              }
+            }
+
+            // Remove filter if empty after removal
+            if (updatedFilters[filterKey]?.length === 0) {
+              delete updatedFilters[filterKey];
+            }
+
+            setFilters(updatedFilters);
+          }}
+        />
       </div>
     </>
   );

@@ -1,10 +1,9 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
-import classNames from "classnames";
 import { motion } from "framer-motion";
-import { useInView } from "react-intersection-observer";
 import { useNavigate } from "react-router-dom";
 import { ArrowUpRight } from "lucide-react";
+import FilterDrawer from "@/components/shopping-view/filter-drawer";
 import "@/styles/masonry.css";
 
 import { useDispatch, useSelector } from "react-redux";
@@ -12,15 +11,12 @@ import {
   fetchAllFilteredProducts,
   fetchProductDetails,
 } from "@/store/shop/products-slice";
-import ShoppingProductTile from "@/components/shopping-view/product-tile";
 import { addToCart, fetchCartItems } from "@/store/shop/cart-slice";
 import { useToast } from "@/components/ui/use-toast";
 import { fetchCategories } from "@/store/shop/categories-slice";
 import { fetchBanners } from "@/store/shop/banners-slice";
 import { fetchInstaFeed } from "@/store/shop/instafeed-slice";
 import CategoryCard from "@/components/shopping-view/categoryCard";
-import Carousel from "@/components/shopping-view/carousel";
-import FastMovingCard from "@/components/shopping-view/fast-moving-card";
 import InstagramFeed from "@/components/shopping-view/instagramFeed";
 import Testimonials from "@/components/shopping-view/testimonials-new";
 import Banner from "@/components/shopping-view/banner";
@@ -31,11 +27,9 @@ import banner from "../../assets/banner.jpg";
 import { Loader } from "../../components/ui/loader";
 
 function ShoppingHome() {
-  const [activeItem, setActiveItem] = useState(0);
-  let screenWidth = window.innerWidth;
   const navigate = useNavigate();
   const { productList, isLoading: productsLoading } = useSelector((state) => state.shopProducts);
-  const { bannersList, isLoading: bannersLoading } = useSelector((state) => state.shopBanners);
+  const { isLoading: bannersLoading } = useSelector((state) => state.shopBanners);
   const { categoriesList, isLoading: categoriesLoading } = useSelector((state) => state.shopCategories);
   const { instaFeedPosts, isLoading: instaFeedLoading } = useSelector((state) => state.shopInstaFeed);
   const { user } = useSelector((state) => state.auth);
@@ -43,41 +37,67 @@ function ShoppingHome() {
   const dispatch = useDispatch();
   const { toast } = useToast();
 
-  const wrapperRef = useRef(null);
+  // State for filters and loading state
+  const [filters, setFilters] = useState({});
+  const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+
   const timeoutRef = useRef(null);
 
-  const { ref, inView } = useInView({
-    rootMargin: screenWidth <= 768 ? "3100px" : "0px",
-    threshold: 0.2,
-  });
-
+  // Filter out theme categories and ensure we have the categories shown in the image
   const filteredCategoryList = categoriesList.filter(category =>
     !['author', 'bravo', 'hector'].includes(category.name.trim().toLowerCase())
   );
-  console.log(filteredCategoryList)
+
+  // Create a sorted list to ensure the categories appear in the right order for the grid layout
+  const sortedCategories = [...filteredCategoryList].sort((a, b) => {
+    // Define the preferred order
+    const preferredOrder = ['jeans', 't-shirts', 'combo sets', 'shirts', 'sneakers'];
+
+    const aIndex = preferredOrder.findIndex(name =>
+      a.name.toLowerCase().includes(name.toLowerCase()));
+    const bIndex = preferredOrder.findIndex(name =>
+      b.name.toLowerCase().includes(name.toLowerCase()));
+
+    // If both categories are in the preferred order, sort by that order
+    if (aIndex !== -1 && bIndex !== -1) {
+      return aIndex - bIndex;
+    }
+    // If only one is in the preferred order, prioritize it
+    if (aIndex !== -1) return -1;
+    if (bIndex !== -1) return 1;
+
+    // Otherwise, sort alphabetically
+    return a.name.localeCompare(b.name);
+  });
+
+  // Clean up any timeouts when component unmounts
   useEffect(() => {
-    if (!wrapperRef.current) return;
-    if (timeoutRef.current) clearTimeout(timeoutRef.current);
-
-    wrapperRef.current.style.setProperty(
-      "--transition",
-      "600ms cubic-bezier(0.22, 0.61, 0.36, 1)"
-    );
-
-    timeoutRef.current = setTimeout(() => {
-      wrapperRef.current?.style.removeProperty("--transition");
-    }, 900);
-
     return () => timeoutRef.current && clearTimeout(timeoutRef.current);
-  }, [activeItem]);
+  }, []);
 
   // Fetch all required data once
   useEffect(() => {
+    // Fetch all initial data
     dispatch(fetchAllFilteredProducts({ filterParams: {}, sortParams: "price-lowtohigh" }));
     dispatch(fetchBanners());
     dispatch(fetchCategories());
     dispatch(fetchInstaFeed());
+
+    // Mark initial load as complete after data is fetched
+    setInitialLoadComplete(true);
   }, [dispatch]);
+
+  // Apply filters when they change, but only after initial load
+
+  useEffect(() => {
+    // Skip the first render to avoid double fetching
+    if (initialLoadComplete) {
+      dispatch(fetchAllFilteredProducts({
+        filterParams: Object.keys(filters).length > 0 ? filters : {},
+        sortParams: "price-lowtohigh"
+      }));
+    }
+  }, [dispatch, filters, initialLoadComplete]);
 
   function handleGetProductDetails(productId) {
     dispatch(fetchProductDetails(productId));
@@ -101,8 +121,9 @@ function ShoppingHome() {
     });
   }
 
-  const isAnyLoading = productsLoading || bannersLoading || categoriesLoading || instaFeedLoading;
-  if (isAnyLoading) return <Loader />;
+  // Only show loader on initial load, not when filters change
+  const isInitialLoading = !initialLoadComplete && (productsLoading || bannersLoading || categoriesLoading || instaFeedLoading);
+  if (isInitialLoading) return <Loader />;
 
   return (
     <>
@@ -135,152 +156,168 @@ function ShoppingHome() {
         />
 
 
-        {/* Masonry layout desktop */}
-        <section className="hidden md:block py-8 ">
+        {/* Category Grid Layout - Based on the reference image */}
+        <section className="py-12">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4">Shop by Category</h2>
-              <div className="w-24 h-1 bg-black mx-auto mb-6"></div>
-              <p className="text-gray-600">Discover our curated collections designed for every style and occasion</p>
+              <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4 text-foreground">Shop by Category</h2>
+              <div className="w-24 h-1 bg-foreground mx-auto mb-6"></div>
+              <p className="text-foreground/80">Discover our curated collections designed for every style and occasion</p>
             </div>
 
-            {/* Masonry layout container */}
-            <div className="columns-1 sm:columns-2 md:columns-3 gap-4">
-              {filteredCategoryList &&
-                filteredCategoryList.map((categoryItem, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false, amount: 0.1 }}
-                    transition={{
-                      duration: 0.5,
-                      delay: index * 0.1,
-                      type: "spring",
-                      stiffness: 50,
-                    }}
-                    className="break-inside-avoid mb-4"
-                  >
-                    <CategoryCard
-                      categoryItem={categoryItem}
-                      index={index}
-                      variant="masonry"
-                    />
-                  </motion.div>
-                ))}
+            {/* Desktop Layout */}
+            <div className="hidden md:grid grid-cols-12 gap-4">
+              {sortedCategories && sortedCategories.length > 0 && (
+                <>
+                  {/* Top row - 2 cards */}
+                  <div className="col-span-6">
+                    {sortedCategories[0] && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: false, amount: 0.1 }}
+                        transition={{
+                          duration: 0.5,
+                          delay: 0.1,
+                          type: "spring",
+                          stiffness: 50,
+                        }}
+                      >
+                        <CategoryCard
+                          categoryItem={sortedCategories[0]}
+                          index={0}
+                          variant="grid"
+                        />
+                      </motion.div>
+                    )}
+                  </div>
+                  <div className="col-span-6">
+                    {sortedCategories[1] && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: false, amount: 0.1 }}
+                        transition={{
+                          duration: 0.5,
+                          delay: 0.2,
+                          type: "spring",
+                          stiffness: 50,
+                        }}
+                      >
+                        <CategoryCard
+                          categoryItem={sortedCategories[1]}
+                          index={1}
+                          variant="grid"
+                        />
+                      </motion.div>
+                    )}
+                  </div>
+
+                  {/* Middle row - 1 card */}
+                  <div className="col-span-12">
+                    {sortedCategories[2] && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: false, amount: 0.1 }}
+                        transition={{
+                          duration: 0.5,
+                          delay: 0.3,
+                          type: "spring",
+                          stiffness: 50,
+                        }}
+                      >
+                        <CategoryCard
+                          categoryItem={sortedCategories[2]}
+                          index={2}
+                          variant="grid"
+                          fullWidth
+                        />
+                      </motion.div>
+                    )}
+                  </div>
+
+                  {/* Bottom row - 2 cards */}
+                  <div className="col-span-6">
+                    {sortedCategories[3] && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: false, amount: 0.1 }}
+                        transition={{
+                          duration: 0.5,
+                          delay: 0.4,
+                          type: "spring",
+                          stiffness: 50,
+                        }}
+                      >
+                        <CategoryCard
+                          categoryItem={sortedCategories[3]}
+                          index={3}
+                          variant="grid"
+                        />
+                      </motion.div>
+                    )}
+                  </div>
+                  <div className="col-span-6">
+                    {sortedCategories[4] && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: false, amount: 0.1 }}
+                        transition={{
+                          duration: 0.5,
+                          delay: 0.5,
+                          type: "spring",
+                          stiffness: 50,
+                        }}
+                      >
+                        <CategoryCard
+                          categoryItem={sortedCategories[4]}
+                          index={4}
+                          variant="grid"
+                        />
+                      </motion.div>
+                    )}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Mobile Layout */}
+            <div className="md:hidden space-y-4">
+              {sortedCategories && sortedCategories.length > 0 && (
+                <>
+                  {/* Display first 5 categories in a vertical stack */}
+                  {sortedCategories.slice(0, 5).map((categoryItem, index) => (
+                    <motion.div
+                      key={index}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: false, amount: 0.1 }}
+                      transition={{
+                        duration: 0.5,
+                        delay: index * 0.1,
+                        type: "spring",
+                        stiffness: 50,
+                      }}
+                    >
+                      <CategoryCard
+                        categoryItem={categoryItem}
+                        index={index}
+                        variant="grid"
+                        fullWidth={index === 2} // Make the middle card full width
+                      />
+                    </motion.div>
+                  ))}
+                </>
+              )}
             </div>
 
             <div className="text-center mt-12">
               <button
                 onClick={() => navigate("/shop/collections")}
-                className="inline-block px-8 py-3 border-2 border-black hover:bg-black hover:text-white transition-colors duration-300 uppercase tracking-wider text-sm font-medium"
-              >
-                View All Collections
-              </button>
-            </div>
-          </div>
-        </section>
-        {/* Mobile layout */}
-        <section className="py-8  md:hidden">
-          <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto text-center mb-6">
-              <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4">Shop by Category</h2>
-              <div className="w-24 h-1 bg-black mx-auto mb-6"></div>
-              <p className="text-gray-600">Discover our curated collections designed for every style and occasion</p>
-            </div>
-
-            {/* Custom layout container - mobile: first card full width, rest in 2 columns; desktop: masonry */}
-            <div className="hidden sm:block columns-2 md:columns-3 gap-4">
-              {filteredCategoryList &&
-                filteredCategoryList.map((categoryItem, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false, amount: 0.1 }}
-                    transition={{
-                      duration: 0.5,
-                      delay: index * 0.1,
-                      type: "spring",
-                      stiffness: 50,
-                    }}
-                    className="break-inside-avoid mb-4"
-                  >
-                    <CategoryCard
-                      categoryItem={categoryItem}
-                      index={index}
-                      variant="masonry"
-                    />
-                  </motion.div>
-                ))}
-            </div>
-
-            {/* Mobile layout - first card full width, rest in 2 columns, pattern repeats every 5 cards */}
-            <div className="sm:hidden">
-              {filteredCategoryList && filteredCategoryList.length > 0 &&
-                Array.from({ length: Math.ceil(filteredCategoryList.length / 5) }).map((_, groupIndex) => {
-                  const startIndex = groupIndex * 5;
-                  const groupItems = filteredCategoryList.slice(startIndex, startIndex + 5);
-
-                  return (
-                    <div key={`group-${groupIndex}`} className="mb-4">
-                      {/* First item in group - full width */}
-                      {groupItems[0] && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: false, amount: 0.1 }}
-                          transition={{
-                            duration: 0.5,
-                            delay: 0.1,
-                            type: "spring",
-                            stiffness: 50,
-                          }}
-                          className="mb-4"
-                        >
-                          <CategoryCard
-                            categoryItem={groupItems[0]}
-                            index={startIndex}
-                            variant="masonry"
-                          />
-                        </motion.div>
-                      )}
-
-                      {/* Remaining items in group - 2 column grid */}
-                      {groupItems.length > 1 && (
-                        <div className="grid grid-cols-2 gap-4">
-                          {groupItems.slice(1).map((categoryItem, idx) => (
-                            <motion.div
-                              key={startIndex + idx + 1}
-                              initial={{ opacity: 0, y: 20 }}
-                              whileInView={{ opacity: 1, y: 0 }}
-                              viewport={{ once: false, amount: 0.1 }}
-                              transition={{
-                                duration: 0.5,
-                                delay: (idx + 1) * 0.1,
-                                type: "spring",
-                                stiffness: 50,
-                              }}
-                            >
-                              <CategoryCard
-                                categoryItem={categoryItem}
-                                index={startIndex + idx + 1}
-                                variant="masonry"
-                              />
-                            </motion.div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })
-              }
-            </div>
-
-            <div className="text-center mt-12">
-              <button
-                onClick={() => navigate("/shop/collections")}
-                className="inline-block px-8 py-3 border-2 border-black hover:bg-black hover:text-white transition-colors duration-300 uppercase tracking-wider text-sm font-medium"
+                className="inline-block px-8 py-3 border-2 border-foreground hover:bg-foreground hover:text-background transition-colors duration-300 uppercase tracking-wider text-sm font-medium text-foreground"
               >
                 View All Collections
               </button>
@@ -356,6 +393,36 @@ function ShoppingHome() {
 
         {/* Add extra space to ensure footer visibility */}
         <div className="h-16"></div>
+
+        {/* Filter Drawer */}
+        <FilterDrawer
+          filters={filters}
+          setFilters={setFilters}
+          handleFilter={(filterKey, filterValue) => {
+            // Ensure filters is an object
+            const safeFilters = filters || {};
+            const updatedFilters = { ...safeFilters };
+
+            // Add or remove filter value
+            if (!updatedFilters[filterKey]) {
+              updatedFilters[filterKey] = [filterValue];
+            } else {
+              const index = updatedFilters[filterKey].indexOf(filterValue);
+              if (index === -1) {
+                updatedFilters[filterKey].push(filterValue);
+              } else {
+                updatedFilters[filterKey].splice(index, 1);
+              }
+            }
+
+            // Remove filter if empty after removal
+            if (updatedFilters[filterKey]?.length === 0) {
+              delete updatedFilters[filterKey];
+            }
+
+            setFilters(updatedFilters);
+          }}
+        />
       </div>
     </>
   );
