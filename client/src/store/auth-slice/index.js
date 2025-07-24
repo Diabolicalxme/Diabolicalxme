@@ -220,7 +220,7 @@ export const logoutUser = createAsyncThunk("/auth/logout", async () => {
 });
 
 export const forgotPassword = createAsyncThunk(
-  "/auth/forgot-password",
+  "auth/forgot-password",
   async (formData, { rejectWithValue }) => {
     const url = `${import.meta.env.VITE_BACKEND_URL}/auth/forgot-password`;
     try {

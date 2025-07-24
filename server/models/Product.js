@@ -18,7 +18,7 @@ const ProductSchema = new mongoose.Schema(
         image: String,
       }
     ],
-    isWatchAndBuy: Boolean,
+    // isWatchAndBuy: Boolean,
     video: String
   },
   { timestamps: true }

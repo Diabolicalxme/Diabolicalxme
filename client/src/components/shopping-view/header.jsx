@@ -36,6 +36,7 @@ import { useToast } from "../ui/use-toast";
 function ShoppingHeader() {
   const { user, incognitoUsers } = useSelector((state) => state.auth);
   const { cartItems, isLoading: cartIsLoading } = useSelector((state) => state.shopCart);
+  const { currentTheme } = useSelector((state) => state.theme);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [openCartSheet, setOpenCartSheet] = useState(false);
   const lastCartSheetToggleTime = useRef(0);
@@ -137,7 +138,7 @@ function ShoppingHeader() {
     );
   }
 
-  function HeaderRightContent() {
+  function HeaderRightContent({ onCloseSheet }) {
     const { isAuthenticated, user } = useSelector((state) => state.auth);
     const navigate = useNavigate();
 
@@ -149,6 +150,9 @@ function ShoppingHeader() {
     }, [isAuthenticated, user, dispatch]);
 
     const handleLogout = () => {
+      // Close the menu sidebar
+      onCloseSheet();
+
       // Clear the cart items immediately to prevent them from showing after logout
       dispatch(clearCart());
 
@@ -181,7 +185,10 @@ function ShoppingHeader() {
     return (
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-4">
-          <button onClick={() => navigate('/shop/search')} className="relative group">
+          <button onClick={() => {
+            onCloseSheet();
+            navigate('/shop/search');
+          }} className="relative group">
             <Search className="h-5 w-5 text-foreground group-hover:opacity-80 transition-colors" />
             <span className="sr-only">Search</span>
           </button>
@@ -224,7 +231,10 @@ function ShoppingHeader() {
                 Hello, {user.userName || "Main Account"}
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-border my-1" />
-              <DropdownMenuItem className="flex items-center py-2 px-2 rounded-md hover:bg-muted/30 cursor-pointer" onClick={() => navigate("/shop/account")}>
+              <DropdownMenuItem className="flex items-center py-2 px-2 rounded-md hover:bg-muted/30 cursor-pointer" onClick={() => {
+                onCloseSheet();
+                navigate("/shop/account");
+              }}>
                 <UserCog className="mr-2 h-4 w-4" />
                 <span>My Account</span>
               </DropdownMenuItem>
@@ -235,7 +245,10 @@ function ShoppingHeader() {
                   <DropdownMenuSeparator className="bg-border my-1" />
                   <DropdownMenuItem
                     className="flex items-center py-2 px-2 rounded-md hover:bg-muted/30 cursor-pointer"
-                    onClick={() => handleSwitchProfile(null, true)}
+                    onClick={() => {
+                      onCloseSheet();
+                      handleSwitchProfile(null, true);
+                    }}
                   >
                     <Avatar className="h-6 w-6 bg-card border border-border">
                       <AvatarFallback className="bg-card text-foreground font-medium text-sm">M</AvatarFallback>
@@ -253,7 +266,10 @@ function ShoppingHeader() {
                     <DropdownMenuItem
                       key={incog.id}
                       className="flex items-center py-2 px-2 rounded-md hover:bg-muted/30 cursor-pointer"
-                      onClick={() => handleSwitchProfile(incog._id)}
+                      onClick={() => {
+                        onCloseSheet();
+                        handleSwitchProfile(incog._id);
+                      }}
                     >
                       <Avatar className="h-6 w-6 bg-card border border-border">
                         <AvatarFallback className="bg-card text-foreground font-medium text-sm">
@@ -270,7 +286,10 @@ function ShoppingHeader() {
               {!user.isIncognito && (
                 <>
                   <DropdownMenuSeparator className="bg-border my-1" />
-                  <DropdownMenuItem className="flex items-center py-2 px-2 rounded-md hover:bg-muted/30 cursor-pointer" onClick={() => navigate("/auth/register-incognito")}>
+                  <DropdownMenuItem className="flex items-center py-2 px-2 rounded-md hover:bg-muted/30 cursor-pointer" onClick={() => {
+                    onCloseSheet();
+                    navigate("/auth/register-incognito");
+                  }}>
                     <UserPlus className="mr-2 h-4 w-4" />
                     <span>Register for a Friend</span>
                   </DropdownMenuItem>
@@ -292,12 +311,18 @@ function ShoppingHeader() {
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-56 p-2 bg-card shadow-lg rounded-md border border-border">
-              <DropdownMenuItem className="flex items-center py-2 px-2 rounded-md hover:bg-muted/30 cursor-pointer" onClick={() => navigate("/auth/login")}>
+              <DropdownMenuItem className="flex items-center py-2 px-2 rounded-md hover:bg-muted/30 cursor-pointer" onClick={() => {
+                onCloseSheet();
+                navigate("/auth/login");
+              }}>
                 <LogOut className="mr-2 h-4 w-4 rotate-180" />
                 <span>Sign In</span>
               </DropdownMenuItem>
               <DropdownMenuSeparator className="bg-border my-1" />
-              <DropdownMenuItem className="flex items-center py-2 px-2 rounded-md hover:bg-muted/30 cursor-pointer" onClick={() => navigate("/auth/register")}>
+              <DropdownMenuItem className="flex items-center py-2 px-2 rounded-md hover:bg-muted/30 cursor-pointer" onClick={() => {
+                onCloseSheet();
+                navigate("/auth/register");
+              }}>
                 <UserPlus className="mr-2 h-4 w-4" />
                 <span>Create Account</span>
               </DropdownMenuItem>
@@ -324,9 +349,44 @@ function ShoppingHeader() {
     }
   }, [openCartSheet, user?.id, dispatch]);
 
+  // Get theme-aware header classes
+  const getHeaderClasses = () => {
+    const baseClasses = "fixed top-0 z-50 w-full shadow-sm transition-colors duration-300";
+    
+    switch (currentTheme) {
+      case 'beige': // Author theme
+        return `${baseClasses} bg-[#EDE8D0]/95 backdrop-blur-sm`;
+      case 'black': // Bravo theme
+        return `${baseClasses} bg-black/95 backdrop-blur-sm`;
+      case 'bottle-green': // Hector theme
+        return `${baseClasses} bg-[#093624]/95 backdrop-blur-sm`;
+      case 'dark':
+        return `${baseClasses} bg-[#121212]/95 backdrop-blur-sm`;
+      default: // Light theme
+        return `${baseClasses} bg-background/95 backdrop-blur-sm`;
+    }
+  };
+
+  const getMainHeaderClasses = () => {
+    const baseClasses = "border-b transition-colors duration-300";
+    
+    switch (currentTheme) {
+      case 'beige': // Author theme
+        return `${baseClasses} bg-[#EDE8D0]/90 backdrop-blur-sm border-[#D6CCA9]`;
+      case 'black': // Bravo theme
+        return `${baseClasses} bg-black/90 backdrop-blur-sm border-[#333333]`;
+      case 'bottle-green': // Hector theme
+        return `${baseClasses} bg-[#093624]/90 backdrop-blur-sm border-[#106840]`;
+      case 'dark':
+        return `${baseClasses} bg-[#121212]/90 backdrop-blur-sm border-[#444444]`;
+      default: // Light theme
+        return `${baseClasses} bg-background/90 backdrop-blur-sm border-border`;
+    }
+  };
+
   return (
     <>
-      <header className="fixed top-0 z-40 w-full shadow-sm bg-background/90 backdrop-blur-md transition-colors duration-300">
+      <header className={getHeaderClasses()}>
         {/* Top announcement bar */}
         {/* <div className="bg-foreground text-background py-2 px-4">
           <div className="max-w-[1440px] mx-auto flex justify-between items-center">
@@ -357,7 +417,7 @@ function ShoppingHeader() {
           </div>
         </div> */}
         {/* Main header */}
-        <div className="bg-background/80 backdrop-blur-sm border-b border-border">
+        <div className={getMainHeaderClasses()}>
           <div className="max-w-[1440px] mx-auto flex h-16 items-center justify-between px-4 md:px-6">
             <div>
               <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
@@ -367,14 +427,18 @@ function ShoppingHeader() {
                     <span className="sr-only">Toggle menu</span>
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="left" className="w-full max-w-xs p-0 bg-background text-foreground">
+                <SheetContent side="left" className="w-full max-w-xs p-0 bg-background text-foreground border-border">
                   <div className="p-6">
-                    <Link to="/shop/home" className="block mb-6">
+                    <Link
+                      to="/shop/home"
+                      className="block mb-6"
+                      onClick={() => setIsSheetOpen(false)}
+                    >
                       <img src={logo} alt="Fashion Store Logo" className="h-8" />
                     </Link>
                     <MenuItems onCloseSheet={() => setIsSheetOpen(false)} />
                     <div className="mt-8 pt-6 border-t border-border">
-                      <HeaderRightContent />
+                      <HeaderRightContent onCloseSheet={() => setIsSheetOpen(false)} />
                     </div>
                   </div>
                 </SheetContent>
@@ -386,13 +450,17 @@ function ShoppingHeader() {
               </Link>
             </div>
             <div className="flex items-center gap-3">
-              <button onClick={() => navigate('/shop/search')} className="relative group p-2">
+              <button onClick={() => {
+                setIsSheetOpen(false); // Close the menu sidebar
+                navigate('/shop/search');
+              }} className="relative group p-2">
                 <Search className="h-5 w-5 text-foreground group-hover:opacity-80 transition-colors" />
                 <span className="sr-only">Search</span>
               </button>
               <button
                 className="relative group"
                 onClick={() => {
+                  setIsSheetOpen(false); // Close the menu sidebar
                   if (cartIsLoading) return;
                   const now = Date.now();
                   if (now - lastCartSheetToggleTime.current > 300) {
@@ -414,7 +482,7 @@ function ShoppingHeader() {
           </div>
         </div>
       </header>
-      <div className="h-[calc(4.9rem)]"></div>
+      <div className="h-[calc(2.5rem)]"></div>
       {/* Hidden on mobile, visible on desktop */}
       <div className="hidden">
         <MenuItems onCloseSheet={() => {}} />

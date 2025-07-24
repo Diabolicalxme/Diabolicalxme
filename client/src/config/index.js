@@ -81,12 +81,14 @@ export const addProductFormElements = [
     componentType: "input",
     type: "text",
     placeholder: "Enter product title",
+    required: true,
   },
   {
     label: "Description",
     name: "description",
     componentType: "textarea",
     placeholder: "Enter product description",
+    required: true,
   },
   {
     label: "Category",
@@ -99,16 +101,19 @@ export const addProductFormElements = [
       { id: "accessories", label: "Accessories" },
       { id: "footwear", label: "Footwear" },
     ],
+    required: true,
   },
   {
     label: "Is New Arrival",
     name: "isNewArrival",
     componentType: "toggle",
+    required: false,
   },
   {
     label: "Is Featured",
     name: "isFeatured",
     componentType: "toggle",
+    required: false,
   },
   {
     label: "Price",
@@ -116,6 +121,7 @@ export const addProductFormElements = [
     componentType: "input",
     type: "number",
     placeholder: "Enter product price",
+    required: true,
   },
   /* {
     label: "Sale Price",
@@ -123,6 +129,7 @@ export const addProductFormElements = [
     componentType: "input",
     type: "number",
     placeholder: "Enter sale price (optional)",
+    required: false,
   }, */
   {
     label: "Total Stock",
@@ -130,6 +137,7 @@ export const addProductFormElements = [
     componentType: "input",
     type: "number",
     placeholder: "Enter total stock",
+    required: true,
   },
 ];
 
@@ -141,12 +149,14 @@ export const addCategoryFormElements = [
     componentType: "input",
     type: "text",
     placeholder: "Enter category Name",
+    required: true,
   },
   {
     label: "Description",
     name: "description",
     componentType: "textarea",
     placeholder: "Enter category description",
+    required: true,
   },
 ];
 
@@ -156,6 +166,7 @@ export const addBannerFormElements = [
     name: "description",
     componentType: "textarea",
     placeholder: "Enter banner description",
+    required: true,
   },
 
 ]
@@ -166,6 +177,7 @@ export const addInstafeedFormElements = [
     name: "postUrl",
     componentType: "textarea",
     placeholder: "Enter instagram url",
+    required: true,
   },
 ]
 

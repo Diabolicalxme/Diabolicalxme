@@ -1,82 +1,249 @@
 import React, { useState } from "react";
-import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import { createSubscription } from "@/store/shop/newsletter-slice";
-import { useToast } from "@/components/ui/use-toast";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Mail, ArrowRight, Phone } from "lucide-react";
-import { FaWhatsapp, FaFacebook, FaInstagram } from "react-icons/fa";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { FaFacebook, FaInstagram, FaTwitter } from "react-icons/fa";
+import { useSelector } from "react-redux";
+import logo from "@/assets/logo.png";
 
-
-// Updated policies data with array of points for numbered rendering
+// Updated policies data with structured content for scrollable dialog
 const policiesData = [
   {
+    id: "privacy",
+    title: "Privacy Policy",
+    content: [
+      {
+        type: "text",
+        value: "At DiabolicalXme, we are committed to protecting your privacy and ensuring the security of your personal information. This Privacy Policy explains how we collect, use, and safeguard your data when you use our services."
+      },
+      {
+        type: "section",
+        heading: "Information We Collect",
+        points: [
+          "Personal information you provide directly to us, such as when you create an account, make a purchase, or contact us",
+          "Usage data and analytics to improve our services and user experience",
+          "Device information and technical data for security and optimization purposes",
+          "Communication preferences and marketing consent"
+        ]
+      },
+      {
+        type: "section",
+        heading: "How We Use Your Information",
+        points: [
+          "To provide, maintain, and improve our services and products",
+          "To process transactions and manage your orders",
+          "To communicate with you about your account, orders, and promotional offers",
+          "To personalize your shopping experience and recommend products",
+          "To detect, prevent, and address technical issues and security threats"
+        ]
+      },
+      {
+        type: "section",
+        heading: "Information Sharing and Disclosure",
+        points: [
+          "We do not sell, trade, or otherwise transfer your personal information to third parties without your consent",
+          "We may share information with trusted service providers who assist us in operating our website and conducting business",
+          "We may disclose information when required by law or to protect our rights and safety",
+          "Anonymous, aggregated data may be shared for analytical purposes"
+        ]
+      },
+      {
+        type: "section",
+        heading: "Data Security",
+        points: [
+          "We implement appropriate security measures to protect your personal information",
+          "Your data is encrypted during transmission and stored securely",
+          "We regularly review and update our security practices",
+          "Access to personal information is restricted to authorized personnel only"
+        ]
+      },
+      {
+        type: "section",
+        heading: "Your Rights",
+        points: [
+          "You have the right to access, update, or delete your personal information",
+          "You can opt-out of marketing communications at any time",
+          "You can request a copy of the data we hold about you",
+          "Contact us if you wish to exercise any of these rights"
+        ]
+      }
+    ]
+  },
+  {
     id: "terms",
-    title: "Terms & Conditions",
-    points: [
-      "These are the terms and conditions.",
-      "Lorem ipsum dolor sit amet, consectetur adipiscing elit."
+    title: "Terms of Service",
+    content: [
+      {
+        type: "text",
+        value: "Welcome to DiabolicalXme. These Terms of Service govern your use of our website and services. By accessing and using our platform, you agree to be bound by these terms."
+      },
+      {
+        type: "section",
+        heading: "Acceptance of Terms",
+        points: [
+          "By accessing and using this website, you accept and agree to be bound by these terms and conditions",
+          "If you do not agree to these terms, please do not use our services",
+          "We reserve the right to modify these terms at any time with notice",
+          "Continued use of our services constitutes acceptance of any changes"
+        ]
+      },
+      {
+        type: "section",
+        heading: "Use of Our Services",
+        points: [
+          "You must be at least 18 years old to make purchases on our website",
+          "You are responsible for maintaining the confidentiality of your account information",
+          "You agree to provide accurate and complete information when creating an account",
+          "You must not use our services for any illegal or unauthorized purposes"
+        ]
+      },
+      {
+        type: "section",
+        heading: "Product Information and Pricing",
+        points: [
+          "We strive to provide accurate product descriptions and pricing information",
+          "Product colors may vary slightly due to monitor settings and photography",
+          "Prices are subject to change without notice",
+          "We reserve the right to correct any errors in product information or pricing"
+        ]
+      },
+      {
+        type: "section",
+        heading: "Orders and Payment",
+        points: [
+          "All orders are subject to acceptance and availability",
+          "Payment must be received before order processing",
+          "We accept various payment methods as displayed at checkout",
+          "You are responsible for any applicable taxes and shipping charges"
+        ]
+      },
+      {
+        type: "section",
+        heading: "Intellectual Property",
+        points: [
+          "All content on this website is owned by or licensed to DiabolicalXme",
+          "This includes design, layout, graphics, text, and other materials",
+          "Unauthorized use of our content may result in legal action",
+          "You may not reproduce, distribute, or create derivative works without permission"
+        ]
+      },
+      {
+        type: "section",
+        heading: "Limitation of Liability",
+        points: [
+          "Your use of our website and services is at your own risk",
+          "We are not liable for any indirect, incidental, or consequential damages",
+          "Our liability is limited to the maximum extent permitted by law",
+          "We do not warrant that our services will be uninterrupted or error-free"
+        ]
+      }
     ]
   },
   {
     id: "return",
     title: "Return Policy",
-    points: [
-      "This is the return policy.",
-      "Nulla facilisi. Praesent interdum, nunc vitae egestas ultricies, eros dolor fermentum nisl."
-    ]
-  },
-  {
-    id: "privacy",
-    title: "Privacy Policy",
-    points: [
-      "This is the privacy policy.",
-      "Vivamus ut sem eu velit finibus placerat."
+    content: [
+      {
+        type: "text",
+        value: "We want you to be completely satisfied with your purchase. Our return policy is designed to make the process as simple and convenient as possible."
+      },
+      {
+        type: "section",
+        heading: "Return Eligibility",
+        points: [
+          "Items must be returned within 30 days of delivery",
+          "Products must be in original condition with tags attached",
+          "Items must be unworn, unwashed, and free from damage",
+          "Original packaging and accessories must be included"
+        ]
+      },
+      {
+        type: "section",
+        heading: "Return Process",
+        points: [
+          "Contact our customer service team to initiate a return",
+          "We will provide you with a return authorization and shipping label",
+          "Package items securely and attach the provided shipping label",
+          "Drop off the package at any authorized shipping location"
+        ]
+      },
+      {
+        type: "section",
+        heading: "Refunds and Exchanges",
+        points: [
+          "Refunds will be processed within 5-7 business days after we receive your return",
+          "Refunds will be issued to the original payment method",
+          "Exchanges are available for different sizes or colors of the same item",
+          "Shipping costs are non-refundable unless the return is due to our error"
+        ]
+      },
+      {
+        type: "section",
+        heading: "Non-Returnable Items",
+        points: [
+          "Intimate apparel and swimwear for hygiene reasons",
+          "Customized or personalized items",
+          "Items damaged by normal wear and tear",
+          "Products returned after the 30-day return window"
+        ]
+      }
     ]
   },
   {
     id: "cancellation",
     title: "Cancellation Policy",
-    points: [
-      "This is the cancellation policy.",
-      "Fusce porta, odio at fringilla semper, lacus justo sodales massa, a facilisis nulla orci ac lorem."
+    content: [
+      {
+        type: "text",
+        value: "We understand that sometimes you may need to cancel your order. Here's our cancellation policy to help you understand your options."
+      },
+      {
+        type: "section",
+        heading: "Order Cancellation",
+        points: [
+          "Orders can be cancelled within 2 hours of placement",
+          "Once an order is processed for shipping, it cannot be cancelled",
+          "To cancel an order, contact our customer service immediately",
+          "Cancelled orders will be refunded within 3-5 business days"
+        ]
+      },
+      {
+        type: "section",
+        heading: "Cancellation Process",
+        points: [
+          "Log into your account and go to 'My Orders'",
+          "Find the order you wish to cancel and click 'Cancel Order'",
+          "If the cancel option is not available, contact customer service",
+          "You will receive a confirmation email once the cancellation is processed"
+        ]
+      },
+      {
+        type: "section",
+        heading: "Refund for Cancelled Orders",
+        points: [
+          "Full refund will be issued for successfully cancelled orders",
+          "Refunds will be processed to the original payment method",
+          "Processing time may vary depending on your payment provider",
+          "No cancellation fees will be charged"
+        ]
+      },
+      {
+        type: "section",
+        heading: "Special Circumstances",
+        points: [
+          "Pre-order items may have different cancellation terms",
+          "Sale items may have restricted cancellation policies",
+          "Custom orders cannot be cancelled once production begins",
+          "Contact us for assistance with special circumstances"
+        ]
+      }
     ]
   }
 ];
 
-
-
 const Footer = () => {
-  const dispatch = useDispatch();
-  const { toast } = useToast();
-
-  const [email, setEmail] = useState("");
   const [selectedPolicy, setSelectedPolicy] = useState(null);
   const [policyDialogOpen, setPolicyDialogOpen] = useState(false);
-
-  // Access loading state from Redux
-  const { isLoading } = useSelector((state) => state.shopNewsLetter);
-
-  // Subscription handler
-  const handleSubscribe = async (e) => {
-    e.preventDefault();
-    if (!email) {
-      toast({ title: "Please enter a valid email address.", variant: "destructive" });
-      return;
-    }
-    dispatch(createSubscription({ email }))
-      .then((res) => {
-        if (res.payload?.success) {
-          toast({ title: res.payload.message, variant: "success" });
-          setEmail("");
-        } else if (res.payload?.message === "This email is already subscribed to the newsletter.") {
-          toast({ title: "You are already subscribed!", variant: "warning" });
-        }
-      })
-      .catch(() => {
-        toast({ title: "Subscription failed. Try again!", variant: "destructive" });
-      });
-  };
+  const { currentTheme } = useSelector((state) => state.theme);
 
   // Policy dialog handlers
   const openPolicyDialog = (policy) => {
@@ -89,129 +256,162 @@ const Footer = () => {
     setPolicyDialogOpen(false);
   };
 
+  // Get theme-aware classes
+  const getFooterClasses = () => {
+    const baseClasses = "relative z-20 transition-colors duration-300";
+    
+    switch (currentTheme) {
+      case 'beige': // Author theme
+        return `${baseClasses} bg-[#C2B280] text-[#333333]`;
+      case 'black': // Bravo theme
+        return `${baseClasses} bg-black text-white`;
+      case 'bottle-green': // Hector theme
+        return `${baseClasses} bg-[#093624] text-white`;
+      case 'dark':
+        return `${baseClasses} bg-[#121212] text-white`;
+      default: // Light theme
+        return `${baseClasses} bg-black text-white`;
+    }
+  };
+
   return (
+    <footer className={getFooterClasses()}>
+      <div className="container mx-auto py-12 px-4">
+        {/* Main Footer Content */}
+        <div className="grid grid-cols-12 gap-8">
+          {/* Left Section - Logo and About */}
+          <div className="col-span-12 md:col-span-4 lg:col-span-3">
+            <Link to="/shop/home" className="block mb-6">
+              <img src={logo} alt="DiabolicalXme" className="h-12" />
+            </Link>
 
-    <>
+            {/* Social Media Icons */}
+            <div className="flex space-x-4 mb-6">
+              <a href="#" className="hover:opacity-70 transition-colors">
+                <FaTwitter size={20} />
+              </a>
+              <a href="#" className="hover:opacity-70 transition-colors">
+                <FaInstagram size={20} />
+              </a>
+              <a href="#" className="hover:opacity-70 transition-colors">
+                <FaFacebook size={20} />
+              </a>
+            </div>
 
-      {/* <div className="bg-background py-6">
-        <div className="px-5 md:container flex flex-col gap-4 md:flex-row justify-between  items-center py-12">
-          <div className="text-center md:text-left">
-            <h1 className="text-3xl md:text-4xl font-semibold ">Join the Elegance Club</h1>
-            <p className="text-lg text-muted-foreground mt-4">
-              Stay updated with our latest collections and offers.
+            {/* About Text */}
+            <p className="opacity-80 mb-6">
+              Welcome to, your fashion destination. Discover the latest trends, find perfect pieces for your wardrobe, and enjoy seamless online shopping.
             </p>
           </div>
 
-          <div className="w-full md:w-1/3">
-            <form onSubmit={handleSubscribe} className="flex items-center border-b-2 border-input focus-within:border-primary">
-              <Mail className="text-foreground mr-2" />
-              <input
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full outline-none px-2 py-2 text-lg bg-transparent placeholder-muted-foreground"
-              />
-              <button type="submit" disabled={isLoading} className="text-primary hover:text-muted-foreground transition">
-                <ArrowRight size={24} />
-              </button>
-            </form>
+          {/* Middle Section - Empty Space */}
+          <div className="hidden md:block md:col-span-2 lg:col-span-4">
+            {/* Intentionally left empty for spacing */}
           </div>
-        </div>
-      </div> */}
-      <footer className="bg-background text-foreground relative z-20 border-t border-muted/30">
-        <div className="container mx-auto pt-6 pb-3 px-4">
-          {/* Flex Container */}
-          <div className="flex flex-col md:flex-row md:justify-between md:gap-x-12 gap-y-8">
 
-            {/* About Section */}
-            <div className="md:w-[25%]">
-              <Link to="/shop/home" className="flex items-center gap-2">
-                {/* <img src={logo} alt="Logo" className="w-full md:w-3/4" /> */}
-              </Link>
-              <p className="text-lg my-4">
-                Welcome to our store, where tradition meets elegance. Explore our curated collection of exquisite sarees designed to make every occasion special.
-              </p>
-            </div>
+          {/* Right Section - Three Columns */}
+          <div className="col-span-12 md:col-span-6 lg:col-span-5">
+            <div className="grid grid-cols-3 gap-4">
+              {/* Product Column */}
+              <div>
+                <h4 className="font-medium mb-4">Product</h4>
+                <ul className="space-y-2">
+                  <li><Link to="/shop/home" className="opacity-70 hover:opacity-100 transition-opacity">Home</Link></li>
+                  <li><Link to="/shop/collections" className="opacity-70 hover:opacity-100 transition-opacity">Advisable</Link></li>
+                  <li><Link to="/shop/new-arrivals" className="opacity-70 hover:opacity-100 transition-opacity">Promotions</Link></li>
+                </ul>
+              </div>
 
-            {/* Explore Products */}
-            <div className="md:w-[20%]">
-              <h4 className="text-lg font-semibold text-foreground mb-4">Explore Products</h4>
-              <ul className="space-y-2">
-                <li><Link to="/shop/home" className="text-md hover:underline hover:bg-primary/10 transition px-2 py-1 rounded-sm hover:text-muted-foreground">Home</Link></li>
-                <li><Link to="/shop/collections" className="text-md hover:underline hover:bg-primary/10 transition px-2 py-1 rounded-sm hover:text-muted-foreground">Collections</Link></li>
-                <li><Link to="/shop/new-arrivals" className="text-md hover:underline hover:bg-primary/10 transition px-2 py-1 rounded-sm hover:text-muted-foreground">New Arrivals</Link></li>
-              </ul>
-            </div>
+              {/* Company Column */}
+              <div>
+                <h4 className="font-medium mb-4">Company</h4>
+                <ul className="space-y-2">
+                  <li><Link to="/shop/contact" className="opacity-70 hover:opacity-100 transition-opacity">Contact</Link></li>
+                  <li><Link to="/shop/blog" className="opacity-70 hover:opacity-100 transition-opacity">Blog</Link></li>
+                  <li><Link to="/shop/faq" className="opacity-70 hover:opacity-100 transition-opacity">FAQ</Link></li>
+                </ul>
+              </div>
 
-            {/* Policies */}
-            <div className="md:w-[20%]">
-              <h4 className="text-lg font-semibold text-foreground mb-4">Policies</h4>
-              <ul className="space-y-2">
-                {policiesData.map((policy) => (
-                  <li key={policy.id}>
-                    <button onClick={() => openPolicyDialog(policy)} className="hover:underline text-foreground hover:bg-primary/10 transition px-2 py-1 rounded-sm hover:text-muted-foreground w-full text-left">
-                      {policy.title}
+              {/* Legal Column */}
+              <div>
+                <h4 className="font-medium mb-4">Legal</h4>
+                <ul className="space-y-2">
+                  <li>
+                    <button
+                      onClick={() => openPolicyDialog(policiesData.find(p => p.id === "privacy"))}
+                      className="opacity-70 hover:opacity-100 transition-opacity text-left"
+                    >
+                      Privacy
                     </button>
                   </li>
-                ))}
-              </ul>
-            </div>
-
-            {/* Contact & Social Media */}
-            <div className="md:w-[25%]">
-              <h4 className="text-lg font-semibold text-foreground mb-4">Contact Us</h4>
-              <div className="space-y-2 text-md">
-                <div className="flex items-center">
-                  <Phone className="w-5 h-5 text-muted-foreground mr-2" />
-                  <a href="tel:+919944783389" className="hover:underline hover:bg-primary/10 px-2 py-1 rounded-sm hover:text-muted-foreground transition">+91 9944783389</a>
-                </div>
-                <div className="flex items-center">
-                  <Mail className="w-5 h-5 text-muted-foreground mr-2" />
-                  <a href="mailto:rachanaboutique@gmail.com" className="hover:underline hover:bg-primary/10 px-2 py-1 rounded-sm hover:text-muted-foreground transition">diabolicalxme@gmail.com</a>
-                </div>
-                {/* Social Media Links */}
-                <div className="flex gap-4 mt-3">
-                  <a href="#" className="text-foreground hover:text-[#1877F2] transition">
-                    <FaFacebook size={24} />
-                  </a>
-                  <a href="#" className="text-foreground hover:text-[#E4405F] transition">
-                    <FaInstagram size={24} />
-                  </a>
-                  <a href="https://wa.me/9944783389" className="text-foreground hover:text-[#25D366] transition" target="_blank" rel="noopener noreferrer">
-                    <FaWhatsapp size={24} />
-                  </a>
-                </div>
+                  <li>
+                    <button
+                      onClick={() => openPolicyDialog(policiesData.find(p => p.id === "terms"))}
+                      className="opacity-70 hover:opacity-100 transition-opacity text-left"
+                    >
+                      Terms
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => openPolicyDialog(policiesData.find(p => p.id === "return"))}
+                      className="opacity-70 hover:opacity-100 transition-opacity text-left"
+                    >
+                      Returns
+                    </button>
+                  </li>
+                  <li>
+                    <button
+                      onClick={() => openPolicyDialog(policiesData.find(p => p.id === "cancellation"))}
+                      className="opacity-70 hover:opacity-100 transition-opacity text-left"
+                    >
+                      Cancellation
+                    </button>
+                  </li>
+                </ul>
               </div>
             </div>
-
-
-
-          </div>
-
-          {/* Bottom Section */}
-          <div className="mt-8 border-t border-input pt-4 text-center text-sm flex flex-col gap-2">
-            <div>&copy; {new Date().getFullYear()} DiabolicalXme. All rights reserved.</div>
           </div>
         </div>
 
-        {/* Policy Dialog */}
-        <Dialog open={policyDialogOpen} onOpenChange={(open) => !open && closePolicyDialog()}>
-          <DialogContent className="bg-card text-card-foreground border border-input">
-            <DialogHeader>
-              <DialogTitle>{selectedPolicy?.title}</DialogTitle>
-            </DialogHeader>
-            {selectedPolicy?.points && (
-              <ol className="list-decimal ml-6 space-y-1 text-sm">
-                {selectedPolicy.points.map((point, index) => (
-                  <li key={index}>{point}</li>
+        {/* Copyright Section */}
+        <div className="mt-12 pt-6 border-t border-opacity-30 text-center md:text-left">
+          <p className="opacity-60 text-sm">&copy; {new Date().getFullYear()} DiabolicalXme. All rights reserved.</p>
+        </div>
+      </div>
+
+      {/* Policy Dialog */}
+      <Dialog open={policyDialogOpen} onOpenChange={(open) => !open && closePolicyDialog()}>
+        <DialogContent className="w-[90%] md:w-[80vw] bg-card text-card-foreground border-border">
+          <DialogHeader>
+            <DialogTitle className="font-bold text-xl mb-4 text-center text-foreground">{selectedPolicy?.title}</DialogTitle>
+          </DialogHeader>
+          <DialogDescription className="max-h-[70vh] overflow-y-auto">
+            {selectedPolicy?.content && (
+              <div className="space-y-4">
+                {selectedPolicy.content.map((item, index) => (
+                  <div key={index}>
+                    {item.type === "text" && (
+                      <p className="text-card-foreground leading-relaxed">{item.value}</p>
+                    )}
+                    {item.type === "section" && (
+                      <div className="mt-6">
+                        <h3 className="font-semibold text-lg mb-3 text-foreground border-b border-border pb-2">{item.heading}</h3>
+                        <ol className="list-decimal ml-6 space-y-2">
+                          {item.points.map((point, pointIndex) => (
+                            <li key={pointIndex} className="text-card-foreground leading-relaxed">{point}</li>
+                          ))}
+                        </ol>
+                      </div>
+                    )}
+                  </div>
                 ))}
-              </ol>
+              </div>
             )}
-          </DialogContent>
-        </Dialog>
-      </footer>
-    </>
+          </DialogDescription>
+        </DialogContent>
+      </Dialog>
+    </footer>
   );
 };
 

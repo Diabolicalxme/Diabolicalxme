@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSelector } from 'react-redux';
 import Slider from 'react-slick';
 import { ArrowLeft, ArrowRight, Quote } from 'lucide-react';
 import FeedbackCard from './feedback-card';
@@ -40,6 +41,7 @@ const testimonials = [
 ];
 
 const Testimonials = () => {
+  const { user } = useSelector((state) => state.auth);
   const settings = {
     className: "testimonial-slider",
     infinite: true,
@@ -69,7 +71,7 @@ const Testimonials = () => {
       </div>
     ),
     customPaging: i => (
-      <div className="w-3 h-3 mx-1 rounded-full bg-gray-200 hover:bg-gray-400 transition-colors"></div>
+      <div className="w-3 h-3 mx-1 rounded-full bg-muted-foreground/30 hover:bg-foreground transition-colors"></div>
     ),
   };
 
@@ -91,8 +93,65 @@ const Testimonials = () => {
   );
 };
 
-// Modern testimonial card component
+// Modern testimonial card component with theme awareness
 const TestimonialCard = ({ testimonial, index }) => {
+  const { user } = useSelector((state) => state.auth);
+  
+  // Get theme-aware background colors
+  const getThemeColors = () => {
+    if (!user?.category) {
+      return {
+        cardBg: 'bg-card/60',
+        borderColor: 'border-border/30',
+        textColor: 'text-card-foreground',
+        mutedText: 'text-muted-foreground',
+        quoteBg: 'text-muted-foreground/40',
+        dividerColor: 'border-border/20'
+      };
+    }
+
+    switch (user.category.toLowerCase()) {
+      case 'author':
+        return {
+          cardBg: 'bg-[#F5F1E8]/80', // Lighter beige
+          borderColor: 'border-[#D6CCA9]/40',
+          textColor: 'text-[#333333]',
+          mutedText: 'text-[#666666]',
+          quoteBg: 'text-[#C2B280]/60',
+          dividerColor: 'border-[#D6CCA9]/30'
+        };
+      case 'bravo':
+        return {
+          cardBg: 'bg-gray-900/20', // Lighter black
+          borderColor: 'border-gray-700/30',
+          textColor: 'text-white',
+          mutedText: 'text-gray-300',
+          quoteBg: 'text-gray-500/60',
+          dividerColor: 'border-gray-700/20'
+        };
+      case 'hector':
+        return {
+          cardBg: 'bg-[#0E5A38]/20', // Lighter bottle green
+          borderColor: 'border-[#106840]/30',
+          textColor: 'text-white',
+          mutedText: 'text-green-200',
+          quoteBg: 'text-green-400/60',
+          dividerColor: 'border-[#106840]/20'
+        };
+      default:
+        return {
+          cardBg: 'bg-card/60',
+          borderColor: 'border-border/30',
+          textColor: 'text-card-foreground',
+          mutedText: 'text-muted-foreground',
+          quoteBg: 'text-muted-foreground/40',
+          dividerColor: 'border-border/20'
+        };
+    }
+  };
+
+  const themeColors = getThemeColors();
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
@@ -106,25 +165,25 @@ const TestimonialCard = ({ testimonial, index }) => {
       }}
       className="px-4"
     >
-      <div className="bg-white p-8 border border-gray-200 shadow-sm h-full flex flex-col">
+      <div className={`${themeColors.cardBg} backdrop-blur-sm p-8 border ${themeColors.borderColor} shadow-sm h-full flex flex-col rounded-lg transition-colors duration-300`}>
         {/* Quote icon */}
-        <div className="mb-6 text-gray-300">
+        <div className={`mb-6 ${themeColors.quoteBg}`}>
           <Quote size={32} />
         </div>
 
         {/* Review text */}
-        <p className="text-gray-600 mb-8 flex-grow leading-relaxed">"{testimonial.review}"</p>
+        <p className={`${themeColors.textColor} mb-8 flex-grow leading-relaxed`}>"{testimonial.review}"</p>
 
         {/* Customer info */}
-        <div className="flex items-center mt-auto pt-6 border-t border-gray-100">
+        <div className={`flex items-center mt-auto pt-6 border-t ${themeColors.dividerColor}`}>
           <img
             src={testimonial.image}
             alt={testimonial.name}
-            className="w-12 h-12 rounded-full object-cover border border-gray-200"
+            className={`w-12 h-12 rounded-full object-cover border ${themeColors.borderColor}`}
           />
           <div className="ml-4">
-            <h4 className="font-medium text-gray-900">{testimonial.name}</h4>
-            <p className="text-sm text-gray-500">{testimonial.title}</p>
+            <h4 className={`font-medium ${themeColors.textColor}`}>{testimonial.name}</h4>
+            <p className={`text-sm ${themeColors.mutedText}`}>{testimonial.title}</p>
           </div>
         </div>
       </div>
@@ -132,11 +191,30 @@ const TestimonialCard = ({ testimonial, index }) => {
   );
 };
 
-// Previous and Next arrows with updated styling
+// Previous and Next arrows with theme-aware styling
 const PrevIcon = ({ onClick }) => {
+  const { user } = useSelector((state) => state.auth);
+  
+  const getArrowTheme = () => {
+    if (!user?.category) {
+      return 'bg-background/80 border-border hover:bg-foreground hover:text-background';
+    }
+
+    switch (user.category.toLowerCase()) {
+      case 'author':
+        return 'bg-[#F5F1E8]/90 border-[#D6CCA9] text-[#333333] hover:bg-[#C2B280] hover:text-white';
+      case 'bravo':
+        return 'bg-gray-900/80 border-gray-700 text-white hover:bg-black hover:text-white';
+      case 'hector':
+        return 'bg-[#0E5A38]/80 border-[#106840] text-white hover:bg-[#093624] hover:text-white';
+      default:
+        return 'bg-background/80 border-border hover:bg-foreground hover:text-background';
+    }
+  };
+
   return (
     <button
-      className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-6 z-10 w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center border border-gray-200 hover:bg-black hover:text-white hover:border-black transition-colors"
+      className={`absolute left-0 top-1/2 -translate-y-1/2 -translate-x-6 z-10 w-12 h-12 rounded-full shadow-md flex items-center justify-center border transition-colors backdrop-blur-sm ${getArrowTheme()}`}
       onClick={onClick}
       aria-label="Previous"
     >
@@ -146,9 +224,28 @@ const PrevIcon = ({ onClick }) => {
 };
 
 const NextIcon = ({ onClick }) => {
+  const { user } = useSelector((state) => state.auth);
+  
+  const getArrowTheme = () => {
+    if (!user?.category) {
+      return 'bg-background/80 border-border hover:bg-foreground hover:text-background';
+    }
+
+    switch (user.category.toLowerCase()) {
+      case 'author':
+        return 'bg-[#F5F1E8]/90 border-[#D6CCA9] text-[#333333] hover:bg-[#C2B280] hover:text-white';
+      case 'bravo':
+        return 'bg-gray-900/80 border-gray-700 text-white hover:bg-black hover:text-white';
+      case 'hector':
+        return 'bg-[#0E5A38]/80 border-[#106840] text-white hover:bg-[#093624] hover:text-white';
+      default:
+        return 'bg-background/80 border-border hover:bg-foreground hover:text-background';
+    }
+  };
+
   return (
     <button
-      className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-6 z-10 w-12 h-12 rounded-full bg-white shadow-md flex items-center justify-center border border-gray-200 hover:bg-black hover:text-white hover:border-black transition-colors"
+      className={`absolute right-0 top-1/2 -translate-y-1/2 translate-x-6 z-10 w-12 h-12 rounded-full shadow-md flex items-center justify-center border transition-colors backdrop-blur-sm ${getArrowTheme()}`}
       onClick={onClick}
       aria-label="Next"
     >

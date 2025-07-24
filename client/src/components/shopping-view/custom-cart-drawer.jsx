@@ -12,7 +12,7 @@ const CartOverlay = memo(({ isOpen, onClose }) => {
   // Close the cart when clicking on the overlay
   return (
     <div
-      className={`fixed inset-0 z-50 bg-black/80 transition-opacity duration-300 ${
+      className={`fixed inset-0 z-[100] bg-black/80 transition-opacity duration-300 ${
         isOpen ? "opacity-100" : "opacity-0 pointer-events-none"
       }`}
       onClick={onClose}
@@ -162,7 +162,7 @@ const CustomCartDrawer = memo(function CustomCartDrawer({
       <CartOverlay isOpen={isOpen} onClose={onClose} />
       <div
         ref={drawerRef}
-        className={`fixed inset-y-0 right-0 z-50 w-full sm:max-w-md bg-card text-card-foreground p-4 shadow-lg transform transition-transform duration-300 ease-in-out overflow-y-auto ${
+        className={`fixed inset-y-0 right-0 z-[100] w-full sm:max-w-md bg-card text-card-foreground p-4 shadow-lg transform transition-transform duration-300 ease-in-out overflow-y-auto ${
           isOpen ? "translate-x-0" : "translate-x-full"
         }`}
       >

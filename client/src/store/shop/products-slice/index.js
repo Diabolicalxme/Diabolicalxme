@@ -19,7 +19,7 @@ export const fetchAllFilteredProducts = createAsyncThunk(
 
     // Construct the URL using Vite's environment variable
     const url = `${import.meta.env.VITE_BACKEND_URL}/shop/products/get?${query}`;
-    
+
     try {
       const result = await axios.get(url);
       return result.data;
@@ -36,7 +36,7 @@ export const fetchProductDetails = createAsyncThunk(
   async (id, { rejectWithValue }) => {
     // Construct the URL using Vite's environment variable
     const url = `${import.meta.env.VITE_BACKEND_URL}/shop/products/get/${id}`;
-    
+
     try {
       const result = await axios.get(url);
       return result.data;
@@ -59,14 +59,14 @@ const shoppingProductSlice = createSlice({
     builder
       // Handle fetchAllFilteredProducts
       .addCase(fetchAllFilteredProducts.pending, (state) => {
-        // state.isLoading = true;
+        state.isLoading = true;
       })
       .addCase(fetchAllFilteredProducts.fulfilled, (state, action) => {
-        // state.isLoading = false;
+        state.isLoading = false;
         state.productList = action.payload.data;
       })
       .addCase(fetchAllFilteredProducts.rejected, (state) => {
-        // state.isLoading = false;
+        state.isLoading = false;
         state.productList = [];
       })
       // Handle fetchProductDetails

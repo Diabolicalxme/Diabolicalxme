@@ -6,6 +6,7 @@ import { Button } from "../ui/button";
 import axios from "axios";
 import { Skeleton } from "../ui/skeleton";
 import { useToast } from "../ui/use-toast";
+import { getOptimizedImageUrl } from "../../lib/utils";
 
 function ProductImageUpload({
   imageFiles = [],
@@ -44,17 +45,32 @@ function ProductImageUpload({
 
   function handleImageFileChange(event) {
     const selectedFiles = Array.from(event.target.files || []);
-    if (selectedFiles.length > 0) {
+
+    // Filter out files that are too large
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 1.2MB in bytes
+    const validFiles = selectedFiles.filter(file => {
+      if (file.size > MAX_FILE_SIZE) {
+        toast({
+          title: "File too large",
+          description: `${file.name} exceeds 1.2MB limit and was not added.`,
+          variant: "destructive",
+        });
+        return false;
+      }
+      return true;
+    });
+
+    if (validFiles.length > 0) {
       if (isSingleImage) {
         // For single image mode, replace the current arrays
-        setImageFiles([selectedFiles[0]]);
+        setImageFiles([validFiles[0]]);
         setImageLoadingStates([true]);
         setUploadedImageUrls([]);
-        setPendingUploads([{ file: selectedFiles[0], index: 0 }]);
+        setPendingUploads([{ file: validFiles[0], index: 0 }]);
       } else {
         // For multiple images, append to the existing files
         const currentLength = Array.isArray(imageFiles) ? imageFiles.length : 0;
-        const newFiles = selectedFiles.map((file, idx) => ({
+        const newFiles = validFiles.map((file, idx) => ({
           file,
           index: currentLength + idx
         }));
@@ -66,7 +82,7 @@ function ProductImageUpload({
 
         setImageFiles((prevFiles) => {
           const files = Array.isArray(prevFiles) ? prevFiles : [];
-          return [...files, ...selectedFiles];
+          return [...files, ...validFiles];
         });
 
         setImageLoadingStates((prevStates) => {
@@ -161,6 +177,27 @@ function ProductImageUpload({
   }
 
   async function uploadImageToCloudinary(file, index) {
+    // Check file size - limit to 1.2MB (1.2 * 1024 * 1024 bytes)
+    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 1.2MB in bytes
+    if (file.size > MAX_FILE_SIZE) {
+      console.error(`File size exceeds 1.2MB limit. Please select a smaller image.`);
+      toast({
+        title: "File too large",
+        description: `File size exceeds 1.2MB limit. Please select a smaller image.`,
+        variant: "destructive",
+      });
+      // Remove the file from the arrays
+      setImageFiles((prev) => {
+        if (!Array.isArray(prev)) return [];
+        return prev.filter((_, i) => i !== index);
+      });
+      setImageLoadingStates((prev) => {
+        if (!Array.isArray(prev)) return [];
+        return prev.filter((_, i) => i !== index);
+      });
+      return;
+    }
+
     // Mark file as being uploaded
     setImageLoadingStates((prevStates) => {
       const states = Array.isArray(prevStates) ? prevStates : [];
@@ -169,25 +206,26 @@ function ProductImageUpload({
       return updatedStates;
     });
     setIsUploading(true);
-  
+
     const data = new FormData();
     data.append("my_file", file);
-  
+
     try {
       const response = await axios.post(
         `${import.meta.env.VITE_BACKEND_URL}/admin/products/upload-image`,
         data
       );
-  
+
       if (response?.data?.success) {
         const secureUrl = response.data.result[0].secure_url; // Use secure_url for HTTPS
-  
+        const optimizedUrl = getOptimizedImageUrl(secureUrl); // Apply q_auto,f_auto transformations
+
         if (isSingleImage) {
-          setUploadedImageUrls([secureUrl]);
+          setUploadedImageUrls([optimizedUrl]);
         } else {
           setUploadedImageUrls((prevUrls) => {
             const urls = Array.isArray(prevUrls) ? prevUrls : [];
-            return [...urls, secureUrl];
+            return [...urls, optimizedUrl];
           });
         }
       }
@@ -208,18 +246,18 @@ function ProductImageUpload({
         updatedStates[index] = false;
         return updatedStates;
       });
-  
+
       setPendingUploads((prev) => {
         if (!Array.isArray(prev)) return [];
         return prev.filter((item) => item.index !== index);
       });
-  
+
       if (!Array.isArray(pendingUploads) || pendingUploads.length <= 1) {
         setIsUploading(false);
       }
     }
   }
-  
+
 
   // Process pending uploads
   useEffect(() => {

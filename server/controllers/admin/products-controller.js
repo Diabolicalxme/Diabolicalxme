@@ -5,7 +5,7 @@ const sharp = require('sharp');
 
 // Handles image upload for both single and multiple files
 /* const handleImageUpload = async (req, res) => {
-  try {
+  try { 
     let results = [];
     // Check if multiple files were uploaded
     if (req.files && req.files.length > 0) {
@@ -51,7 +51,7 @@ const handleImageUpload = async (req, res) => {
       // Compress and convert the image
       const compressedBuffer = await sharp(file.buffer)
         .resize({ width: 1024 }) // Resize to optimize storage
-        .toFormat(outputFormat, { quality: 80 }) // Convert with 80% quality
+        .toFormat(outputFormat, { quality: 90 }) 
         .toBuffer();
 
       const b64 = compressedBuffer.toString("base64");
@@ -88,7 +88,7 @@ const handleVideoUpload = async (req, res) => {
       const b64 = Buffer.from(req.file.buffer).toString("base64");
       const url = "data:" + req.file.mimetype + ";base64," + b64;
 
-      // Upload the video using the videoUploadUtil (internal organization util)
+      // Upload without transformations - we'll apply them at delivery time
       const result = await videoUploadUtil(url);
 
       return res.json({
@@ -127,8 +127,8 @@ const addProduct = async (req, res) => {
       totalStock,
       averageReview,
       colors,
-      isWatchAndBuy,
-      video
+      // isWatchAndBuy,
+      // video
     } = req.body;
 
     // Ensure that image is an array; if not, convert it to one.
@@ -150,8 +150,8 @@ const addProduct = async (req, res) => {
       totalStock,
       averageReview,
       colors: colorsArray,
-      isWatchAndBuy,
-      video
+      // isWatchAndBuy,
+      // video
     });
 
     await newlyCreatedProduct.save();
@@ -222,8 +222,8 @@ const editProduct = async (req, res) => {
       totalStock,
       averageReview,
       colors,        // new field: colors array
-      isWatchAndBuy, // new field: boolean
-      video         // new field: string
+      // isWatchAndBuy, // new field: boolean
+      // video         // new field: string
     } = req.body;
 
     // Ensure that image is an array; if not, convert it to one.
@@ -247,8 +247,8 @@ const editProduct = async (req, res) => {
         totalStock,
         averageReview,
         colors: colorsArray,
-        isWatchAndBuy,
-        video
+        // isWatchAndBuy,
+        // video
       },
       { new: true }
     );

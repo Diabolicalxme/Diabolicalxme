@@ -26,8 +26,8 @@ const initialFormData = {
   totalStock: "",
   averageReview: 0,
   colors: [],
-  isWatchAndBuy: false,
-  video: ""
+  // isWatchAndBuy: false,
+  // video: ""
 };
 
 function AdminProducts() {
@@ -82,22 +82,22 @@ function AdminProducts() {
   }
 
   // If isWatchAndBuy toggle field is not present, add it.
-  if (!dynamicAddProductFormElements.find((el) => el.name === "isWatchAndBuy")) {
-    dynamicAddProductFormElements.push({
-      name: "isWatchAndBuy",
-      label: "Watch & Buy",
-      componentType: "toggle"
-    });
-  }
+  // if (!dynamicAddProductFormElements.find((el) => el.name === "isWatchAndBuy")) {
+  //   dynamicAddProductFormElements.push({
+  //     name: "isWatchAndBuy",
+  //     label: "Watch & Buy",
+  //     componentType: "toggle"
+  //   });
+  // }
 
   // If video field is not present, add it.
-  if (!dynamicAddProductFormElements.find((el) => el.name === "video")) {
-    dynamicAddProductFormElements.push({
-      name: "video",
-      label: "Video",
-      componentType: "video"
-    });
-  }
+  // if (!dynamicAddProductFormElements.find((el) => el.name === "video")) {
+  //   dynamicAddProductFormElements.push({
+  //     name: "video",
+  //     label: "Video",
+  //     componentType: "video"
+  //   });
+  // }
 
   function onSubmit(event) {
     event.preventDefault();
@@ -160,8 +160,8 @@ function AdminProducts() {
       totalStock: product.totalStock,
       averageReview: product.averageReview || 0,
       colors: product.colors || [],
-      isWatchAndBuy: product.isWatchAndBuy,
-      video: product.video || ""
+      // isWatchAndBuy: product.isWatchAndBuy,
+      // video: product.video || ""
     });
     setUploadedImageUrls(product.image || []);
     setOpenCreateProductsDialog(true);
@@ -176,8 +176,8 @@ function AdminProducts() {
       "productCode",
       "isNewArrival",
       "isFeatured",
-      "isWatchAndBuy",
-      "video",
+      // "isWatchAndBuy",
+      // "video",
       "image",
       "salePrice",
       "secondTitle"

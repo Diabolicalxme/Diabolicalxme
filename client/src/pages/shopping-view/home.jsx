@@ -147,7 +147,7 @@ function ShoppingHome() {
       {/* Full-page background image that changes with theme */}
       <BackgroundImage />
 
-      <div className="mt-32 flex flex-col relative z-10">
+      <div className="pt-32 flex flex-col relative z-10">
         {/* Category-based Product Picks */}
         <CategoryPicks
           products={productList}
@@ -156,163 +156,165 @@ function ShoppingHome() {
         />
 
 
-        {/* Category Grid Layout - Based on the reference image */}
-        <section className="py-12">
+        {/* Category Grid Layout - Revamped Design */}
+        <section className="py-16 ">
+          <div className="container mx-auto px-4">
+       
+
+           {/* Masonry layout desktop */}
+        <section className="hidden md:block py-8 ">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4 text-foreground">Shop by Category</h2>
-              <div className="w-24 h-1 bg-foreground mx-auto mb-6"></div>
-              <p className="text-foreground/80">Discover our curated collections designed for every style and occasion</p>
+              <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4">Shop by Category</h2>
+              <div className="w-24 h-1 bg-black mx-auto mb-6"></div>
+              <p className="text-gray-600">Discover our curated collections designed for every style and occasion</p>
             </div>
 
-            {/* Desktop Layout */}
-            <div className="hidden md:grid grid-cols-12 gap-4">
-              {sortedCategories && sortedCategories.length > 0 && (
-                <>
-                  {/* Top row - 2 cards */}
-                  <div className="col-span-6">
-                    {sortedCategories[0] && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: false, amount: 0.1 }}
-                        transition={{
-                          duration: 0.5,
-                          delay: 0.1,
-                          type: "spring",
-                          stiffness: 50,
-                        }}
-                      >
-                        <CategoryCard
-                          categoryItem={sortedCategories[0]}
-                          index={0}
-                          variant="grid"
-                        />
-                      </motion.div>
-                    )}
-                  </div>
-                  <div className="col-span-6">
-                    {sortedCategories[1] && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: false, amount: 0.1 }}
-                        transition={{
-                          duration: 0.5,
-                          delay: 0.2,
-                          type: "spring",
-                          stiffness: 50,
-                        }}
-                      >
-                        <CategoryCard
-                          categoryItem={sortedCategories[1]}
-                          index={1}
-                          variant="grid"
-                        />
-                      </motion.div>
-                    )}
-                  </div>
-
-                  {/* Middle row - 1 card */}
-                  <div className="col-span-12">
-                    {sortedCategories[2] && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: false, amount: 0.1 }}
-                        transition={{
-                          duration: 0.5,
-                          delay: 0.3,
-                          type: "spring",
-                          stiffness: 50,
-                        }}
-                      >
-                        <CategoryCard
-                          categoryItem={sortedCategories[2]}
-                          index={2}
-                          variant="grid"
-                          fullWidth
-                        />
-                      </motion.div>
-                    )}
-                  </div>
-
-                  {/* Bottom row - 2 cards */}
-                  <div className="col-span-6">
-                    {sortedCategories[3] && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: false, amount: 0.1 }}
-                        transition={{
-                          duration: 0.5,
-                          delay: 0.4,
-                          type: "spring",
-                          stiffness: 50,
-                        }}
-                      >
-                        <CategoryCard
-                          categoryItem={sortedCategories[3]}
-                          index={3}
-                          variant="grid"
-                        />
-                      </motion.div>
-                    )}
-                  </div>
-                  <div className="col-span-6">
-                    {sortedCategories[4] && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 20 }}
-                        whileInView={{ opacity: 1, y: 0 }}
-                        viewport={{ once: false, amount: 0.1 }}
-                        transition={{
-                          duration: 0.5,
-                          delay: 0.5,
-                          type: "spring",
-                          stiffness: 50,
-                        }}
-                      >
-                        <CategoryCard
-                          categoryItem={sortedCategories[4]}
-                          index={4}
-                          variant="grid"
-                        />
-                      </motion.div>
-                    )}
-                  </div>
-                </>
-              )}
+            {/* Masonry layout container */}
+            <div className="columns-1 sm:columns-2 md:columns-3 gap-4">
+              {categoriesList &&
+                categoriesList.map((categoryItem, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: false, amount: 0.1 }}
+                    transition={{
+                      duration: 0.5,
+                      delay: index * 0.1,
+                      type: "spring",
+                      stiffness: 50,
+                    }}
+                    className="break-inside-avoid mb-4"
+                  >
+                    <CategoryCard
+                      categoryItem={categoryItem}
+                      index={index}
+                      variant="masonry"
+                    />
+                  </motion.div>
+                ))}
             </div>
 
-            {/* Mobile Layout */}
-            <div className="md:hidden space-y-4">
-              {sortedCategories && sortedCategories.length > 0 && (
-                <>
-                  {/* Display first 5 categories in a vertical stack */}
-                  {sortedCategories.slice(0, 5).map((categoryItem, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, y: 20 }}
-                      whileInView={{ opacity: 1, y: 0 }}
-                      viewport={{ once: false, amount: 0.1 }}
-                      transition={{
-                        duration: 0.5,
-                        delay: index * 0.1,
-                        type: "spring",
-                        stiffness: 50,
-                      }}
-                    >
-                      <CategoryCard
-                        categoryItem={categoryItem}
-                        index={index}
-                        variant="grid"
-                        fullWidth={index === 2} // Make the middle card full width
-                      />
-                    </motion.div>
-                  ))}
-                </>
-              )}
+            <div className="text-center mt-12">
+              <button
+                onClick={() => navigate("/shop/collections")}
+                className="inline-block px-8 py-3 border-2 border-black hover:bg-black hover:text-white transition-colors duration-300 uppercase tracking-wider text-sm font-medium"
+              >
+                View All Collections
+              </button>
             </div>
+          </div>
+        </section>
+        {/* Mobile layout */}
+        <section className="py-8  md:hidden">
+          <div className="container mx-auto px-4">
+            <div className="max-w-3xl mx-auto text-center mb-6">
+              <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4">Shop by Category</h2>
+              <div className="w-24 h-1 bg-black mx-auto mb-6"></div>
+              <p className="text-gray-600">Discover our curated collections designed for every style and occasion</p>
+            </div>
+
+            {/* Custom layout container - mobile: first card full width, rest in 2 columns; desktop: masonry */}
+            <div className="hidden sm:block columns-2 md:columns-3 gap-4">
+              {categoriesList &&
+                categoriesList.map((categoryItem, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: false, amount: 0.1 }}
+                    transition={{
+                      duration: 0.5,
+                      delay: index * 0.1,
+                      type: "spring",
+                      stiffness: 50,
+                    }}
+                    className="break-inside-avoid mb-4"
+                  >
+                    <CategoryCard
+                      categoryItem={categoryItem}
+                      index={index}
+                      variant="masonry"
+                    />
+                  </motion.div>
+                ))}
+            </div>
+
+            {/* Mobile layout - first card full width, rest in 2 columns, pattern repeats every 5 cards */}
+            <div className="sm:hidden">
+              {categoriesList && categoriesList.length > 0 &&
+                Array.from({ length: Math.ceil(categoriesList.length / 5) }).map((_, groupIndex) => {
+                  const startIndex = groupIndex * 5;
+                  const groupItems = categoriesList.slice(startIndex, startIndex + 5);
+
+                  return (
+                    <div key={`group-${groupIndex}`} className="mb-4">
+                      {/* First item in group - full width */}
+                      {groupItems[0] && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 20 }}
+                          whileInView={{ opacity: 1, y: 0 }}
+                          viewport={{ once: false, amount: 0.1 }}
+                          transition={{
+                            duration: 0.5,
+                            delay: 0.1,
+                            type: "spring",
+                            stiffness: 50,
+                          }}
+                          className="mb-4"
+                        >
+                          <CategoryCard
+                            categoryItem={groupItems[0]}
+                            index={startIndex}
+                            variant="masonry"
+                          />
+                        </motion.div>
+                      )}
+
+                      {/* Remaining items in group - 2 column grid */}
+                      {groupItems.length > 1 && (
+                        <div className="grid grid-cols-2 gap-4">
+                          {groupItems.slice(1).map((categoryItem, idx) => (
+                            <motion.div
+                              key={startIndex + idx + 1}
+                              initial={{ opacity: 0, y: 20 }}
+                              whileInView={{ opacity: 1, y: 0 }}
+                              viewport={{ once: false, amount: 0.1 }}
+                              transition={{
+                                duration: 0.5,
+                                delay: (idx + 1) * 0.1,
+                                type: "spring",
+                                stiffness: 50,
+                              }}
+                            >
+                              <CategoryCard
+                                categoryItem={categoryItem}
+                                index={startIndex + idx + 1}
+                                variant="masonry"
+                              />
+                            </motion.div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })
+              }
+            </div>
+
+            <div className="text-center mt-12">
+              <button
+                onClick={() => navigate("/shop/collections")}
+                className="inline-block px-8 py-3 border-2 border-black hover:bg-black hover:text-white transition-colors duration-300 uppercase tracking-wider text-sm font-medium"
+              >
+                View All Collections
+              </button>
+            </div>
+          </div>
+        </section>
+
+
 
             <div className="text-center mt-12">
               <button

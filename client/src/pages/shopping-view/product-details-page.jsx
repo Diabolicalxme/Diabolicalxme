@@ -8,7 +8,7 @@ import { addReview, getReviews } from "@/store/shop/review-slice";
 import StarRatingComponent from "../../components/common/star-rating";
 import ZoomableImage from "../../components/ui/zoomable-dialog-box";
 import { Label } from "../../components/ui/label";
-import { ChevronLeft, ChevronRight, Plus, Minus, ShoppingBag, CheckCircle, Star, Sparkles, Gem, Award, Heart, Scissors, Palette, Zap, Leaf } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronUp, Plus, Minus, ShoppingBag, CheckCircle, Star, Sparkles, Gem, Award, Heart, Scissors, Palette, Zap, Leaf } from "lucide-react";
 import ReviewSection from "@/components/shopping-view/review-section";
 import ProductSlider from "@/components/shopping-view/product-slider";
 import { fetchAllProducts } from "@/store/admin/products-slice";
@@ -31,7 +31,9 @@ function ProductDetailsPage() {
   const { isAuthenticated, user } = useSelector((state) => state.auth);
   const { cartItems } = useSelector((state) => state.shopCart);
   const { reviews } = useSelector((state) => state.shopReview);
+  const { currentTheme } = useSelector((state) => state.theme);
   const [relatedProducts, setRelatedProducts] = useState([]);
+  const [expandedFAQ, setExpandedFAQ] = useState({});
   const { toast } = useToast();
   const { id: getCurrentProductId } = useParams();
   // Using location key so that even if same productId is used, we can fetch fresh details.
@@ -67,6 +69,13 @@ function ProductDetailsPage() {
       ...data,
       imageSrc: selectedImage || ""
     });
+  };
+
+  const toggleFAQ = (faqKey) => {
+    setExpandedFAQ(prev => ({
+      ...prev,
+      [faqKey]: !prev[faqKey]
+    }));
   };
 
   const handleRatingChange = (getRating) => {
@@ -850,8 +859,177 @@ function ProductDetailsPage() {
         </div>
       </div>
 
+      {/* FAQ Section */}
+      <div className="bg-background py-12">
+        <div className="container mx-auto px-4">
+          <h2 className="text-2xl font-light uppercase tracking-wide mb-6 text-center">
+            Additional Information
+          </h2>
+          <div className="w-24 h-0.5 bg-primary mx-auto mb-8"></div>
 
+          <div className="hidden md:block mt-8 w-full max-w-2xl mx-auto">
+            <div className="space-y-4 w-full">
+              {/* Color Accuracy Notice */}
+              <div className="w-full border border-border rounded-lg shadow-sm hover:shadow-md transition-all duration-200 bg-card">
+                <button
+                  onClick={() => toggleFAQ('color')}
+                  className="w-full flex items-center justify-between p-5 text-left hover:bg-muted/10 transition-all duration-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-muted/20 flex items-center justify-center">
+                      <Palette className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <span className="font-semibold text-foreground text-base">Color Accuracy Notice</span>
+                  </div>
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted/20 transition-all duration-200">
+                    {expandedFAQ['color'] ? (
+                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <Plus className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </div>
+                </button>
+                {expandedFAQ['color'] && (
+                  <div className="w-full px-5 pb-5 text-sm text-card-foreground leading-relaxed bg-muted/5 border-t border-border">
+                    <div className="pt-3 pl-3 border-l-3 border-muted">
+                      Slight variations in colour may occur due to photographic lighting and individual monitor settings. We strive to represent colors as accurately as possible to ensure your satisfaction.
+                    </div>
+                  </div>
+                )}
+              </div>
 
+              {/* Shipping Order Processing */}
+              <div className="w-full border border-border rounded-lg shadow-sm hover:shadow-md transition-all duration-200 bg-card">
+                <button
+                  onClick={() => toggleFAQ('shipping')}
+                  className="w-full flex items-center justify-between p-5 text-left hover:bg-muted/10 transition-all duration-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-muted/20 flex items-center justify-center">
+                      <Zap className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <span className="font-semibold text-foreground text-base">Shipping Order Processing</span>
+                  </div>
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted/20 transition-all duration-200">
+                    {expandedFAQ['shipping'] ? (
+                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <Plus className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </div>
+                </button>
+                {expandedFAQ['shipping'] && (
+                  <div className="w-full px-5 pb-5 text-sm text-card-foreground leading-relaxed bg-muted/5 border-t border-border">
+                    <div className="pt-3 pl-3 border-l-3 border-muted">
+                      Orders are shipped after we receive them, which may affect processing time. A tracking link will be shared via email once dispatched for your convenience.
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Wash Care Instructions */}
+              <div className="w-full border border-border rounded-lg shadow-sm hover:shadow-md transition-all duration-200 bg-card">
+                <button
+                  onClick={() => toggleFAQ('washcare')}
+                  className="w-full flex items-center justify-between p-5 text-left hover:bg-muted/10 transition-all duration-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-muted/20 flex items-center justify-center">
+                      <Leaf className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <span className="font-semibold text-foreground text-base">Wash Care Instructions</span>
+                  </div>
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted/20 transition-all duration-200">
+                    {expandedFAQ['washcare'] ? (
+                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <Plus className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </div>
+                </button>
+                {expandedFAQ['washcare'] && (
+                  <div className="w-full px-5 pb-5 text-sm text-card-foreground leading-relaxed bg-muted/5 border-t border-border">
+                    <div className="pt-3 pl-3 border-l-3 border-muted">
+                      Dry clean recommended for best results. If hand washing, use cold water with mild detergent. Avoid direct sunlight when drying to preserve fabric quality and colour.
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Return & Exchange Policy */}
+              <div className="w-full border border-border rounded-lg shadow-sm hover:shadow-md transition-all duration-200 bg-card">
+                <button
+                  onClick={() => toggleFAQ('return')}
+                  className="w-full flex items-center justify-between p-5 text-left hover:bg-muted/10 transition-all duration-200"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-muted/20 flex items-center justify-center">
+                      <Award className="h-4 w-4 text-muted-foreground" />
+                    </div>
+                    <span className="font-semibold text-foreground text-base">Return & Exchange Policy</span>
+                  </div>
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-muted/20 transition-all duration-200">
+                    {expandedFAQ['return'] ? (
+                      <ChevronUp className="h-4 w-4 text-muted-foreground" />
+                    ) : (
+                      <Plus className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </div>
+                </button>
+                {expandedFAQ['return'] && (
+                  <div className="w-full px-5 pb-5 text-sm text-card-foreground leading-relaxed bg-muted/5 border-t border-border">
+                    <div className="pt-3 pl-3 border-l-3 border-muted space-y-3">
+                      <div>
+                        <p className="font-medium text-foreground mb-1">Damaged or Incorrect Item</p>
+                        <p>To be eligible for return/exchange, you must share an unedited unpacking video clearly showing the sealed package and the issue.</p>
+                      </div>
+
+                      <div>
+                        <p className="font-medium text-foreground mb-1">Contact Timeline</p>
+                        <p>Reach out within 2 days of delivery via WhatsApp at +91 9994412667 to initiate a return/exchange.</p>
+                      </div>
+
+                      <div>
+                        <p className="font-medium text-foreground mb-1">Return Shipping Details</p>
+                        <p>Return shipping by customer (unless wrong/damaged item) use INDIA POST only. Rs 100/- courier fee will be reimbursed.</p>
+                      </div>
+
+                      <div>
+                        <p className="font-medium text-foreground mb-1">Replacement Timeline</p>
+                        <p>Once your return is received and approved, a replacement will be shipped within 5 business days.</p>
+                      </div>
+
+                      <div>
+                        <p className="font-medium text-foreground mb-1">💰 Refunds (if applicable)</p>
+                        <p>If a replacement isn't available, a refund will be processed within 2 working days.</p>
+                      </div>
+
+                      <div>
+                        <p className="font-medium text-foreground mb-1">⚠ No Return/Refund/Exchange for:</p>
+                        <ul className="list-disc list-inside space-y-1 ml-2">
+                          <li>Items bought on sale or discounts</li>
+                          <li>Beaded/sequined products (minor fall-off is considered normal)</li>
+                          <li>Cases of personal dislike or unmet expectations</li>
+                          <li>International Orders</li>
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-muted/10 py-16 mt-8">
+        {/* Related Products */}
+        <div className="container mx-auto px-4">
+          <h2 className="text-2xl font-light uppercase tracking-wide mb-4 text-center">
+            You May Also Like
+          </h2>
+          <div className="w-24 h-0.5 bg-primary mx-auto mb-8"></div>
+          <p className="text-center text-muted-foreground mb-8">Discover more items that complement your style</p>
 
           <div className="-mx-3.5">
             {relatedProducts && relatedProducts.length > 0 && (
@@ -860,13 +1038,12 @@ function ProductDetailsPage() {
                 handleGetProductDetails={(productId) => navigate(`/shop/details/${productId}`)}
                 handleAddtoCart={handleRelatedProductsAddToCart}
                 hideTitle={true}
-                 title="You May Also Like"
-            description="Discover more items that complement your style"
               />
             )}
-
+          </div>
+        </div>
       </div>
-    </div>
+      </div>
     </>
   );
 }
