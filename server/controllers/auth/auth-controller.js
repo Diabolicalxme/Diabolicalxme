@@ -227,8 +227,8 @@ const forgotPassword = async (req, res) => {
 
     const message = `
     <div style="font-family: Arial, sans-serif; color: #2c3315; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
-      <div style="background-color: #fed1d6; padding: 20px; text-align: center; color: #2c3315;">
-        <img src="https://res.cloudinary.com/dhkdsvdvr/image/upload/v1740216811/logo3_moey1d.png" alt="Logo" style="max-width: 150px; margin-bottom: 10px;">
+      <div style="background-color: #eeeeee; padding: 20px; text-align: center; color: #2c3315;">
+        <img src="https://res.cloudinary.com/dkqt39aad/image/upload/v1754300738/logo_pa0nq0.png" alt="Logo" style="max-width: 150px; margin-bottom: 10px;">
         <h2 style="margin-bottom: 5px;">Reset Your Password</h2>
         <p style="font-size: 16px; margin-top: 0;">We received a request to reset your password.</p>
       </div>
@@ -237,7 +237,7 @@ const forgotPassword = async (req, res) => {
         <p style="font-size: 14px; color: #2c3315; text-align: center;">Click the button below to reset your password:</p>
         
         <div style="text-align: center; margin-top: 20px;">
-          <a href="${resetUrl}" style="display: inline-block; background-color: #fed1d6; color: #2c3315; padding: 14px 28px; font-size: 16px; text-decoration: none; border-radius: 4px; font-weight: bold;">Reset Password</a>
+          <a href="${resetUrl}" style="display: inline-block; background-color: #eeeeee; color: #2c3315; padding: 14px 28px; font-size: 16px; text-decoration: none; border-radius: 4px; font-weight: bold;">Reset Password</a>
         </div>
         
         <p style="font-size: 12px; color: #777; text-align: center; margin-top: 20px;">

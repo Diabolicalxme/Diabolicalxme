@@ -14,6 +14,7 @@ import { Button } from "../ui/button";
 import { Switch } from "../ui/switch";
 import { useToast } from "../ui/use-toast";
 import { getOptimizedImageUrl, getOptimizedVideoUrl } from "../../lib/utils";
+import { optimizeImageForUpload, isValidImageFile, isValidFileSize } from "../../lib/imageOptimization";
 
 
 function CommonForm({ formControls, formData, setFormData, onSubmit, buttonText, isBtnDisabled }) {
@@ -25,28 +26,41 @@ function CommonForm({ formControls, formData, setFormData, onSubmit, buttonText,
   const [uploadError, setUploadError] = useState("");
   const { toast } = useToast();
 
-  // Helper function for uploading a color image to Cloudinary.
+  // Helper function for uploading a color image directly to Cloudinary with optimization.
   const uploadColorImage = async (file, idx, controlItem) => {
-    // Check file size - limit to 1.2MB (1.2 * 1024 * 1024 bytes)
-    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 1.2MB in bytes
-    if (file.size > MAX_FILE_SIZE) {
+    // Validate file type and size using the same logic as backend
+    if (!isValidImageFile(file)) {
       setColorsUploadStatus((prevStatus) => ({ ...prevStatus, [idx]: "error" }));
-      console.error(`File size exceeds 1.2MB limit. Please select a smaller image.`);
+      console.error(`Unsupported file format: ${file.type || 'unknown'}`);
+      return;
+    }
+
+    if (!isValidFileSize(file)) {
+      setColorsUploadStatus((prevStatus) => ({ ...prevStatus, [idx]: "error" }));
+      console.error(`File size exceeds 1MB limit. Please select a smaller image.`);
       return;
     }
 
     setColorsUploadStatus((prevStatus) => ({ ...prevStatus, [idx]: "uploading" }));
-    const data = new FormData();
-    data.append("my_file", file);
 
     try {
+      // Apply the same optimization logic as backend
+      const optimizedFile = await optimizeImageForUpload(file);
+
+      const cloudinaryFormData = new FormData();
+      cloudinaryFormData.append("file", optimizedFile);
+      cloudinaryFormData.append("upload_preset", "upload_product_image");
+      cloudinaryFormData.append("resource_type", "image");
+
+      // Upload directly to Cloudinary using environment variable for cloud name
+      const cloudName = import.meta.env.VITE_CLOUDINARY_NAME;
       const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/admin/products/upload-image`,
-        data
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        cloudinaryFormData
       );
 
-      if (response?.data?.success) {
-        const secureUrl = response.data.result[0].secure_url; // Use secure_url for HTTPS
+      if (response?.data?.secure_url) {
+        const secureUrl = response.data.secure_url;
         const optimizedUrl = getOptimizedImageUrl(secureUrl); // Apply q_auto,f_auto transformations
         const colorsArray = Array.isArray(formData[controlItem.name]) ? formData[controlItem.name] : [];
         const updatedColors = [...colorsArray];
@@ -61,7 +75,12 @@ function CommonForm({ formControls, formData, setFormData, onSubmit, buttonText,
       }
     } catch (err) {
       console.error("Error uploading color image: ", err);
-      setColorsUploadStatus((prevStatus) => ({ ...prevStatus, [idx]: "idle" }));
+      setColorsUploadStatus((prevStatus) => ({ ...prevStatus, [idx]: "error" }));
+
+      // Log specific error for HEIC files
+      if (err.message.includes('HEIC')) {
+        console.warn('HEIC file processing failed. User should convert to JPEG/PNG first.');
+      }
     }
   };
 
@@ -69,74 +88,74 @@ function CommonForm({ formControls, formData, setFormData, onSubmit, buttonText,
   // Helper function for uploading video to Cloudinary.
 
 // Updated uploadVideo function with file size limit and progress tracking
-// const uploadVideo = async (file) => {
-//   // Check file size - limit to 10MB (10 * 1024 * 1024 bytes)
-//   const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
-//   if (file.size > MAX_FILE_SIZE) {
-//     setVideoUploadStatus("error");
-//     setUploadError(`File size exceeds 10MB limit. Please select a smaller file.`);
-//     return;
-//   }
+const uploadVideo = async (file) => {
+  // Check file size - limit to 10MB (10 * 1024 * 1024 bytes)
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+  if (file.size > MAX_FILE_SIZE) {
+    setVideoUploadStatus("error");
+    setUploadError(`File size exceeds 10MB limit. Please select a smaller file.`);
+    return;
+  }
 
-//   setVideoUploadStatus("uploading");
-//   setUploadProgress(0);
+  setVideoUploadStatus("uploading");
+  setUploadProgress(0);
 
-//   try {
-//     const cloudinaryFormData = new FormData();
-//     cloudinaryFormData.append("file", file);
-//     cloudinaryFormData.append("upload_preset", "watch_any_buy");
-//     cloudinaryFormData.append("resource_type", "video");
+  try {
+    const cloudinaryFormData = new FormData();
+    cloudinaryFormData.append("file", file);
+    cloudinaryFormData.append("upload_preset", "watch_any_buy");
+    cloudinaryFormData.append("resource_type", "video");
 
-//     // Transformations will be applied at delivery time via getOptimizedVideoUrl
+    // Transformations will be applied at delivery time via getOptimizedVideoUrl
 
-//     // Use XMLHttpRequest to track upload progress
-//     return new Promise((resolve, reject) => {
-//       const xhr = new XMLHttpRequest();
+    // Use XMLHttpRequest to track upload progress
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
 
-//       // Track upload progress
-//       xhr.upload.onprogress = (event) => {
-//         if (event.lengthComputable) {
-//           const percentComplete = Math.round((event.loaded / event.total) * 100);
-//           setUploadProgress(percentComplete);
-//         }
-//       };
+      // Track upload progress
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          const percentComplete = Math.round((event.loaded / event.total) * 100);
+          setUploadProgress(percentComplete);
+        }
+      };
 
-//       xhr.onload = () => {
-//         if (xhr.status >= 200 && xhr.status < 300) {
-//           const data = JSON.parse(xhr.responseText);
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          const data = JSON.parse(xhr.responseText);
 
-//           // Set the Cloudinary URL in the form data with optimizations
-//           const optimizedVideoUrl = getOptimizedVideoUrl(data.secure_url);
-//           setFormData((prevFormData) => ({
-//             ...prevFormData,
-//             video: optimizedVideoUrl,
-//           }));
+          // Set the Cloudinary URL in the form data with optimizations
+          const optimizedVideoUrl = getOptimizedVideoUrl(data.secure_url);
+          setFormData((prevFormData) => ({
+            ...prevFormData,
+            video: optimizedVideoUrl,
+          }));
 
-//           setVideoUploadStatus("uploaded");
-//           resolve({ url: data.secure_url, public_id: data.public_id });
-//         } else {
-//           setVideoUploadStatus("error");
-//           setUploadError("Failed to upload video to Cloudinary. Please try again.");
-//           reject(new Error("Failed to upload video to Cloudinary"));
-//         }
-//       };
+          setVideoUploadStatus("uploaded");
+          resolve({ url: data.secure_url, public_id: data.public_id });
+        } else {
+          setVideoUploadStatus("error");
+          setUploadError("Failed to upload video to Cloudinary. Please try again.");
+          reject(new Error("Failed to upload video to Cloudinary"));
+        }
+      };
 
-//       xhr.onerror = () => {
-//         setVideoUploadStatus("error");
-//         setUploadError("Network error during upload. Please check your connection and try again.");
-//         reject(new Error("Network error during upload"));
-//       };
+      xhr.onerror = () => {
+        setVideoUploadStatus("error");
+        setUploadError("Network error during upload. Please check your connection and try again.");
+        reject(new Error("Network error during upload"));
+      };
 
-//       xhr.open("POST", "https://api.cloudinary.com/v1_1/dkqt39aad/video/upload", true);
-//       xhr.send(cloudinaryFormData);
-//     });
-//   } catch (err) {
-//     console.error("Error uploading video: ", err);
-//     setVideoUploadStatus("error");
-//     setUploadError("An unexpected error occurred. Please try again.");
-//     throw err;
-//   }
-// };
+      xhr.open("POST", `https://api.cloudinary.com/v1_1/dxfeyj7hl/video/upload`, true);
+      xhr.send(cloudinaryFormData);
+    });
+  } catch (err) {
+    console.error("Error uploading video: ", err);
+    setVideoUploadStatus("error");
+    setUploadError("An unexpected error occurred. Please try again.");
+    throw err;
+  }
+};
 
 
 
@@ -148,42 +167,149 @@ function CommonForm({ formControls, formData, setFormData, onSubmit, buttonText,
     }));
   }
 
-  // Validation function to check required fields
-  function validateRequiredFields() {
-    const missingFields = [];
+  // Comprehensive validation function with detailed error messages
+  function validateFormFields() {
+    const validationErrors = [];
 
     formControls.forEach((controlItem) => {
+      const value = formData[controlItem.name];
+      const fieldLabel = controlItem.label;
+
       // Check if field is required (default to true unless explicitly set to false)
       const isRequired = controlItem.required !== false;
 
-      if (isRequired) {
-        const value = formData[controlItem.name];
+      switch (controlItem.componentType) {
+        case "input":
+          if (isRequired && (!value || (typeof value === "string" && value.trim() === ""))) {
+            validationErrors.push(`${fieldLabel} is required.`);
+          } else if (value) {
+            // Type-specific validations
+            if (controlItem.type === "number") {
+              const numValue = Number(value);
+              if (isNaN(numValue)) {
+                validationErrors.push(`${fieldLabel} must be a valid number.`);
+              } else if (numValue < 0) {
+                validationErrors.push(`${fieldLabel} cannot be negative.`);
+              } else if (controlItem.min && numValue < controlItem.min) {
+                validationErrors.push(`${fieldLabel} must be at least ${controlItem.min}.`);
+              } else if (controlItem.max && numValue > controlItem.max) {
+                validationErrors.push(`${fieldLabel} cannot exceed ${controlItem.max}.`);
+              }
 
-        // Check different field types
-        if (controlItem.componentType === "colors") {
-          // For colors array, check if it has at least one color with title and image
-          if (!Array.isArray(value) || value.length === 0 ||
-              !value.some(color => color.title && color.image)) {
-            missingFields.push(controlItem.label);
+              // Specific validations for inventory-related fields
+              if (controlItem.name === "totalStock") {
+                if (numValue > 10000) {
+                  validationErrors.push(`${fieldLabel} seems unusually high. Please verify the stock quantity.`);
+                } else if (numValue === 0) {
+                  validationErrors.push(`${fieldLabel} cannot be zero. Please enter a valid stock quantity.`);
+                }
+              }
+              if (controlItem.name === "price") {
+                if (numValue > 100000) {
+                  validationErrors.push(`${fieldLabel} seems unusually high. Please verify the price.`);
+                } else if (numValue <= 0) {
+                  validationErrors.push(`${fieldLabel} must be greater than zero.`);
+                }
+              }
+              if (controlItem.name === "salePrice" && formData.price) {
+                const regularPrice = Number(formData.price);
+                if (numValue >= regularPrice) {
+                  validationErrors.push(`Sale price (${numValue}) must be less than regular price (${regularPrice}).`);
+                }
+              }
+            } else if (controlItem.type === "email") {
+              const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+              if (!emailRegex.test(value)) {
+                validationErrors.push(`${fieldLabel} must be a valid email address.`);
+              }
+            }
           }
-        } else if (controlItem.componentType === "select") {
-          // For select fields, check if a value is selected
-          if (!value || value === "") {
-            missingFields.push(controlItem.label);
+          break;
+
+        case "password":
+          if (isRequired && (!value || value.trim() === "")) {
+            validationErrors.push(`${fieldLabel} is required.`);
+          } else if (value && value.length < 6) {
+            validationErrors.push(`${fieldLabel} must be at least 6 characters long.`);
           }
-        } else if (controlItem.componentType === "toggle") {
-          // For toggle fields, they are usually optional, but if required, check boolean value
-          // Skip validation for toggles as they have default false value
-        } else {
-          // For input, textarea, password fields
-          if (!value || (typeof value === "string" && value.trim() === "")) {
-            missingFields.push(controlItem.label);
+          break;
+
+        case "select":
+          if (isRequired && (!value || value === "")) {
+            validationErrors.push(`Please select a ${fieldLabel.toLowerCase()}.`);
           }
-        }
+          break;
+
+        case "textarea":
+          if (isRequired && (!value || value.trim() === "")) {
+            validationErrors.push(`${fieldLabel} is required.`);
+          } else if (value && controlItem.maxLength && value.length > controlItem.maxLength) {
+            validationErrors.push(`${fieldLabel} cannot exceed ${controlItem.maxLength} characters.`);
+          }
+          break;
+
+        case "colors":
+          if (isRequired) {
+            if (!Array.isArray(value) || value.length === 0) {
+              validationErrors.push(`At least one color variant is required.`);
+            } else {
+              // Check for duplicate color names
+              const colorTitles = value.map(color => color.title?.trim().toLowerCase()).filter(Boolean);
+              const duplicateTitles = colorTitles.filter((title, index) => colorTitles.indexOf(title) !== index);
+              if (duplicateTitles.length > 0) {
+                validationErrors.push(`Duplicate color names found. Each color must have a unique name.`);
+              }
+
+              // Check each color for completeness
+              value.forEach((color, index) => {
+                if (!color.title || color.title.trim() === "") {
+                  validationErrors.push(`Color ${index + 1}: Title is required.`);
+                }
+                if (!color.image) {
+                  validationErrors.push(`Color ${index + 1}: Image is required.`);
+                }
+
+                // Check if color inventory exceeds total stock
+                if (color.inventory && formData.totalStock) {
+                  const colorInventory = Number(color.inventory);
+                  const totalStock = Number(formData.totalStock);
+                  if (colorInventory > totalStock) {
+                    validationErrors.push(`Color "${color.title || index + 1}": Inventory (${colorInventory}) cannot exceed total stock (${totalStock}).`);
+                  }
+                  if (colorInventory < 0) {
+                    validationErrors.push(`Color "${color.title || index + 1}": Inventory cannot be negative.`);
+                  }
+                }
+              });
+
+              // Check if sum of all color inventories exceeds total stock
+              const totalColorInventory = value.reduce((sum, color) => {
+                return sum + (Number(color.inventory) || 0);
+              }, 0);
+              if (formData.totalStock && totalColorInventory > Number(formData.totalStock)) {
+                validationErrors.push(`Total color inventory (${totalColorInventory}) exceeds total stock (${formData.totalStock}). Please adjust individual color inventories.`);
+              }
+            }
+          }
+          break;
+
+        case "toggle":
+          // Toggles are usually optional, but if required, check boolean value
+          if (isRequired && typeof value !== "boolean") {
+            validationErrors.push(`${fieldLabel} selection is required.`);
+          }
+          break;
+
+        default:
+          // Generic validation for unknown field types
+          if (isRequired && (!value || (typeof value === "string" && value.trim() === ""))) {
+            validationErrors.push(`${fieldLabel} is required.`);
+          }
+          break;
       }
     });
 
-    return missingFields;
+    return validationErrors;
   }
 
   function renderInputsByComponentType(controlItem) {
@@ -312,6 +438,21 @@ function CommonForm({ formControls, formData, setFormData, onSubmit, buttonText,
                         });
                       }}
                     />
+                    <Input
+                      placeholder="Inventory"
+                      type="number"
+                      min="0"
+                      value={color.inventory || ""}
+                      onChange={({ target }) => {
+                        const updatedColors = [...colorsArray];
+                        updatedColors[idx] = { ...updatedColors[idx], inventory: parseInt(target.value) || 0 };
+                        setFormData({
+                          ...formData,
+                          [controlItem.name]: updatedColors,
+                        });
+                      }}
+                      className="w-24"
+                    />
                     {color.image && (
                       <img
                         src={color.image}
@@ -322,7 +463,7 @@ function CommonForm({ formControls, formData, setFormData, onSubmit, buttonText,
                     {!color.image && colorsUploadStatus[idx] !== "uploading" && (
                       <Input
                         type="file"
-                        accept="image/*"
+                        accept="image/*,.heic,.heif"
                         onChange={async (event) => {
                           const file = event.target.files[0];
                           if (file) {
@@ -337,7 +478,7 @@ function CommonForm({ formControls, formData, setFormData, onSubmit, buttonText,
                       {colorsUploadStatus[idx] === "uploading" && "Uploading..."}
                       {colorsUploadStatus[idx] === "uploaded" && "Uploaded"}
                       {colorsUploadStatus[idx] === "error" && (
-                        <span className="text-red-600">File too large (max 1.2MB)</span>
+                        <span className="text-red-600">Upload failed (check file format/size)</span>
                       )}
                     </span>
                     <Button
@@ -370,69 +511,69 @@ function CommonForm({ formControls, formData, setFormData, onSubmit, buttonText,
           );
           break;
         }
-        // case "video": {
-        //   if (formData.isWatchAndBuy) {
-        //     element = (
-        //       <div>
-        //         {formData.video && (
-        //           <div style={{ marginBottom: "10px" }}>
-        //             <video
-        //               src={formData.video}
-        //               controls
-        //               width="200"
-        //               style={{ borderRadius: "8px", border: "1px solid #ccc" }}
-        //             />
-        //             <button
-        //               onClick={() => {
-        //                 setFormData({ ...formData, video: "" });
-        //                 setVideoUploadStatus("idle");
-        //               }}
-        //             >
-        //               Remove Video
-        //             </button>
-        //           </div>
-        //         )}
+        case "video": {
+          if (formData.isWatchAndBuy) {
+            element = (
+              <div>
+                {formData.video && (
+                  <div style={{ marginBottom: "10px" }}>
+                    <video
+                      src={formData.video}
+                      controls
+                      width="200"
+                      style={{ borderRadius: "8px", border: "1px solid #ccc" }}
+                    />
+                    <button
+                      onClick={() => {
+                        setFormData({ ...formData, video: "" });
+                        setVideoUploadStatus("idle");
+                      }}
+                    >
+                      Remove Video
+                    </button>
+                  </div>
+                )}
 
-        //         {!formData.video && (
-        //           <input
-        //             type="file"
-        //             accept="video/*"
-        //             onChange={async (event) => {
-        //               const file = event.target.files[0];
-        //               if (file) {
-        //                 setVideoUploadStatus("uploading");
-        //                 setUploadError(""); // Clear any previous errors
-        //                 await uploadVideo(file); // Upload function
-        //                 // No need to set the blob URL here
-        //               }
-        //             }}
-        //           />
-        //         )}
+                {!formData.video && (
+                  <input
+                    type="file"
+                    accept="video/*"
+                    onChange={async (event) => {
+                      const file = event.target.files[0];
+                      if (file) {
+                        setVideoUploadStatus("uploading");
+                        setUploadError(""); // Clear any previous errors
+                        await uploadVideo(file); // Upload function
+                        // No need to set the blob URL here
+                      }
+                    }}
+                  />
+                )}
 
-        //         {videoUploadStatus === "uploading" && (
-        //           <div className="mt-2">
-        //             <p>Processing... {uploadProgress}%</p>
-        //             <div className="w-full bg-gray-200 rounded-full h-2.5 mt-1">
-        //               <div
-        //                 className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
-        //                 style={{ width: `${uploadProgress}%` }}
-        //               ></div>
-        //             </div>
-        //           </div>
-        //         )}
-        //         {videoUploadStatus === "error" && (
-        //           <div className="mt-2">
-        //             <p className="text-red-600">{uploadError}</p>
-        //           </div>
-        //         )}
-        //         {videoUploadStatus === "uploaded" && <p className="mt-2 text-green-600">Uploaded Successfully</p>}
-        //       </div>
-        //     );
-        //   } else {
-        //     element = null;
-        //   }
-        //   break;
-        // }
+                {videoUploadStatus === "uploading" && (
+                  <div className="mt-2">
+                    <p>Processing... {uploadProgress}%</p>
+                    <div className="w-full bg-gray-200 rounded-full h-2.5 mt-1">
+                      <div
+                        className="bg-blue-600 h-2.5 rounded-full transition-all duration-300"
+                        style={{ width: `${uploadProgress}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                )}
+                {videoUploadStatus === "error" && (
+                  <div className="mt-2">
+                    <p className="text-red-600">{uploadError}</p>
+                  </div>
+                )}
+                {videoUploadStatus === "uploaded" && <p className="mt-2 text-green-600">Uploaded Successfully</p>}
+              </div>
+            );
+          } else {
+            element = null;
+          }
+          break;
+        }
 
       default:
         element = null;
@@ -441,26 +582,30 @@ function CommonForm({ formControls, formData, setFormData, onSubmit, buttonText,
   }
 
   // Helper function to check if video upload is required and completed
-  // const isVideoUploadRequired = () => {
-  //   const hasVideoField = formControls.some(control => control.componentType === "video");
-  //   return hasVideoField && formData.isWatchAndBuy && !formData.video;
-  // };
+  const isVideoUploadRequired = () => {
+    const hasVideoField = formControls.some(control => control.componentType === "video");
+    return hasVideoField && formData.isWatchAndBuy && !formData.video;
+  };
 
   // Determine if button should be disabled
-  // const shouldDisableButton = isBtnDisabled || isVideoUploadRequired() || videoUploadStatus === "uploading";
+  const shouldDisableButton = isBtnDisabled || isVideoUploadRequired() || videoUploadStatus === "uploading";
 
-  // Custom form submission handler with validation
+  // Custom form submission handler with comprehensive validation
   function handleFormSubmit(event) {
     event.preventDefault();
 
-    // Validate required fields
-    const missingFields = validateRequiredFields();
+    // Validate all form fields
+    const validationErrors = validateFormFields();
 
-    if (missingFields.length > 0) {
-      // Show toast notification for missing required fields
+    if (validationErrors.length > 0) {
+      // Show toast notification with validation errors
+      const errorMessage = validationErrors.length === 1
+        ? validationErrors[0]
+        : `Please fix the following issues:\n• ${validationErrors.slice(0, 5).join('\n• ')}${validationErrors.length > 5 ? `\n• ... and ${validationErrors.length - 5} more issues` : ''}`;
+
       toast({
-        title: "Required Fields Missing",
-        description: `Please fill in the following required fields: ${missingFields.join(", ")}.`,
+        title: "Validation Error",
+        description: errorMessage,
         variant: "destructive",
       });
       return;
@@ -480,7 +625,7 @@ function CommonForm({ formControls, formData, setFormData, onSubmit, buttonText,
           </div>
         ))}
       </div>
-      <Button  type="submit" className="mt-2 w-full hover:bg-accent">
+      <Button disabled={shouldDisableButton} type="submit" className="mt-2 w-full hover:bg-accent">
         {buttonText || "Submit"}
       </Button>
     </form>

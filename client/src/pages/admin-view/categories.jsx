@@ -150,7 +150,7 @@ function AdminCategories() {
             placeholder="Search by category name..."
             value={searchQuery}
             onChange={handleSearchChange}
-            className="w-full border rounded-md p-2"
+            className="w-full border border-input bg-background text-foreground rounded-md p-2 placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
           />
         </div>
         <div className="w-full md:w-auto flex justify-end">

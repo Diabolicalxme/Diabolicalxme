@@ -52,7 +52,7 @@ function AdminCategoryTile({
           <Button
             variant="ghost"
             onClick={handleEdit}
-            className="text-white rounded bg-foreground hover:bg-accent"
+            className="text-white rounded bg-primary hover:bg-primary/80"
           >
             <Edit className="w-4 h-4 mr-2" />
             Edit
@@ -69,11 +69,11 @@ function AdminCategoryTile({
       </div>
 
       {/* Category details */}
-      <CardContent className="p-4 bg-white">
-        <h2 className="text-lg font-semibold mb-1 text-gray-800 truncate">
+      <CardContent className="p-4 bg-card text-card-foreground">
+        <h2 className="text-lg font-semibold mb-1 text-card-foreground truncate">
           {category?.name}
         </h2>
-        <p className="text-sm text-gray-600">{category?.description}</p>
+        <p className="text-sm text-muted-foreground">{category?.description}</p>
       </CardContent>
 
       {/* Delete confirmation modal */}

@@ -196,14 +196,7 @@ function ShoppingHome() {
                 ))}
             </div>
 
-            <div className="text-center mt-12">
-              <button
-                onClick={() => navigate("/shop/collections")}
-                className="inline-block px-8 py-3 border-2 border-black hover:bg-black hover:text-white transition-colors duration-300 uppercase tracking-wider text-sm font-medium"
-              >
-                View All Collections
-              </button>
-            </div>
+           
           </div>
         </section>
         {/* Mobile layout */}

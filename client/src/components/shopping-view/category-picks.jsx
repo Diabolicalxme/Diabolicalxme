@@ -50,7 +50,7 @@ const CategoryPicks = ({
 
   // Auto-slide functionality for infinite loop
   useEffect(() => {
-    if (isAutoSliding && categoryProducts.length > 2) {
+    if (isAutoSliding && categoryProducts.length > 3) {
       autoSlideRef.current = setInterval(() => {
         setCurrentSlide(prev => prev + 1);
       }, 3000); // Change slide every 3 seconds
@@ -121,45 +121,21 @@ const CategoryPicks = ({
           </p>
         </div>
 
-        {/* Desktop Grid Layout */}
-        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {categoryProducts.map((product, index) => (
-            <motion.div
-              key={product._id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{
-                duration: 0.5,
-                delay: index * 0.1,
-                type: "spring",
-                stiffness: 50,
-              }}
-              className="flex justify-center"
-            >
-              <ShoppingProductTile
-                handleGetProductDetails={handleGetProductDetails}
-                product={product}
-                handleAddtoCart={handleAddtoCart}
-              />
-            </motion.div>
-          ))}
-        </div>
-
-        {/* Mobile Slider Layout - Infinite Loop */}
-        <div className="md:hidden relative">
+        {/* Single Row Slider Layout - 3 cards per scroll for all devices */}
+        <div className="relative">
           <div className="overflow-hidden">
             <div
               ref={sliderRef}
               className="flex transition-transform duration-500 ease-in-out"
               style={{
-                transform: `translateX(-${(currentSlide % Math.ceil(categoryProducts.length / 2)) * 100}%)`,
+                transform: `translateX(-${(currentSlide % Math.ceil(categoryProducts.length / 3)) * 100}%)`,
               }}
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
               onTransitionEnd={() => {
                 // Reset position for infinite loop without animation
-                if (currentSlide >= Math.ceil(categoryProducts.length / 2)) {
+                if (currentSlide >= Math.ceil(categoryProducts.length / 3)) {
                   sliderRef.current.style.transition = 'none';
                   setCurrentSlide(0);
                   setTimeout(() => {
@@ -167,7 +143,7 @@ const CategoryPicks = ({
                   }, 50);
                 } else if (currentSlide < 0) {
                   sliderRef.current.style.transition = 'none';
-                  setCurrentSlide(Math.ceil(categoryProducts.length / 2) - 1);
+                  setCurrentSlide(Math.ceil(categoryProducts.length / 3) - 1);
                   setTimeout(() => {
                     sliderRef.current.style.transition = 'transform 500ms ease-in-out';
                   }, 50);
@@ -175,13 +151,13 @@ const CategoryPicks = ({
               }}
             >
               {/* Create infinite loop by duplicating slides */}
-              {[...Array.from({ length: Math.ceil(categoryProducts.length / 2) }), ...Array.from({ length: Math.ceil(categoryProducts.length / 2) })].map((_, slideIndex) => {
-                const actualIndex = slideIndex % Math.ceil(categoryProducts.length / 2);
+              {[...Array.from({ length: Math.ceil(categoryProducts.length / 3) }), ...Array.from({ length: Math.ceil(categoryProducts.length / 3) })].map((_, slideIndex) => {
+                const actualIndex = slideIndex % Math.ceil(categoryProducts.length / 3);
                 return (
                   <div key={`slide-${slideIndex}`} className="w-full flex-shrink-0">
-                    <div className="grid grid-cols-2 gap-4 px-2">
+                    <div className="grid grid-cols-3 gap-4 px-2">
                       {categoryProducts
-                        .slice(actualIndex * 2, actualIndex * 2 + 2)
+                        .slice(actualIndex * 3, actualIndex * 3 + 3)
                         .map((product, productIndex) => (
                           <motion.div
                             key={`${product._id}-${slideIndex}`}
@@ -210,9 +186,9 @@ const CategoryPicks = ({
           </div>
 
           {/* Slide Indicators */}
-          {categoryProducts.length > 2 && (
+          {categoryProducts.length > 3 && (
             <div className="flex justify-center mt-6 space-x-2">
-              {Array.from({ length: Math.ceil(categoryProducts.length / 2) }).map((_, index) => (
+              {Array.from({ length: Math.ceil(categoryProducts.length / 3) }).map((_, index) => (
                 <button
                   key={index}
                   onClick={() => {
@@ -221,7 +197,7 @@ const CategoryPicks = ({
                     setTimeout(() => setIsAutoSliding(true), 5000);
                   }}
                   className={`w-2 h-2 rounded-full transition-colors ${
-                    (currentSlide % Math.ceil(categoryProducts.length / 2)) === index
+                    (currentSlide % Math.ceil(categoryProducts.length / 3)) === index
                       ? 'bg-foreground'
                       : 'bg-muted-foreground/30'
                   }`}

@@ -14,21 +14,38 @@ import { useToast } from "../ui/use-toast";
 
 const initialFormData = {
   status: "",
+  trackingNumber: "",
 };
 
 function AdminOrderDetailsView({ orderDetails }) {
   const [formData, setFormData] = useState(initialFormData);
+  const [isUpdating, setIsUpdating] = useState(false);
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const { toast } = useToast();
 
   function handleUpdateStatus(event) {
     event.preventDefault();
-    const { status } = formData;
+    const { status, trackingNumber } = formData;
 
-    dispatch(
-      updateOrderStatus({ id: orderDetails?._id, orderStatus: status })
-    ).then((data) => {
+    // Validation: If status is "inShipping", tracking number is required
+    if (status === "inShipping" && !trackingNumber.trim()) {
+      toast({
+        title: "Tracking number is required when marking order as shipped",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const updateData = { id: orderDetails?._id, orderStatus: status };
+    if (trackingNumber.trim()) {
+      updateData.trackingNumber = trackingNumber.trim();
+    }
+
+    // Set loading state
+    setIsUpdating(true);
+
+    dispatch(updateOrderStatus(updateData)).then((data) => {
       if (data?.payload?.success) {
         dispatch(getOrderDetailsForAdmin(orderDetails?._id));
         dispatch(getAllOrdersForAdmin());
@@ -36,12 +53,27 @@ function AdminOrderDetailsView({ orderDetails }) {
         toast({
           title: data?.payload?.message,
         });
+      } else {
+        toast({
+          title: data?.payload?.message || "Failed to update order status",
+          variant: "destructive",
+        });
       }
+      // Reset loading state
+      setIsUpdating(false);
+    }).catch((error) => {
+      console.error("Error updating order status:", error);
+      toast({
+        title: "Failed to update order status",
+        variant: "destructive",
+      });
+      // Reset loading state
+      setIsUpdating(false);
     });
   }
 
   return (
-    <DialogContent className="sm:max-w-[600px] bg-playground">
+    <DialogContent className="w-full md:w-1/2 bg-playground">
       <div className="grid gap-6">
         <div className="grid gap-2">
           <div className="flex mt-6 items-center justify-between">
@@ -85,6 +117,15 @@ function AdminOrderDetailsView({ orderDetails }) {
               </Badge>
             </Label>
           </div>
+          {/* Show tracking number if it exists */}
+          {orderDetails?.trackingNumber && (
+            <div className="flex mt-2 items-center justify-between">
+              <p className="font-medium">Tracking Number</p>
+              <Label className="bg-blue-50 px-2 py-1 rounded border font-mono text-sm">
+                {orderDetails.trackingNumber}
+              </Label>
+            </div>
+          )}
         </div>
         <Separator />
         <div className="grid gap-4">
@@ -134,11 +175,28 @@ function AdminOrderDetailsView({ orderDetails }) {
                   { id: "rejected", label: "Rejected" },
                 ],
               },
+              // Show tracking number field only when status is "inShipping"
+              ...(formData.status === "inShipping" ? [{
+                label: "Tracking Number",
+                name: "trackingNumber",
+                componentType: "input",
+                type: "text",
+                placeholder: "Enter tracking number (e.g., TRK123456789)",
+              }] : []),
             ]}
             formData={formData}
             setFormData={setFormData}
-            buttonText={"Update Order Status"}
+            buttonText={
+              isUpdating
+                ? (formData.status === "inShipping" && formData.trackingNumber
+                    ? "Updating & Sending Email..."
+                    : "Updating...")
+                : (formData.status === "inShipping" && formData.trackingNumber
+                    ? "Update Status & Send Tracking Email"
+                    : "Update Order Status")
+            }
             onSubmit={handleUpdateStatus}
+            isBtnDisabled={isUpdating}
           />
         </div>
       </div>

@@ -7,6 +7,7 @@ import axios from "axios";
 import { Skeleton } from "../ui/skeleton";
 import { useToast } from "../ui/use-toast";
 import { getOptimizedImageUrl } from "../../lib/utils";
+import { optimizeImageForUpload, isValidImageFile, isValidFileSize } from "../../lib/imageOptimization";
 
 function ProductImageUpload({
   imageFiles = [],
@@ -46,13 +47,20 @@ function ProductImageUpload({
   function handleImageFileChange(event) {
     const selectedFiles = Array.from(event.target.files || []);
 
-    // Filter out files that are too large
-    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 1.2MB in bytes
+    // Filter out files using the same validation logic as backend
     const validFiles = selectedFiles.filter(file => {
-      if (file.size > MAX_FILE_SIZE) {
+      if (!isValidImageFile(file)) {
+        toast({
+          title: "Unsupported file format",
+          description: `${file.name} is not a supported image format.`,
+          variant: "destructive",
+        });
+        return false;
+      }
+      if (!isValidFileSize(file)) {
         toast({
           title: "File too large",
-          description: `${file.name} exceeds 1.2MB limit and was not added.`,
+          description: `${file.name} exceeds 1MB limit and was not added.`,
           variant: "destructive",
         });
         return false;
@@ -99,15 +107,37 @@ function ProductImageUpload({
   function handleDrop(event) {
     event.preventDefault();
     const droppedFiles = Array.from(event.dataTransfer.files || []);
-    if (droppedFiles.length > 0) {
+
+    // Filter out invalid files using the same validation logic as backend
+    const validFiles = droppedFiles.filter(file => {
+      if (!isValidImageFile(file)) {
+        toast({
+          title: "Unsupported file format",
+          description: `${file.name} is not a supported image format.`,
+          variant: "destructive",
+        });
+        return false;
+      }
+      if (!isValidFileSize(file)) {
+        toast({
+          title: "File too large",
+          description: `${file.name} exceeds 1MB limit and was not added.`,
+          variant: "destructive",
+        });
+        return false;
+      }
+      return true;
+    });
+
+    if (validFiles.length > 0) {
       if (isSingleImage) {
-        setImageFiles([droppedFiles[0]]);
+        setImageFiles([validFiles[0]]);
         setImageLoadingStates([true]);
         setUploadedImageUrls([]);
-        setPendingUploads([{ file: droppedFiles[0], index: 0 }]);
+        setPendingUploads([{ file: validFiles[0], index: 0 }]);
       } else {
         const currentLength = Array.isArray(imageFiles) ? imageFiles.length : 0;
-        const newFiles = droppedFiles.map((file, idx) => ({
+        const newFiles = validFiles.map((file, idx) => ({
           file,
           index: currentLength + idx
         }));
@@ -119,14 +149,14 @@ function ProductImageUpload({
 
         setImageFiles((prevFiles) => {
           const files = Array.isArray(prevFiles) ? prevFiles : [];
-          return [...files, ...droppedFiles];
+          return [...files, ...validFiles];
         });
 
         setImageLoadingStates((prevStates) => {
           const states = Array.isArray(prevStates) ? prevStates : [];
           return [
             ...states,
-            ...droppedFiles.map(() => true),
+            ...validFiles.map(() => true),
           ];
         });
       }
@@ -177,13 +207,31 @@ function ProductImageUpload({
   }
 
   async function uploadImageToCloudinary(file, index) {
-    // Check file size - limit to 1.2MB (1.2 * 1024 * 1024 bytes)
-    const MAX_FILE_SIZE = 5 * 1024 * 1024; // 1.2MB in bytes
-    if (file.size > MAX_FILE_SIZE) {
-      console.error(`File size exceeds 1.2MB limit. Please select a smaller image.`);
+    // Validate file using the same logic as backend
+    if (!isValidImageFile(file)) {
+      console.error(`Unsupported file format: ${file.type || 'unknown'}`);
+      toast({
+        title: "Unsupported file format",
+        description: `File format ${file.type || 'unknown'} is not supported.`,
+        variant: "destructive",
+      });
+      // Remove the file from the arrays
+      setImageFiles((prev) => {
+        if (!Array.isArray(prev)) return [];
+        return prev.filter((_, i) => i !== index);
+      });
+      setImageLoadingStates((prev) => {
+        if (!Array.isArray(prev)) return [];
+        return prev.filter((_, i) => i !== index);
+      });
+      return;
+    }
+
+    if (!isValidFileSize(file)) {
+      console.error(`File size exceeds 1MB limit. Please select a smaller image.`);
       toast({
         title: "File too large",
-        description: `File size exceeds 1.2MB limit. Please select a smaller image.`,
+        description: `File size exceeds 1MB limit. Please select a smaller image.`,
         variant: "destructive",
       });
       // Remove the file from the arrays
@@ -207,17 +255,24 @@ function ProductImageUpload({
     });
     setIsUploading(true);
 
-    const data = new FormData();
-    data.append("my_file", file);
-
     try {
+      // Apply the same optimization logic as backend
+      const optimizedFile = await optimizeImageForUpload(file);
+
+      const cloudinaryFormData = new FormData();
+      cloudinaryFormData.append("file", optimizedFile);
+      cloudinaryFormData.append("upload_preset", "upload_product_image");
+      cloudinaryFormData.append("resource_type", "image");
+
+      // Upload directly to Cloudinary using environment variable for cloud name
+      const cloudName = import.meta.env.VITE_CLOUDINARY_NAME;
       const response = await axios.post(
-        `${import.meta.env.VITE_BACKEND_URL}/admin/products/upload-image`,
-        data
+        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+        cloudinaryFormData
       );
 
-      if (response?.data?.success) {
-        const secureUrl = response.data.result[0].secure_url; // Use secure_url for HTTPS
+      if (response?.data?.secure_url) {
+        const secureUrl = response.data.secure_url;
         const optimizedUrl = getOptimizedImageUrl(secureUrl); // Apply q_auto,f_auto transformations
 
         if (isSingleImage) {
@@ -238,6 +293,16 @@ function ProductImageUpload({
       setImageLoadingStates((prev) => {
         if (!Array.isArray(prev)) return [];
         return prev.filter((_, i) => i !== index);
+      });
+
+      // Show specific error message for HEIC files
+      const isHEICError = error.message.includes('HEIC');
+      toast({
+        title: isHEICError ? "HEIC conversion failed" : "Upload failed",
+        description: isHEICError
+          ? "Unable to process iPhone HEIC image. Please convert to JPEG/PNG first or try a different image."
+          : "Failed to upload image. Please try again.",
+        variant: "destructive",
       });
     } finally {
       setImageLoadingStates((prevStates) => {
@@ -461,7 +526,7 @@ function ProductImageUpload({
             Drag & drop or click to upload {isSingleImage ? "an image" : "images"}
           </span>
           <span className="text-xs text-gray-500 mt-1">
-            {isSingleImage ? "1 image maximum" : "Multiple images allowed"}
+            {isSingleImage ? "1 image maximum • 1MB limit" : "Multiple images allowed • 1MB per image"}
           </span>
         </Label>
 
@@ -473,7 +538,7 @@ function ProductImageUpload({
           ref={inputRef}
           onChange={handleImageFileChange}
           multiple={!isSingleImage}
-          accept="image/*"
+          accept="image/*,.heic,.heif"
           disabled={isUploading}
         />
       </div>

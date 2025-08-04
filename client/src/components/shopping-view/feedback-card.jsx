@@ -109,7 +109,7 @@ const FeedbackCard = () => {
           <span>Share Your Experience</span>
         </button>
       </DialogTrigger>
-      <DialogContent className="w-[90%] md:w-[80vw] bg-card text-card-foreground border-border">
+      <DialogContent className="w-[90%] md:w-[50vw] bg-card text-card-foreground border-border">
         <DialogHeader>
           <DialogTitle className={`text-xl font-bold mb-4 text-center ${themeColors.textColor}`}>Share Your Experience</DialogTitle>
           <div className={`w-16 h-0.5 ${themeColors.dividerBg} mx-auto mt-2 mb-4`}></div>

@@ -100,13 +100,13 @@ const capturePayment = async (req, res) => {
     // Prepare immersive email message with detailed order information and an appealing UI.
     const message = `
     <div style="font-family: Arial, sans-serif; color: #2c3315; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
-      <div style="background-color: #fed1d6; padding: 20px; text-align: center; color: #2c3315;">
-        <img src="https://res.cloudinary.com/dhkdsvdvr/image/upload/v1740216811/logo3_moey1d.png" alt="Logo" style="max-width: 150px;">
+      <div style="background-color: #eeeeee; padding: 20px; text-align: center; color: #2c3315;">
+        <img src="https://res.cloudinary.com/dkqt39aad/image/upload/v1754300738/logo_pa0nq0.png" alt="Logo" style="max-width: 150px;">
       <h2 style="margin-bottom: 5px;">Order Confirmed!</h2>
         <p style="font-size: 16px; margin-top: 0;">Thank you for your purchase.</p>
       </div>
       <div style="padding: 20px;">
-        <h3 style="border-bottom: 2px solid #fed1d6; padding-bottom: 10px;">Order Details</h3>
+        <h3 style="border-bottom: 2px solid #eeeeee; padding-bottom: 10px;">Order Details</h3>
         <p><strong>Order ID:</strong> ${order._id}</p>
         <p><strong>Total Amount:</strong> ₹${order.totalAmount}</p>
         <p><strong>Payment ID:</strong> ${order.paymentId}</p>
@@ -117,10 +117,10 @@ const capturePayment = async (req, res) => {
             <table style="width: 100%; min-width: 500px; border-collapse: collapse; margin-top: 10px;">
               <thead>
                 <tr>
-                  <th style="border-bottom: 2px solid #fed1d6; padding: 12px; background-color: #f0f0f0; text-align: left;">Product</th>
-                  <th style="border-bottom: 2px solid #fed1d6; padding: 12px; background-color: #f0f0f0; text-align: center;">Quantity</th>
-                  <th style="border-bottom: 2px solid #fed1d6; padding: 12px; background-color: #f0f0f0; text-align: center;">Price</th>
-                  <th style="border-bottom: 2px solid #fed1d6; padding: 12px; background-color: #f0f0f0; text-align: center;">Color</th>
+                  <th style="border-bottom: 2px solid #eeeeee; padding: 12px; background-color: #f0f0f0; text-align: left;">Product</th>
+                  <th style="border-bottom: 2px solid #eeeeee; padding: 12px; background-color: #f0f0f0; text-align: center;">Quantity</th>
+                  <th style="border-bottom: 2px solid #eeeeee; padding: 12px; background-color: #f0f0f0; text-align: center;">Price</th>
+                  <th style="border-bottom: 2px solid #eeeeee; padding: 12px; background-color: #f0f0f0; text-align: center;">Color</th>
                 </tr>
               </thead>
               <tbody>
@@ -155,7 +155,7 @@ const capturePayment = async (req, res) => {
         ` : ''}
 
         <div style="text-align: center; margin-top: 30px;">
-          <a href="${process.env.FRONTEND_URL}/shop/account" style="display: inline-block; background-color: #fed1d6; color: #2c3315; padding: 14px 28px; font-size: 16px; text-decoration: none; border-radius: 4px; font-weight: bold;"> View Your Order</a>
+          <a href="${process.env.FRONTEND_URL}/shop/account" style="display: inline-block; background-color: #eeeeee; color: #2c3315; padding: 14px 28px; font-size: 16px; text-decoration: none; border-radius: 4px; font-weight: bold;"> View Your Order</a>
         </div>
       </div>
       <div style="background-color: #f7f7f7; padding: 12px; text-align: center; font-size: 12px; color: #777;">

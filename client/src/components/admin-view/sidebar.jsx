@@ -14,7 +14,7 @@ import {
 import { Fragment } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "../ui/sheet";
-// import logo from "../../assets/logo.png";
+import logo from "../../assets/logo.png";
 
 const adminSidebarMenuItems = [
   {
@@ -23,12 +23,12 @@ const adminSidebarMenuItems = [
     path: "/admin/dashboard",
     icon: <LayoutDashboard />,
   },
-  {
-    id: "banners",
-    label: "Banners",
-    path: "/admin/banners",
-    icon: <Layers />,
-  },
+  // {
+  //   id: "banners",
+  //   label: "Banners",
+  //   path: "/admin/banners",
+  //   icon: <Layers />,
+  // },
   {
     id: "categories",
     label: "Categories",
@@ -53,12 +53,12 @@ const adminSidebarMenuItems = [
     path: "/admin/instafeed",
     icon: <Film />,
   },
-   {
-     id: "reviews",
+  {
+    id: "reviews",
     label: "Reviews",
-     path: "/admin/reviews",
+    path: "/admin/reviews",
     icon: <Star />,
-   },
+  },
   {
     id: "feedback",
     label: "Feedback",
@@ -139,9 +139,13 @@ function AdminSideBar({ open, setOpen }) {
           onClick={() => navigate("/admin/dashboard")}
           className="flex cursor-pointer items-center gap-2"
         >
-          <ChartNoAxesCombined size={30} />
+          {/* <ChartNoAxesCombined size={30} /> */}
+          <div className="relative w-10 h-10 overflow-hidden rounded-full">
+            <img src={logo} alt="Logo" className="w-full h-full" />
+
+          </div>
           <h2 className="font-bold text-lg">DiabolicalXme</h2>
-      {/* <img src={logo} alt="Logo" className="w-full h-11" /> */}
+          {/* <img src={logo} alt="Logo" className="w-full h-11" /> */}
 
         </div>
         <MenuItems />

@@ -34,7 +34,7 @@ function AdminBannerTile({ image, description, handleEdit, handleDelete }) {
           <Button
             variant="ghost"
             onClick={handleEdit}
-            className="text-white rounded bg-foreground hover:bg-accent"
+            className="text-white rounded bg-primary hover:bg-primary/80"
           >
             <Edit className="w-4 h-4 mr-2" />
             Edit

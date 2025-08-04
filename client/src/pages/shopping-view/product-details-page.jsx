@@ -94,19 +94,59 @@ function ProductDetailsPage() {
       return;
     }
 
+    // Check if a color is selected and if it's out of stock
+    if (selectedColor && selectedColor.inventory <= 0) {
+      toast({
+        title: "Selected color is out of stock",
+        variant: "destructive",
+      });
+      setIsAddingToCart(false);
+      return;
+    }
+
+    // Check color inventory if a color is selected
     let currentCartItems = cartItems.items || [];
-    if (currentCartItems.length) {
+    if (selectedColor) {
       const itemIndex = currentCartItems.findIndex(
-        (item) => item.productId === currentProductId
+        (item) => item.productId === currentProductId &&
+                  item.colors &&
+                  item.colors._id === selectedColor._id
       );
+
       if (itemIndex > -1) {
         const currentQuantity = currentCartItems[itemIndex].quantity;
-        if (currentQuantity + quantity > totalStock) {
+        if (currentQuantity + quantity > selectedColor.inventory) {
           toast({
-            title: `Only ${totalStock - currentQuantity} more can be added for this item`,
+            title: `Only ${selectedColor.inventory - currentQuantity} more can be added for this color`,
             variant: "destructive",
           });
+          setIsAddingToCart(false);
           return;
+        }
+      } else if (quantity > selectedColor.inventory) {
+        toast({
+          title: `Only ${selectedColor.inventory} items available for this color`,
+          variant: "destructive",
+        });
+        setIsAddingToCart(false);
+        return;
+      }
+    } else {
+      // Fallback to total stock check for products without colors
+      if (currentCartItems.length) {
+        const itemIndex = currentCartItems.findIndex(
+          (item) => item.productId === currentProductId
+        );
+        if (itemIndex > -1) {
+          const currentQuantity = currentCartItems[itemIndex].quantity;
+          if (currentQuantity + quantity > totalStock) {
+            toast({
+              title: `Only ${totalStock - currentQuantity} more can be added for this item`,
+              variant: "destructive",
+            });
+            setIsAddingToCart(false);
+            return;
+          }
         }
       }
     }
@@ -683,16 +723,16 @@ function ProductDetailsPage() {
           <div className="flex items-center justify-center gap-8 mt-2">
             {productDetails?.salePrice > 0 ? (
               <>
-                <div className="flex flex-col items-center">
+                {/* <div className="flex flex-col items-center">
                   <p className="text-2xl md:text-3xl font-medium line-through text-muted-foreground">
                     ₹{productDetails?.price}
                   </p>
-                </div>
-               {/*  <div className="flex flex-col items-center">
+                </div> */}
+                <div className="flex flex-col items-center">
                   <p className="text-2xl md:text-3xl font-medium text-foreground">
                     ₹{productDetails?.salePrice}
                   </p>
-                </div> */}
+                </div>
               </>
             ) : (
               <div className="flex flex-col items-center">

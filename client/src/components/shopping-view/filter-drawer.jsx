@@ -112,7 +112,7 @@ function FilterDrawer({ filters, setFilters, handleFilter }) {
       {/* Fixed Filter Button */}
       <button
         onClick={toggleDrawer}
-        className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 flex items-center gap-2 px-5 py-2.5 bg-foreground text-background rounded-full shadow-lg hover:bg-foreground/90 transition-all duration-300 border border-foreground/10"
+        className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[100] flex items-center gap-2 px-5 py-2.5 bg-foreground text-background rounded-full shadow-lg hover:bg-foreground/90 transition-all duration-300 border border-foreground/10"
       >
         <Filter size={16} />
         <span className="font-medium tracking-wide">Filters</span>

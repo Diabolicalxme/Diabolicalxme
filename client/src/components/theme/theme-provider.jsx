@@ -27,7 +27,7 @@ function ThemeProvider({ children }) {
           themeToSet = THEMES.BOTTLE_GREEN; // Changed from DARK to BOTTLE_GREEN
           break;
         default:
-          themeToSet = THEMES.LIGHT;
+          themeToSet = THEMES.BLACK;
           break;
       }
 
@@ -35,7 +35,7 @@ function ThemeProvider({ children }) {
       dispatch(setTheme(themeToSet));
     } else if (!isAuthenticated) {
       // If user is logged out, set theme to light
-      dispatch(setTheme(THEMES.LIGHT));
+      dispatch(setTheme(THEMES.BLACK));
     }
   }, [isAuthenticated, user?.id, user?.category, dispatch]);
 

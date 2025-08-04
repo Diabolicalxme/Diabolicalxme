@@ -89,6 +89,7 @@ export const addProductFormElements = [
     componentType: "textarea",
     placeholder: "Enter product description",
     required: true,
+    maxLength: 1000,
   },
   {
     label: "Category",
@@ -122,6 +123,8 @@ export const addProductFormElements = [
     type: "number",
     placeholder: "Enter product price",
     required: true,
+    min: 1,
+    max: 100000,
   },
   /* {
     label: "Sale Price",
@@ -138,6 +141,8 @@ export const addProductFormElements = [
     type: "number",
     placeholder: "Enter total stock",
     required: true,
+    min: 1,
+    max: 10000,
   },
 ];
 

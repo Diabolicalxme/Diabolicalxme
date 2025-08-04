@@ -5,6 +5,8 @@ const ProductSchema = new mongoose.Schema(
     image: [String],
     title: String,
     description: String,
+    secondTitle: String,
+    productCode: String,
     category: { type: mongoose.Schema.Types.ObjectId, ref: "Category" },
     isNewArrival: Boolean,
     isFeatured: Boolean,
@@ -16,6 +18,11 @@ const ProductSchema = new mongoose.Schema(
       {
         title: String,
         image: String,
+        inventory: {
+          type: Number,
+          default: 0,
+          min: 0
+        }
       }
     ],
     // isWatchAndBuy: Boolean,

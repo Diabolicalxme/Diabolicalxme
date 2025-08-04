@@ -1,11 +1,11 @@
 const { imageUploadUtil, videoUploadUtil } = require("../../helpers/cloudinary");
 const Product = require("../../models/Product");
 const ProductReview = require("../../models/Review");
-const sharp = require('sharp');
+const sharp = require("sharp");
 
 // Handles image upload for both single and multiple files
 /* const handleImageUpload = async (req, res) => {
-  try { 
+  try {
     let results = [];
     // Check if multiple files were uploaded
     if (req.files && req.files.length > 0) {
@@ -39,76 +39,219 @@ const handleImageUpload = async (req, res) => {
   try {
     let results = [];
 
-    const processImage = async (file) => {
-      let outputFormat = "avif"; // Default to AVIF
+    // Define supported input formats
+    const supportedInputFormats = [
+      'image/jpeg', 'image/jpg', 'image/png', 'image/gif', 
+      'image/webp', 'image/avif', 'image/tiff', 'image/bmp',
+      'image/svg+xml', 'image/heic', 'image/heif'
+    ];
 
-      // Check browser support (if applicable, or based on client request)
-      const supportedFormats = ["avif", "webp", "jpeg", "png", "jpg"];
-      if (!supportedFormats.includes(outputFormat)) {
-        outputFormat = "webp"; // Fallback to WebP if AVIF is not widely supported
+    const processImage = async (file) => {
+      // Validate file type
+      if (!file.mimetype || !supportedInputFormats.includes(file.mimetype.toLowerCase())) {
+        throw new Error(`Unsupported file format: ${file.mimetype || 'unknown'}`);
       }
 
-      // Compress and convert the image
-      const compressedBuffer = await sharp(file.buffer)
-        .resize({ width: 1024 }) // Resize to optimize storage
-        .toFormat(outputFormat, { quality: 90 }) 
-        .toBuffer();
+      // Validate file size (optional - adjust as needed)
+      const maxFileSize = 1 * 1024 * 1024; // 1MB
+      if (file.size > maxFileSize) {
+        throw new Error(`File too large: ${file.size} bytes. Maximum allowed: ${maxFileSize} bytes`);
+      }
 
-      const b64 = compressedBuffer.toString("base64");
-      const url = `data:image/${outputFormat};base64,${b64}`;
-      return await imageUploadUtil(url);
+      let outputFormat = "avif"; // Default to AVIF
+      let quality = 90;
+
+      // Determine best output format based on input and browser support
+      const getOptimalFormat = (inputMimetype) => {
+        // For animations (GIF), preserve as WebP to maintain animation
+        if (inputMimetype === 'image/gif') {
+          return { format: 'webp', quality: 80, animated: true };
+        }
+        
+        // For vector graphics, convert to PNG to maintain quality
+        if (inputMimetype === 'image/svg+xml') {
+          return { format: 'png', quality: 100 };
+        }
+
+        // For photos, use AVIF for best compression, fallback to WebP
+        return { format: 'avif', quality: 90 };
+      };
+
+      const formatConfig = getOptimalFormat(file.mimetype);
+      outputFormat = formatConfig.format;
+      quality = formatConfig.quality;
+
+      // Handle different Sharp processing based on input format
+      let sharpInstance = sharp(file.buffer);
+
+      // Special handling for different input formats
+      if (file.mimetype === 'image/heic' || file.mimetype === 'image/heif') {
+        // HEIC/HEIF might need special handling
+        sharpInstance = sharp(file.buffer, { pages: -1 });
+      }
+
+      if (file.mimetype === 'image/gif' && formatConfig.animated) {
+        // Preserve animation for GIFs
+        sharpInstance = sharp(file.buffer, { animated: true });
+      }
+
+      // Apply transformations
+      let processedImage = sharpInstance
+        .resize({ 
+          width: 1024, 
+          height: 1024, 
+          fit: 'inside', // Maintain aspect ratio
+          withoutEnlargement: true // Don't upscale smaller images
+        })
+        .rotate(); // Auto-rotate based on EXIF data
+
+      // Apply format-specific options
+      switch (outputFormat) {
+        case 'avif':
+          processedImage = processedImage.avif({ 
+            quality, 
+            effort: 6 // Higher effort for better compression
+          });
+          break;
+        case 'webp':
+          processedImage = processedImage.webp({ 
+            quality,
+            effort: 6,
+            animated: formatConfig.animated || false
+          });
+          break;
+        case 'jpeg':
+          processedImage = processedImage.jpeg({ 
+            quality,
+            progressive: true,
+            mozjpeg: true // Use mozjpeg encoder for better compression
+          });
+          break;
+        case 'png':
+          processedImage = processedImage.png({ 
+            quality,
+            progressive: true,
+            compressionLevel: 9
+          });
+          break;
+        default:
+          // Fallback to JPEG
+          outputFormat = 'jpeg';
+          processedImage = processedImage.jpeg({ quality: 90 });
+      }
+
+      try {
+        const compressedBuffer = await processedImage.toBuffer();
+        const b64 = compressedBuffer.toString("base64");
+        const url = `data:image/${outputFormat};base64,${b64}`;
+        
+        return await imageUploadUtil(url);
+      } catch (sharpError) {
+        // If Sharp fails with the chosen format, fallback to JPEG
+        console.warn(`Failed to process as ${outputFormat}, falling back to JPEG:`, sharpError.message);
+        
+        const fallbackBuffer = await sharp(file.buffer)
+          .resize({ width: 1024, fit: 'inside', withoutEnlargement: true })
+          .jpeg({ quality: 90 })
+          .toBuffer();
+        
+        const b64 = fallbackBuffer.toString("base64");
+        const url = `data:image/jpeg;base64,${b64}`;
+        
+        return await imageUploadUtil(url);
+      }
     };
 
-    // Handle multiple file uploads
-    if (req.files && req.files.length > 0) {
-      results = await Promise.all(req.files.map(processImage));
+    // Validate that files exist
+    const filesToProcess = [];
+    
+    if (req.files && Array.isArray(req.files) && req.files.length > 0) {
+      filesToProcess.push(...req.files);
+    } else if (req.file) {
+      filesToProcess.push(req.file);
+    } else {
+      return res.status(400).json({
+        success: false,
+        message: "No files provided for upload"
+      });
     }
-    // Handle single file upload
-    else if (req.file) {
-      results.push(await processImage(req.file));
+
+    // Process all files
+    const processPromises = filesToProcess.map(async (file, index) => {
+      try {
+        return await processImage(file);
+      } catch (fileError) {
+        console.error(`Error processing file ${index + 1}:`, fileError);
+        return {
+          error: true,
+          message: fileError.message,
+          filename: file.originalname || `file_${index + 1}`
+        };
+      }
+    });
+
+    results = await Promise.all(processPromises);
+
+    // Check if any files failed to process
+    const errors = results.filter(result => result && result.error);
+    const successes = results.filter(result => result && !result.error);
+
+    if (errors.length > 0 && successes.length === 0) {
+      // All files failed
+      return res.status(400).json({
+        success: false,
+        message: "All files failed to process",
+        errors: errors
+      });
     }
 
     return res.json({
       success: true,
-      result: results,
+      result: successes,
+      ...(errors.length > 0 && { 
+        warnings: `${errors.length} file(s) failed to process`,
+        failed_files: errors 
+      })
     });
+
   } catch (error) {
-    console.error(error);
+    console.error("Image upload handler error:", error);
     return res.status(500).json({
       success: false,
-      message: "Error occurred",
+      message: "Internal server error occurred during image processing",
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
 };
-const handleVideoUpload = async (req, res) => {
-  try {
-    // Check if a video file was uploaded
-    if (req.file) {
-      // Convert the video file buffer to a base64 string
-      const b64 = Buffer.from(req.file.buffer).toString("base64");
-      const url = "data:" + req.file.mimetype + ";base64," + b64;
+// const handleVideoUpload = async (req, res) => {
+//   try {
+//     // Check if a video file was uploaded
+//     if (req.file) {
+//       // Convert the video file buffer to a base64 string
+//       const b64 = Buffer.from(req.file.buffer).toString("base64");
+//       const url = "data:" + req.file.mimetype + ";base64," + b64;
 
-      // Upload without transformations - we'll apply them at delivery time
-      const result = await videoUploadUtil(url);
+//       // Upload without transformations - we'll apply them at delivery time
+//       const result = await videoUploadUtil(url);
 
-      return res.json({
-        success: true,
-        result: result
-      });
-    } else {
-      return res.json({
-        success: false,
-        message: "No file uploaded"
-      });
-    }
-  } catch (error) {
-    console.error(error);
-    return res.json({
-      success: false,
-      message: "Error occurred"
-    });
-  }
-};
+//       return res.json({
+//         success: true,
+//         result: result
+//       });
+//     } else {
+//       return res.json({
+//         success: false,
+//         message: "No file uploaded"
+//       });
+//     }
+//   } catch (error) {
+//     console.error(error);
+//     return res.json({
+//       success: false,
+//       message: "Error occurred"
+//     });
+//   }
+// };
 
 // Add a new product
 const addProduct = async (req, res) => {
@@ -135,6 +278,17 @@ const addProduct = async (req, res) => {
     const images = Array.isArray(image) ? image : [image];
     // Ensure that colors is an array if provided; otherwise, default to an empty array.
     const colorsArray = colors ? (Array.isArray(colors) ? colors : [colors]) : [];
+
+    // Validate color inventory doesn't exceed total stock
+    if (colorsArray.length > 0) {
+      const totalColorInventory = colorsArray.reduce((sum, color) => sum + (color.inventory || 0), 0);
+      if (totalColorInventory > totalStock) {
+        return res.status(400).json({
+          success: false,
+          message: "Total color inventory cannot exceed total stock"
+        });
+      }
+    }
 
     const newlyCreatedProduct = new Product({
       image: images,
@@ -231,6 +385,17 @@ const editProduct = async (req, res) => {
     // Ensure that colors is an array if provided; otherwise, default to an empty array.
     const colorsArray = colors ? (Array.isArray(colors) ? colors : [colors]) : [];
 
+    // Validate color inventory doesn't exceed total stock
+    if (colorsArray.length > 0) {
+      const totalColorInventory = colorsArray.reduce((sum, color) => sum + (color.inventory || 0), 0);
+      if (totalColorInventory > totalStock) {
+        return res.status(400).json({
+          success: false,
+          message: "Total color inventory cannot exceed total stock"
+        });
+      }
+    }
+
     const updatedProduct = await Product.findByIdAndUpdate(
       id,
       {
@@ -301,7 +466,7 @@ const deleteProduct = async (req, res) => {
 
 module.exports = {
   handleImageUpload,
-  handleVideoUpload,
+  // handleVideoUpload,
   addProduct,
   fetchAllProducts,
   editProduct,

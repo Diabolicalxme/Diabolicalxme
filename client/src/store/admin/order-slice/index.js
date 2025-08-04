@@ -41,10 +41,14 @@ export const getOrderDetailsForAdmin = createAsyncThunk(
 // Update Order Status
 export const updateOrderStatus = createAsyncThunk(
   "/order/updateOrderStatus",
-  async ({ id, orderStatus }, { rejectWithValue }) => {
+  async ({ id, orderStatus, trackingNumber }, { rejectWithValue }) => {
     const url = `${import.meta.env.VITE_BACKEND_URL}/admin/orders/update/${id}`;
     try {
-      const response = await axios.put(url, { orderStatus });
+      const requestData = { orderStatus };
+      if (trackingNumber) {
+        requestData.trackingNumber = trackingNumber;
+      }
+      const response = await axios.put(url, requestData);
       return response.data;
     } catch (error) {
       console.error("Error updating order status from URL:", url, error);
