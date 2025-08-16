@@ -17,7 +17,7 @@ import { getOptimizedImageUrl, getOptimizedVideoUrl } from "../../lib/utils";
 import { optimizeImageForUpload, isValidImageFile, isValidFileSize } from "../../lib/imageOptimization";
 
 
-function CommonForm({ formControls, formData, setFormData, onSubmit, buttonText, isBtnDisabled }) {
+function CommonForm({ formControls, formData, setFormData, onSubmit, buttonText, isBtnDisabled, layout = "single" }) {
   const [passwordVisibility, setPasswordVisibility] = useState({});
   // Track upload status for color items (by index) and video upload status.
   const [colorsUploadStatus, setColorsUploadStatus] = useState({});
@@ -615,17 +615,22 @@ const uploadVideo = async (file) => {
     onSubmit(event);
   }
 
+  // Determine grid layout based on layout prop
+  const gridClass = layout === "two-column"
+    ? "grid grid-cols-1 md:grid-cols-2 gap-3"
+    : "flex flex-col gap-3";
+
   return (
     <form onSubmit={handleFormSubmit}>
-      <div className="flex flex-col gap-3">
+      <div className={gridClass}>
         {formControls.map((controlItem) => (
           <div className="grid w-full gap-1.5" key={controlItem.name}>
-            <Label className="mb-1">{controlItem.label}</Label>
+            <Label className="mb-1 text-white drop-shadow-md font-medium">{controlItem.label}</Label>
             {renderInputsByComponentType(controlItem)}
           </div>
         ))}
       </div>
-      <Button disabled={shouldDisableButton} type="submit" className="mt-2 w-full hover:bg-accent">
+      <Button disabled={shouldDisableButton} type="submit" className="mt-6 w-full bg-white/95 hover:bg-white text-gray-900 font-bold shadow-xl border border-white/50">
         {buttonText || "Submit"}
       </Button>
     </form>

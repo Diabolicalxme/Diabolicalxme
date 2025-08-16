@@ -19,8 +19,24 @@ const CategoryPicks = ({
   const [userCategory, setUserCategory] = useState(null);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoSliding, setIsAutoSliding] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const sliderRef = useRef(null);
   const autoSlideRef = useRef(null);
+
+  // Detect mobile screen size
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768); // md breakpoint
+    };
+
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Get items per scroll based on screen size
+  const getItemsPerScroll = () => isMobile ? 2 : 3;
 
   // Find user's category and filter products accordingly
   useEffect(() => {
@@ -50,7 +66,8 @@ const CategoryPicks = ({
 
   // Auto-slide functionality for infinite loop
   useEffect(() => {
-    if (isAutoSliding && categoryProducts.length > 3) {
+    const itemsPerScroll = getItemsPerScroll();
+    if (isAutoSliding && categoryProducts.length > itemsPerScroll) {
       autoSlideRef.current = setInterval(() => {
         setCurrentSlide(prev => prev + 1);
       }, 3000); // Change slide every 3 seconds
@@ -61,7 +78,7 @@ const CategoryPicks = ({
         clearInterval(autoSlideRef.current);
       }
     };
-  }, [isAutoSliding, categoryProducts.length]);
+  }, [isAutoSliding, categoryProducts.length, isMobile]);
 
   // Touch/swipe handlers for infinite scroll
   const [touchStart, setTouchStart] = useState(null);
@@ -121,21 +138,24 @@ const CategoryPicks = ({
           </p>
         </div>
 
-        {/* Single Row Slider Layout - 3 cards per scroll for all devices */}
+        {/* Single Row Slider Layout - 2 cards per scroll on mobile, 3 on desktop */}
         <div className="relative">
           <div className="overflow-hidden">
             <div
               ref={sliderRef}
               className="flex transition-transform duration-500 ease-in-out"
               style={{
-                transform: `translateX(-${(currentSlide % Math.ceil(categoryProducts.length / 3)) * 100}%)`,
+                transform: `translateX(-${(currentSlide % Math.ceil(categoryProducts.length / getItemsPerScroll())) * 100}%)`,
               }}
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
               onTransitionEnd={() => {
                 // Reset position for infinite loop without animation
-                if (currentSlide >= Math.ceil(categoryProducts.length / 3)) {
+                const itemsPerScroll = getItemsPerScroll();
+                const totalSlides = Math.ceil(categoryProducts.length / itemsPerScroll);
+
+                if (currentSlide >= totalSlides) {
                   sliderRef.current.style.transition = 'none';
                   setCurrentSlide(0);
                   setTimeout(() => {
@@ -143,7 +163,7 @@ const CategoryPicks = ({
                   }, 50);
                 } else if (currentSlide < 0) {
                   sliderRef.current.style.transition = 'none';
-                  setCurrentSlide(Math.ceil(categoryProducts.length / 3) - 1);
+                  setCurrentSlide(totalSlides - 1);
                   setTimeout(() => {
                     sliderRef.current.style.transition = 'transform 500ms ease-in-out';
                   }, 50);
@@ -151,14 +171,17 @@ const CategoryPicks = ({
               }}
             >
               {/* Create infinite loop by duplicating slides */}
-              {[...Array.from({ length: Math.ceil(categoryProducts.length / 3) }), ...Array.from({ length: Math.ceil(categoryProducts.length / 3) })].map((_, slideIndex) => {
-                const actualIndex = slideIndex % Math.ceil(categoryProducts.length / 3);
-                return (
-                  <div key={`slide-${slideIndex}`} className="w-full flex-shrink-0">
-                    <div className="grid grid-cols-3 gap-4 px-2">
-                      {categoryProducts
-                        .slice(actualIndex * 3, actualIndex * 3 + 3)
-                        .map((product, productIndex) => (
+              {(() => {
+                const itemsPerScroll = getItemsPerScroll();
+                const totalSlides = Math.ceil(categoryProducts.length / itemsPerScroll);
+                return [...Array.from({ length: totalSlides }), ...Array.from({ length: totalSlides })].map((_, slideIndex) => {
+                  const actualIndex = slideIndex % totalSlides;
+                  return (
+                    <div key={`slide-${slideIndex}`} className="w-full flex-shrink-0">
+                      <div className={`grid gap-4 px-2 ${isMobile ? 'grid-cols-2' : 'grid-cols-3'}`}>
+                        {categoryProducts
+                          .slice(actualIndex * itemsPerScroll, actualIndex * itemsPerScroll + itemsPerScroll)
+                          .map((product, productIndex) => (
                           <motion.div
                             key={`${product._id}-${slideIndex}`}
                             initial={{ opacity: 0, y: 20 }}
@@ -181,31 +204,36 @@ const CategoryPicks = ({
                     </div>
                   </div>
                 );
-              })}
+              })})()}
             </div>
           </div>
 
           {/* Slide Indicators */}
-          {categoryProducts.length > 3 && (
-            <div className="flex justify-center mt-6 space-x-2">
-              {Array.from({ length: Math.ceil(categoryProducts.length / 3) }).map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => {
-                    setCurrentSlide(index);
-                    setIsAutoSliding(false);
-                    setTimeout(() => setIsAutoSliding(true), 5000);
-                  }}
-                  className={`w-2 h-2 rounded-full transition-colors ${
-                    (currentSlide % Math.ceil(categoryProducts.length / 3)) === index
-                      ? 'bg-foreground'
-                      : 'bg-muted-foreground/30'
-                  }`}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
-            </div>
-          )}
+          {(() => {
+            const itemsPerScroll = getItemsPerScroll();
+            const totalSlides = Math.ceil(categoryProducts.length / itemsPerScroll);
+
+            return categoryProducts.length > itemsPerScroll && (
+              <div className="flex justify-center mt-6 space-x-2">
+                {Array.from({ length: totalSlides }).map((_, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      setCurrentSlide(index);
+                      setIsAutoSliding(false);
+                      setTimeout(() => setIsAutoSliding(true), 5000);
+                    }}
+                    className={`w-2 h-2 rounded-full transition-colors ${
+                      (currentSlide % totalSlides) === index
+                        ? 'bg-foreground'
+                        : 'bg-muted-foreground/30'
+                    }`}
+                    aria-label={`Go to slide ${index + 1}`}
+                  />
+                ))}
+              </div>
+            );
+          })()}
         </div>
 
         {/* View all button */}

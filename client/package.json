@@ -23,6 +23,8 @@
     "@radix-ui/react-slot": "^1.1.0",
     "@radix-ui/react-tabs": "^1.1.0",
     "@radix-ui/react-toast": "^1.2.1",
+    "@react-three/drei": "^9.80.0",
+    "@react-three/fiber": "^8.13.7",
     "@reduxjs/toolkit": "^2.2.7",
     "axios": "^1.7.4",
     "chart.js": "^4.4.7",
@@ -48,6 +50,7 @@
     "slick-carousel": "^1.8.1",
     "tailwind-merge": "^2.5.2",
     "tailwindcss-animate": "^1.0.7",
+    "three": "^0.155.0",
     "vite-plugin-checker": "^0.8.0",
     "vite-plugin-compression": "^0.5.1",
     "vite-plugin-pwa": "^0.21.1"

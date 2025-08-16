@@ -6,6 +6,13 @@ function AuthLayout() {
   const [formProgress, setFormProgress] = useState(0);
   const location = useLocation();
 
+  // Check if current route uses the new 3D model layout
+  const isRegisterPage = location.pathname.includes('/register');
+  const isLoginPage = location.pathname.includes('/login');
+  const isForgotPasswordPage = location.pathname.includes('/forgot-password');
+  const isResetPasswordPage = location.pathname.includes('/reset-password');
+  const uses3DLayout = isRegisterPage || isLoginPage || isForgotPasswordPage || isResetPasswordPage;
+
   // Listen for form progress updates from children components
   useEffect(() => {
     const handleFormProgress = (event) => {
@@ -26,6 +33,12 @@ function AuthLayout() {
     setFormProgress(0);
   }, [location.pathname]);
 
+  // For register, login, forgot-password, and reset-password pages, use full-screen 3D layout
+  if (uses3DLayout) {
+    return <Outlet context={{ setFormProgress }} />;
+  }
+
+  // For other auth pages (login), use the traditional two-panel layout
   return (
     <div className="flex min-h-screen w-full">
       <div className="hidden lg:flex items-center justify-center w-1/2 px-12 bg-gradient-to-b from-gray-900 to-gray-800 relative">

@@ -36,8 +36,7 @@ function ShoppingCheckout() {
           // Calculate item total and add to sum
           const itemTotal = itemPrice * itemQuantity;
 
-          // Log for debugging
-          console.log(`Checkout - Item: ${currentItem?.title}, Price: ${itemPrice}, Quantity: ${itemQuantity}, Total: ${itemTotal}`);
+       
 
           return sum + itemTotal;
         }, 0)

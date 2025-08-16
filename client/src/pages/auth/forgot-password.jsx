@@ -1,8 +1,9 @@
 import CommonForm from "@/components/common/form";
 import { useToast } from "@/components/ui/use-toast";
-import { useState, useEffect } from "react";
-import { useDispatch } from "react-redux";
+import { useState, useEffect, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { forgotPassword } from "@/store/auth-slice";
+import LoginModel3D from "@/components/auth/LoginModel3D";
 import logo from "@/assets/logo.png";
 
 
@@ -10,11 +11,28 @@ const initialState = {
   email: "",
 };
 
+const TOTAL_FIELDS = 1; // email only
+
 function AuthForgotPassword() {
   const [formData, setFormData] = useState(initialState);
   const [isFormValid, setIsFormValid] = useState(false);
+  const [filledFieldsCount, setFilledFieldsCount] = useState(0);
+  const [formProgress, setFormProgress] = useState(0);
   const { toast } = useToast();
   const dispatch = useDispatch();
+  const { currentTheme } = useSelector((state) => state.theme);
+
+  // Calculate form progress and update the 3D model
+  const updateFormProgress = useCallback(() => {
+    let count = 0;
+    if (formData.email.trim()) count++;
+
+    setFilledFieldsCount(count);
+
+    // Update the 3D model rotation
+    const progress = count / TOTAL_FIELDS;
+    setFormProgress(progress);
+  }, [formData]);
 
   // Validate the form: email must not be empty
   useEffect(() => {
@@ -23,7 +41,8 @@ function AuthForgotPassword() {
     } else {
       setIsFormValid(false);
     }
-  }, [formData.email]);
+    updateFormProgress();
+  }, [formData.email, updateFormProgress]);
 
   function onSubmit(event) {
     event.preventDefault();
@@ -40,6 +59,9 @@ function AuthForgotPassword() {
 
     dispatch(forgotPassword(formData)).then((data) => {
       if (data?.payload?.success) {
+        // Set progress to 100% when email is sent successfully
+        setFormProgress(1);
+
         toast({
           title: data?.payload?.message,
           description: "Please check your email for reset instructions.",
@@ -53,36 +75,69 @@ function AuthForgotPassword() {
     });
   }
 
+  // Custom form data handler that updates the 3D model
+  const handleFormDataChange = (newFormData) => {
+    setFormData(newFormData);
+  };
+
   return (
-    <div className="-mt-36 mx-auto w-full max-w-xs space-y-6">
-       <div className="w-56 h-56 flex items-center justify-center mx-auto">
-                    <img src={logo} alt="Logo" className="w-full h-full" />
-                  </div>
-      <div className="text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">
-          Forgot Password?
-        </h1>
-        <p className="mt-2">
-          Enter your email address, and we'll send you password reset instructions.
-        </p>
+    <div className="min-h-screen w-full relative overflow-hidden">
+      {/* 3D Model Background */}
+      <div className="absolute inset-0 z-0">
+        <LoginModel3D formProgress={formProgress} />
       </div>
-      <CommonForm
-        formControls={[
-          {
-            name: "email",
-            type: "email",
-            label: "Email Address",
-            placeholder: "Enter your email",
-            componentType: "input",
-            required: true,
-          },
-        ]}
-        buttonText={"Send Reset Link"}
-        formData={formData}
-        setFormData={setFormData}
-        onSubmit={onSubmit}
-        disabled={!isFormValid}
-      />
+
+      {/* Logo - Fixed top right on desktop only */}
+      <div className="hidden md:block fixed top-4 right-4 z-30">
+        <div className="w-20 h-20 flex items-center justify-center">
+          <img src={logo} alt="Logo" className="w-full h-full object-contain" />
+        </div>
+      </div>
+
+      {/* Form Overlay */}
+      <div className="relative z-20 min-h-screen md:h-screen md:overflow-hidden flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+
+          {/* Form Container - Glass effect to show model clearly */}
+          <div className="md:mt-32 bg-white/5 backdrop-blur-[2px] rounded-2xl p-8 shadow-sm border border-white/10 md:max-h-[80vh] md:overflow-hidden">
+            <div className="text-center mb-6">
+              {/* Mobile Logo - under title */}
+              <div className="md:hidden w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <img src={logo} alt="Logo" className="w-full h-full object-contain" />
+              </div>
+
+              <h1 className="text-2xl font-bold tracking-tight text-white drop-shadow-lg">
+                Forgot Password?
+              </h1>
+              <p className="mt-2 text-sm text-white/90 drop-shadow-md">
+                Enter your email address, and we'll send you password reset instructions.
+              </p>
+              <div className="mt-3 text-xs text-white/80 drop-shadow-md">
+                {filledFieldsCount} of {TOTAL_FIELDS} fields completed
+              </div>
+            </div>
+
+            <CommonForm
+              formControls={[
+                {
+                  name: "email",
+                  type: "email",
+                  label: "Email Address",
+                  placeholder: "Enter your email",
+                  componentType: "input",
+                  required: true,
+                },
+              ]}
+              buttonText={"Send Reset Link"}
+              formData={formData}
+              setFormData={handleFormDataChange}
+              onSubmit={onSubmit}
+              disabled={!isFormValid}
+              layout="single"
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

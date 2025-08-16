@@ -102,9 +102,7 @@ const processImageWithCanvas = async (file) => {
     // Handle HEIC files (iPhone photos)
     if (isHEIC) {
       try {
-        console.log('Processing HEIC file from iPhone...');
         processFile = await convertHEIC(file);
-        console.log('HEIC file successfully converted to JPEG');
       } catch (heicError) {
         console.error('HEIC conversion failed:', heicError.message);
         reject(new Error(`HEIC conversion failed: ${heicError.message}. Please try converting the image to JPEG or PNG format first.`));

@@ -1,22 +1,47 @@
 import CommonForm from "@/components/common/form";
 import { useToast } from "@/components/ui/use-toast";
-import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useState, useEffect, useCallback } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import { resetPassword } from "@/store/auth-slice";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import LoginModel3D from "@/components/auth/LoginModel3D";
+import logo from "@/assets/logo.png";
 
 const initialState = {
   newPassword: "",
   confirmPassword: "",
 };
 
+const TOTAL_FIELDS = 2; // newPassword and confirmPassword
+
 function AuthResetPassword() {
   const [formData, setFormData] = useState(initialState);
+  const [filledFieldsCount, setFilledFieldsCount] = useState(0);
+  const [formProgress, setFormProgress] = useState(0);
   const { toast } = useToast();
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
   const token = searchParams.get("token");
+  const { currentTheme } = useSelector((state) => state.theme);
+
+  // Calculate form progress and update the 3D model
+  const updateFormProgress = useCallback(() => {
+    let count = 0;
+    if (formData.newPassword.trim()) count++;
+    if (formData.confirmPassword.trim()) count++;
+
+    setFilledFieldsCount(count);
+
+    // Update the 3D model rotation
+    const progress = count / TOTAL_FIELDS;
+    setFormProgress(progress);
+  }, [formData]);
+
+  // Update progress when form data changes
+  useEffect(() => {
+    updateFormProgress();
+  }, [formData, updateFormProgress]);
 
   function onSubmit(event) {
     event.preventDefault();
@@ -31,6 +56,9 @@ function AuthResetPassword() {
 
     dispatch(resetPassword({ token, newPassword: formData.newPassword })).then((data) => {
       if (data?.payload?.success) {
+        // Set progress to 100% when password is reset successfully
+        setFormProgress(1);
+
         toast({
           title: "Password reset successful!",
           description: "You can now log in with your new password.",
@@ -48,40 +76,76 @@ function AuthResetPassword() {
     });
   }
 
+  // Custom form data handler that updates the 3D model
+  const handleFormDataChange = (newFormData) => {
+    setFormData(newFormData);
+  };
+
   return (
-    <div className="mx-auto w-full max-w-md space-y-6">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">
-          Reset Your Password
-        </h1>
-        <p className="mt-2">
-          Enter your new password below to reset your account.
-        </p>
+    <div className="min-h-screen w-full relative overflow-hidden">
+      {/* 3D Model Background */}
+      <div className="absolute inset-0 z-0">
+        <LoginModel3D formProgress={formProgress} />
       </div>
-      <CommonForm
-        formControls={[
-          {
-            name: "newPassword",
-            type: "password",
-            componentType: "password",
-            label: "New Password",
-            placeholder: "Enter your new password",
-            required: true,
-          },
-          {
-            name: "confirmPassword",
-            type: "password",
-            label: "Confirm Password",
-            componentType: "password",
-            placeholder: "Re-enter your new password",
-            required: true,
-          },
-        ]}
-        buttonText={"Reset Password"}
-        formData={formData}
-        setFormData={setFormData}
-        onSubmit={onSubmit}
-      />
+
+      {/* Logo - Fixed top right on desktop only */}
+      <div className="hidden md:block fixed top-4 right-4 z-30">
+        <div className="w-20 h-20 flex items-center justify-center">
+          <img src={logo} alt="Logo" className="w-full h-full object-contain" />
+        </div>
+      </div>
+
+      {/* Form Overlay */}
+      <div className="relative z-20 min-h-screen md:h-screen md:overflow-hidden flex items-center justify-center p-4">
+        <div className="w-full max-w-md">
+
+          {/* Form Container - Glass effect to show model clearly */}
+          <div className="md:mt-32 bg-white/5 backdrop-blur-[2px] rounded-2xl p-8 shadow-sm border border-white/10 md:max-h-[80vh] md:overflow-hidden">
+            <div className="text-center mb-6">
+              {/* Mobile Logo - under title */}
+              <div className="md:hidden w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <img src={logo} alt="Logo" className="w-full h-full object-contain" />
+              </div>
+
+              <h1 className="text-2xl font-bold tracking-tight text-white drop-shadow-lg">
+                Reset Your Password
+              </h1>
+              <p className="mt-2 text-sm text-white/90 drop-shadow-md">
+                Enter your new password below to reset your account.
+              </p>
+              <div className="mt-3 text-xs text-white/80 drop-shadow-md">
+                {filledFieldsCount} of {TOTAL_FIELDS} fields completed
+              </div>
+            </div>
+
+            <CommonForm
+              formControls={[
+                {
+                  name: "newPassword",
+                  type: "password",
+                  componentType: "password",
+                  label: "New Password",
+                  placeholder: "Enter your new password",
+                  required: true,
+                },
+                {
+                  name: "confirmPassword",
+                  type: "password",
+                  label: "Confirm Password",
+                  componentType: "password",
+                  placeholder: "Re-enter your new password",
+                  required: true,
+                },
+              ]}
+              buttonText={"Reset Password"}
+              formData={formData}
+              setFormData={handleFormDataChange}
+              onSubmit={onSubmit}
+              layout="single"
+            />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

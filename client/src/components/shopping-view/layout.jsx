@@ -12,7 +12,7 @@ function ShoppingLayout() {
         <Outlet />
       </main>
       {/* Footer with higher z-index to ensure visibility */}
-      <div className="relative z-20">
+      <div className="relative z-0">
         <Footer />
       </div>
     </div>

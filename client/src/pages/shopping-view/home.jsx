@@ -1,4 +1,4 @@
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect, useState, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
@@ -22,7 +22,8 @@ import Testimonials from "@/components/shopping-view/testimonials-new";
 import Banner from "@/components/shopping-view/banner";
 import ProductSlider from "@/components/shopping-view/product-slider";
 import CategoryPicks from "@/components/shopping-view/category-picks";
-import BackgroundImage from "@/components/shopping-view/background-image";
+import BackgroundModel from "@/components/shopping-view/BackgroundModel";
+import BackgroundModelFallback from "@/components/shopping-view/BackgroundModelFallback";
 import banner from "../../assets/banner.jpg";
 import { Loader } from "../../components/ui/loader";
 
@@ -40,8 +41,25 @@ function ShoppingHome() {
   // State for filters and loading state
   const [filters, setFilters] = useState({});
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+  const [use3DBackground, setUse3DBackground] = useState(true);
 
   const timeoutRef = useRef(null);
+
+  // Determine 3D model based on user category (reactive like themes)
+  const getModelName = useMemo(() => {
+    if (!user?.category) return 'Arthur'; // Default fallback
+
+    switch (user.category) {
+      case 'Author':
+        return 'Arthur';
+      case 'Bravo':
+        return 'Bravo';
+      case 'Hector':
+        return 'Hector';
+      default:
+        return 'Arthur'; // Default fallback
+    }
+  }, [user?.category]); // React to user category changes
 
   // Filter out theme categories and ensure we have the categories shown in the image
   const filteredCategoryList = categoriesList.filter(category =>
@@ -144,8 +162,13 @@ function ShoppingHome() {
         <meta name="twitter:image" content="https://example.com/path-to-your-image.jpg" />
       </Helmet>
 
-      {/* Full-page background image that changes with theme */}
-      <BackgroundImage />
+      {/* Full-page 3D background model based on user category */}
+      {use3DBackground && (
+        <BackgroundModel
+          modelName={getModelName}
+          onError={() => setUse3DBackground(false)}
+        />
+      )}
 
       <div className="pt-32 flex flex-col relative z-10">
         {/* Category-based Product Picks */}
@@ -419,6 +442,7 @@ function ShoppingHome() {
           }}
         />
       </div>
+
     </>
   );
 }
