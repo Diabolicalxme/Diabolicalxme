@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 function Loader({ className }) {
   return (
     <div
-      className={`z-50 w-screen h-screen fixed inset-0 bg-black flex flex-col items-center justify-center overflow-hidden ${className}`}
+      className={`z-[100] w-screen h-screen fixed inset-0 bg-black flex flex-col items-center justify-center overflow-hidden ${className}`}
     >
       <div className="flex flex-col items-center justify-center">
         {/* Minimalistic Loading Animation */}

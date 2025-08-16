@@ -3,92 +3,91 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import { useSelector } from 'react-redux';
 import { THEMES } from '@/store/theme-slice';
+import { Loader } from '@/components/ui/loader';
 
 // Model component that shows face to shoulders (portrait view) for login
 function LoginModel({ formProgress = 0 }) {
   const modelRef = useRef();
-  const { viewport } = useThree();
-  
-  // Use Arthur model as default for login
   const { scene } = useGLTF('/models/Arthur.glb');
+  const { viewport } = useThree(); // ✅ get viewport
+  const [isMobile, setIsMobile] = useState(false);
 
-  // Clone the scene to avoid issues with multiple instances
+  // Detect mobile on mount + resize
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
+  // Clone the scene
   const clonedScene = useMemo(() => {
     if (!scene) return null;
     return scene.clone();
   }, [scene]);
 
-  // Calculate rotation: Start at π (180°, back-faced) and rotate to 0 (front-faced)
-  const targetRotation = Math.PI - (formProgress * Math.PI); // π to 0 radians (back to front)
+  const targetRotation = Math.PI - (formProgress * Math.PI);
 
-  // Smooth rotation animation (no breathing effect)
   useFrame(() => {
     if (modelRef.current) {
-      // Smooth interpolation to target rotation with better continuity
       const currentRotation = modelRef.current.rotation.y;
       let rotationDiff = targetRotation - currentRotation;
 
-      // Handle rotation wrapping for smooth transition
-      if (rotationDiff > Math.PI) {
-        rotationDiff -= 2 * Math.PI;
-      } else if (rotationDiff < -Math.PI) {
-        rotationDiff += 2 * Math.PI;
-      }
+      if (rotationDiff > Math.PI) rotationDiff -= 2 * Math.PI;
+      else if (rotationDiff < -Math.PI) rotationDiff += 2 * Math.PI;
 
-      modelRef.current.rotation.y += rotationDiff * 0.08; // Slightly faster transition
-
-      // No breathing/bounce effect - keep model static
+      modelRef.current.rotation.y += rotationDiff * 0.08;
     }
   });
 
-  // Position and scale the model to show shoulders up only (same as register)
   useEffect(() => {
     if (clonedScene && modelRef.current) {
       try {
-        // Scale the model to match register model exactly
-        const scale = Math.min(viewport.width, viewport.height) * 0.59;
+        const scale = Math.min(viewport.width, viewport.height) * 0.51;
         modelRef.current.scale.setScalar(scale);
 
-        // Position to show only shoulders up (same as register)
-        modelRef.current.position.set(0, -23.1, 0);
+        // ✅ Different position for mobile vs desktop
+        if (isMobile) {
+          modelRef.current.position.set(0, -1.75, 0);
+        } else {
+          modelRef.current.position.set(0, -2.98, 0);
+        }
 
-        // Set initial rotation to back-faced ONLY if not already set
         if (!modelRef.current.userData.rotationInitialized) {
-          modelRef.current.rotation.y = Math.PI; // Start facing back
+          modelRef.current.rotation.y = Math.PI;
           modelRef.current.userData.rotationInitialized = true;
         }
 
-        console.log('Login model positioned for shoulders-up view (matching register)');
+        console.log(
+          `Login model positioned (${isMobile ? "mobile" : "desktop"})`
+        );
       } catch (error) {
-        console.error('Error positioning login model:', error);
+        console.error("Error positioning login model:", error);
       }
     }
-  }, [clonedScene, viewport]);
+  }, [clonedScene, viewport, isMobile]);
 
+  if (!clonedScene) return null;
 
-  if (!clonedScene) {
-    return null;
-  }
-
-  return (
-    <primitive 
-      ref={modelRef} 
-      object={clonedScene} 
-      dispose={null}
-    />
-  );
+  return <primitive ref={modelRef} object={clonedScene} dispose={null} />;
 }
+
 
 // Scene setup for login
 function LoginScene({ formProgress }) {
   const { camera } = useThree();
 
-  useEffect(() => {
-    // Position camera to focus on shoulders/head area (same as register)
-    camera.position.set(0, -1, 8); // Same as register model
-    camera.lookAt(0, -2, 0); // Same as register model
-    camera.updateProjectionMatrix();
-  }, [camera]);
+useEffect(() => {
+  // Move camera closer to the model
+  camera.position.set(0, 1.6, 3.2); // closer to head/shoulders
+  camera.lookAt(0, 1.6, 0);
+
+  // Zoom in by reducing FOV (default ~50–75)
+  camera.fov = 30;  // tighter "portrait lens" effect
+  camera.updateProjectionMatrix();
+}, [camera]);
+
+
 
 
 
@@ -117,6 +116,7 @@ function LoginScene({ formProgress }) {
 function LoginModel3D({ formProgress = 0 }) {
   const { currentTheme } = useSelector((state) => state.theme);
   const [hasError, setHasError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Get theme colors for background
   const getThemeColors = () => {
@@ -162,8 +162,9 @@ function LoginModel3D({ formProgress = 0 }) {
       alpha: true,
       powerPreference: 'high-performance'
     },
-    dpr: Math.min(window.devicePixelRatio, 2)
-  }), []);
+    dpr: Math.min(window.devicePixelRatio, 2),
+    onCreated: () => setIsLoading(false)
+  }), [setIsLoading]);
 
   if (hasError) {
     return (
@@ -189,11 +190,14 @@ function LoginModel3D({ formProgress = 0 }) {
         zIndex: 0
       }}
     >
-      <Canvas 
-        {...canvasProps} 
+     
+
+      <Canvas
+        {...canvasProps}
         onError={(error) => {
           console.error('3D Model Error:', error);
           setHasError(true);
+          setIsLoading(false);
         }}
       >
         <Suspense fallback={null}>

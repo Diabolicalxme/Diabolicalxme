@@ -3,6 +3,7 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import { useSelector } from 'react-redux';
 import { THEMES } from '@/store/theme-slice';
+import { Loader } from '@/components/ui/loader';
 
 // Model component that shows face to shoulders (portrait view)
 function RegistrationModel({ formProgress = 0 }) {
@@ -119,22 +120,13 @@ useEffect(() => {
   );
 }
 
-// Loading fallback
-function LoadingFallback() {
-  return (
-    <div className="absolute inset-0 flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-2"></div>
-        <p className="text-white/80 text-xs">Loading Model...</p>
-      </div>
-    </div>
-  );
-}
+
 
 // Main component
 function RegisterModel3D({ formProgress = 0 }) {
   const { currentTheme } = useSelector((state) => state.theme);
   const [hasError, setHasError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   // Get theme colors for background
   const getThemeColors = () => {
@@ -180,8 +172,9 @@ function RegisterModel3D({ formProgress = 0 }) {
       alpha: true,
       powerPreference: 'high-performance'
     },
-    dpr: Math.min(window.devicePixelRatio, 2)
-  }), []);
+    dpr: Math.min(window.devicePixelRatio, 2),
+    onCreated: () => setIsLoading(false)
+  }), [setIsLoading]);
 
   if (hasError) {
     return (
@@ -193,6 +186,8 @@ function RegisterModel3D({ formProgress = 0 }) {
       </div>
     );
   }
+
+  
 
   return (
     <div
@@ -207,12 +202,14 @@ function RegisterModel3D({ formProgress = 0 }) {
         zIndex: 0
       }}
     >
+      {isLoading && <Loader />}
+
       <Canvas
         {...canvasProps}
         onError={(error) => {
           console.error('3D Model Error:', error);
           setHasError(true);
-          
+          setIsLoading(false);
         }}
       >
         <Suspense fallback={null}>

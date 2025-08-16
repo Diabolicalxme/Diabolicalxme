@@ -2,6 +2,7 @@ import React, { Suspense, useMemo, useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
+import { Loader } from '@/components/ui/loader';
 
 // ---------------- Model ----------------
 function Model({ modelName, isMobile }) {
@@ -72,16 +73,7 @@ function Scene({ modelName, isMobile }) {
 
 
 
-// ---------------- Loading ----------------
-function LoadingFallback() {
-  return (
-    <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-900/20 to-gray-600/20 backdrop-blur-sm">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white mx-auto mb-4"></div>
-      </div>
-    </div>
-  );
-}
+
 
 // ---------------- Background Wrapper ----------------
 export default function BackgroundModel({ modelName, onError }) {
@@ -119,6 +111,8 @@ export default function BackgroundModel({ modelName, onError }) {
 
   if (!modelName || hasError) return null;
 
+  if (isLoading) return <Loader />;
+
   return (
     <div
       className="fixed inset-0 w-full h-full z-0 pointer-events-none"
@@ -131,7 +125,7 @@ export default function BackgroundModel({ modelName, onError }) {
         overflow: 'hidden',
       }}
     >
-      {isLoading && <LoadingFallback />}
+   
       <Canvas
         {...canvasProps}
         onError={(e) => {
