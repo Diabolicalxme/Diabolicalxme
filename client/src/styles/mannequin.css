@@ -1,0 +1,73 @@
+/* Mannequin animation styles */
+.mannequin-container {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.mannequin-image {
+  max-height: 80vh;
+  max-width: 100%;
+  object-fit: contain;
+  transition: opacity 0.5s ease;
+}
+
+.mannequin-progress {
+  position: absolute;
+  bottom: 2.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16rem;
+  height: 0.5rem;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 9999px;
+  overflow: hidden;
+}
+
+.mannequin-progress-bar {
+  height: 100%;
+  background-color: var(--primary, #2c3315);
+  transition: width 0.3s ease;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .mannequin-image {
+    max-height: 60vh;
+  }
+  
+  .mannequin-progress {
+    width: 12rem;
+  }
+}
+
+/* Animation for mannequin rotation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+.mannequin-fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.mannequin-fade-out {
+  animation: fadeOut 0.5s ease forwards;
+}
