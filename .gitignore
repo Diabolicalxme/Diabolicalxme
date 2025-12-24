@@ -1,2 +1,6 @@
 .qodo
 .env
+
+# remove public models
+client/public/models
+models/

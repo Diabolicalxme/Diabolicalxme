@@ -300,69 +300,69 @@ function ShoppingListing() {
           {/* Product Listing */}
           <div>
             <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-6 pb-4 border-b">
-                <div>
-                  <h2 className="text-2xl font-light uppercase tracking-wide mb-2">
-                    {currentCategory?.title || "All Products"}
-                  </h2>
-                  <div className="w-16 h-0.5 bg-primary mb-3"></div>
-                  <p className="text-muted-foreground">
-                    Showing {filteredProducts.length} products
-                  </p>
-                </div>
-                <div className="mt-4 md:mt-0">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger className="flex items-center gap-2 px-4 py-2 border border-border rounded-md hover:bg-muted/30 transition-colors">
-                      <ArrowUpDownIcon className="h-4 w-4" />
-                      <span>Sort by: {sortOptions.find(option => option.id === sort)?.label || 'Default'}</span>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="mt-2 bg-card p-2 rounded-md shadow-lg border border-border">
-                      <DropdownMenuRadioGroup value={sort} onValueChange={handleSort}>
-                        {sortOptions.map((sortItem) => (
-                          <DropdownMenuRadioItem
-                            className="hover:bg-muted/30 cursor-pointer px-4 py-2 rounded-md"
-                            value={sortItem.id}
-                            key={sortItem.id}
-                          >
-                            {sortItem.label}
-                          </DropdownMenuRadioItem>
-                        ))}
-                      </DropdownMenuRadioGroup>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+              <div>
+                <h2 className="text-2xl font-light uppercase tracking-wide mb-2">
+                  {currentCategory?.title || "All Products"}
+                </h2>
+                <div className="w-16 h-0.5 bg-primary mb-3"></div>
+                <p className="text-muted-foreground">
+                  Showing {filteredProducts.length} products
+                </p>
               </div>
-
-              {/* Products Grid - Using Original ShoppingProductTile */}
-              <div className="grid grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredProducts.map((productItem) => (
-                  <ShoppingProductTile
-                    key={productItem._id}
-                    handleGetProductDetails={handleGetProductDetails}
-                    product={productItem}
-                    handleAddtoCart={handleAddtoCart}
-                  />
-                ))}
+              <div className="mt-4 md:mt-0">
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="flex items-center gap-2 px-4 py-2 border border-border rounded-md hover:bg-muted/30 transition-colors">
+                    <ArrowUpDownIcon className="h-4 w-4" />
+                    <span>Sort by: {sortOptions.find(option => option.id === sort)?.label || 'Default'}</span>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="mt-2 bg-card p-2 rounded-md shadow-lg border border-border">
+                    <DropdownMenuRadioGroup value={sort} onValueChange={handleSort}>
+                      {sortOptions.map((sortItem) => (
+                        <DropdownMenuRadioItem
+                          className="hover:bg-muted/30 cursor-pointer px-4 py-2 rounded-md"
+                          value={sortItem.id}
+                          key={sortItem.id}
+                        >
+                          {sortItem.label}
+                        </DropdownMenuRadioItem>
+                      ))}
+                    </DropdownMenuRadioGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
+            </div>
 
-              {/* Empty State */}
-              {filteredProducts.length === 0 && (
-                <div className="text-center py-16">
-                  <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center rounded-full bg-muted/30">
-                    <ShoppingBag className="h-8 w-8 text-muted-foreground" />
-                  </div>
-                  <h3 className="text-xl font-medium mb-2">No Products Found</h3>
-                  <p className="text-muted-foreground mb-6">Try adjusting your filters or browse our other collections</p>
-                  <button
-                    onClick={() => {
-                      setFilters({});
-                      setSort(null);
-                    }}
-                    className="px-6 py-2 border-2 border-primary hover:bg-primary hover:text-primary-foreground transition-colors duration-300 uppercase tracking-wider text-sm font-medium"
-                  >
-                    Clear All Filters
-                  </button>
+            {/* Products Grid - Using Original ShoppingProductTile */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {filteredProducts.map((productItem) => (
+                <ShoppingProductTile
+                  key={productItem._id}
+                  handleGetProductDetails={handleGetProductDetails}
+                  product={productItem}
+                  handleAddtoCart={handleAddtoCart}
+                />
+              ))}
+            </div>
+
+            {/* Empty State */}
+            {filteredProducts.length === 0 && (
+              <div className="text-center py-16">
+                <div className="w-16 h-16 mx-auto mb-4 flex items-center justify-center rounded-full bg-muted/30">
+                  <ShoppingBag className="h-8 w-8 text-muted-foreground" />
                 </div>
-              )}
+                <h3 className="text-xl font-medium mb-2">No Products Found</h3>
+                <p className="text-muted-foreground mb-6">Try adjusting your filters or browse our other collections</p>
+                <button
+                  onClick={() => {
+                    setFilters({});
+                    setSort(null);
+                  }}
+                  className="px-6 py-2 border-2 border-primary hover:bg-primary hover:text-primary-foreground transition-colors duration-300 uppercase tracking-wider text-sm font-medium"
+                >
+                  Clear All Filters
+                </button>
+              </div>
+            )}
           </div>
         </div>
         {/* Filter Drawer */}

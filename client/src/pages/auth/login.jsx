@@ -17,48 +17,55 @@ const initialState = {
   password: "",
 };
 
-const TOTAL_FIELDS = 2; // email and password
+const TOTAL_STEPS = 2;
 
 function AuthLogin() {
   const [formData, setFormData] = useState(initialState);
-  const [isFormValid, setIsFormValid] = useState(false);
-  const [filledFieldsCount, setFilledFieldsCount] = useState(0);
-  const [formProgress, setFormProgress] = useState(0);
+  const [currentStep, setCurrentStep] = useState(0);
   const [isCopying, setIsCopying] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
-  const { currentTheme } = useSelector((state) => state.theme);
 
-  // Calculate form progress and update the 3D model
-  const updateFormProgress = useCallback(() => {
-    let count = 0;
-    if (formData.email.trim()) count++;
-    if (formData.password.trim()) count++;
+  const formProgress = currentStep / (TOTAL_STEPS - 1);
 
-    setFilledFieldsCount(count);
-
-    // Update the 3D model rotation
-    const progress = count / TOTAL_FIELDS;
-    setFormProgress(progress);
-  }, [formData]);
-
-  // Validate the form: both email and password must be provided
-  useEffect(() => {
-    if (formData.email.trim() && formData.password.trim()) {
-      setIsFormValid(true);
-    } else {
-      setIsFormValid(false);
+  const handleNext = () => {
+    if (currentStep === 0) {
+      if (!formData.email.trim()) {
+        toast({ title: "Email Required", variant: "destructive" });
+        return;
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        toast({ title: "Invalid Email", variant: "destructive" });
+        return;
+      }
     }
-    updateFormProgress();
-  }, [formData.email, formData.password, updateFormProgress]);
- 
-  async function onSubmit(event) {
-    event.preventDefault();
+    if (currentStep < TOTAL_STEPS - 1) {
+      setCurrentStep(prev => prev + 1);
+    }
+  };
 
-    // Ensure both fields are filled before dispatching
-    if (!isFormValid) {
+  const handleBack = () => {
+    if (currentStep > 0) {
+      setCurrentStep(prev => prev - 1);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      if (currentStep < TOTAL_STEPS - 1) {
+        handleNext();
+      } else {
+        onSubmit(e);
+      }
+    }
+  };
+
+  async function onSubmit(event) {
+    if (event) event.preventDefault();
+
+    if (!formData.email.trim() || !formData.password.trim()) {
       toast({
         title: "Missing Fields",
         description: "Please fill out both email and password.",
@@ -67,33 +74,22 @@ function AuthLogin() {
       return;
     }
 
-    // Check for temp cart items before login
     const tempCartItems = getTempCartItems();
     const hasTempItems = tempCartItems.length > 0;
 
     dispatch(loginUser(formData)).then(async (data) => {
       if (data?.payload?.success) {
-        // Set progress to 100% when login is successful
-        setFormProgress(1);
-
         const user = data.payload.user;
+        toast({ title: data?.payload?.message });
 
-        // Show initial login success message
-        toast({
-          title: data?.payload?.message,
-        });
-
-        // Copy temp cart to actual cart if items exist and not already copied
         if (hasTempItems && user?.id && !hasCartCopyCompleted(user.id)) {
           if (startCartCopy(user.id)) {
             setIsCopying(true);
-
             try {
               const copyResult = await copyTempCartToUser(
                 (cartData) => dispatch(addToCart(cartData)),
                 user.id
               );
-
               if (copyResult.success) {
                 completeCartCopy(user.id, true);
                 if (copyResult.copied > 0) {
@@ -104,43 +100,27 @@ function AuthLogin() {
                 }
               } else {
                 completeCartCopy(user.id, false);
-                toast({
-                  title: "Some items couldn't be copied",
-                  description: `${copyResult.copied || 0} items copied, ${copyResult.failed || 0} failed.`,
-                  variant: "destructive",
-                });
               }
             } catch (error) {
               console.error("Error copying temp cart:", error);
               completeCartCopy(user.id, false);
-              toast({
-                title: "Cart copy failed",
-                description: "Your temporary cart items couldn't be copied. Please add them again.",
-                variant: "destructive",
-              });
             } finally {
               setIsCopying(false);
             }
           }
         }
 
-        // Navigate based on user role and redirect parameters
         if (user?.role === 'admin') {
-          // Admin users always go to admin dashboard
           navigate('/admin/dashboard');
         } else {
-          // Check for redirect query parameter first, then location state, then default
           const urlParams = new URLSearchParams(location.search);
           const redirectParam = urlParams.get('redirect');
-
-          let redirectTo = '/shop/home'; // default
-
+          let redirectTo = '/shop/home';
           if (redirectParam === 'checkout') {
             redirectTo = '/shop/checkout';
           } else if (location.state?.from) {
             redirectTo = location.state.from;
           }
-
           navigate(redirectTo);
         }
       } else {
@@ -152,84 +132,105 @@ function AuthLogin() {
     });
   }
 
-  // Custom form data handler that updates the 3D model
-  const handleFormDataChange = (newFormData) => {
-    setFormData(newFormData);
-  };
-
   return (
-    <div className="h-screen w-full relative overflow-hidden">
-      {/* 3D Model Background - Fixed positioning to cover entire viewport */}
+    <div className="h-screen w-full relative overflow-hidden bg-transparent">
+      {/* 3D Model Background */}
       <div className="fixed inset-0 z-0">
         <LoginModel3D formProgress={formProgress} />
       </div>
 
-      {/* Logo - Fixed top right on desktop only */}
-      <div className="hidden md:block fixed top-4 right-4 z-30">
-        <div className="w-20 h-20 flex items-center justify-center">
-          <img src={logo} alt="Logo" className="w-full h-full object-contain" />
-        </div>
+      {/* Logo */}
+      <div className="fixed top-8 left-1/2 -translate-x-1/2 md:left-auto md:right-8 md:translate-x-0 z-30">
+        <img src={logo} alt="Logo" className="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-2xl" />
       </div>
 
-      {/* Form Overlay - Mobile keyboard handling */}
-      <div className="mt-12 fixed inset-0 z-10 flex items-center justify-center p-4 md:relative md:mt-28 md:h-screen">
-        <div className="w-full max-w-md max-h-[100vh] overflow-y-auto md:max-h-[calc(100vh-2rem)]">
-          {/* Form Container - Glass effect to show model clearly */}
-          <div className="bg-white/5 backdrop-blur-[2px] rounded-2xl p-4 md:p-8 shadow-sm border border-white/10 ">
+      {/* Main Content Overlay */}
+      <div className="relative z-10 h-full w-full flex flex-col items-center justify-end pb-[25vh] px-4">
+        <div className="w-full max-w-lg space-y-12">
 
-            <div className="text-center mb-6">
-              {/* Mobile Logo - under title */}
-              {/* <div className="md:hidden w-16 h-16 flex items-center justify-center mx-auto mb-4">
-                <img src={logo} alt="Logo" className="w-full h-full object-contain" />
-              </div> */}
-
-              <h1 className="text-2xl font-bold tracking-tight text-white drop-shadow-lg">
-                Sign in to your account
-              </h1>
-              <p className="mt-2 text-sm text-white/90 drop-shadow-md">
-                Don't have an account?
-                <Link
-                  className="font-medium ml-2 text-white hover:text-white/80 underline drop-shadow-md"
-                  to="/auth/register"
-                >
-                  Register
-                </Link>
-              </p>
-              <div className="mt-3 text-xs text-white/80 drop-shadow-md">
-                {filledFieldsCount} of {TOTAL_FIELDS} fields completed
+          <div className="relative overflow-hidden h-32 flex items-center justify-center">
+            {currentStep === 0 && (
+              <div className="w-full animate-in fade-in slide-in-from-right-8 duration-500">
+                <input
+                  autoFocus
+                  type="email"
+                  placeholder="Enter your email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onKeyDown={handleKeyDown}
+                  className="w-full bg-transparent border-0 border-b-2 border-white/20 focus:border-white focus:outline-none py-4 text-3xl md:text-4xl text-white placeholder:text-white/30 transition-all text-center font-light tracking-wider"
+                />
               </div>
-            </div>
+            )}
 
-            <CommonForm
-              formControls={loginFormControls}
-              buttonText={isCopying ? "Copying Cart..." : "Sign In"}
-              formData={formData}
-              setFormData={handleFormDataChange}
-              onSubmit={onSubmit}
-              disabled={!isFormValid || isCopying}
-              layout="single"
-            />
-
-            <div className="text-center mt-4">
-              <Link
-                className="text-sm text-white/80 hover:text-white underline drop-shadow-md"
-                to="/auth/forgot-password"
-              >
-                Forgot Password?
-              </Link>
-            </div>
-
-            {/* Go to Home Button - Bottom Center */}
-            <div className="text-center mt-6">
-              <Link
-                className="inline-flex items-center gap-2 text-sm text-white/80 hover:text-white transition-colors drop-shadow-md"
-                to="/shop/home"
-              >
-                <Home className="h-4 w-4" />
-                Go to Home
-              </Link>
-            </div>
+            {currentStep === 1 && (
+              <div className="w-full animate-in fade-in slide-in-from-right-8 duration-500 text-center">
+                <input
+                  autoFocus
+                  type="password"
+                  placeholder="Enter your password"
+                  value={formData.password}
+                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  onKeyDown={handleKeyDown}
+                  className="w-full bg-transparent border-0 border-b-2 border-white/20 focus:border-white focus:outline-none py-4 text-3xl md:text-4xl text-white placeholder:text-white/30 transition-all text-center font-light tracking-wider"
+                />
+                <button
+                  onClick={onSubmit}
+                  disabled={isCopying || !formData.password}
+                  className="mt-8 px-12 py-3 bg-white text-black rounded-full font-bold hover:bg-white/90 transition-all disabled:opacity-50 tracking-widest uppercase text-sm"
+                >
+                  {isCopying ? "Signing In..." : "Sign In"}
+                </button>
+              </div>
+            )}
           </div>
+
+          {/* Navigation Controls */}
+          <div className="flex justify-center items-center gap-12 pt-4">
+            {currentStep > 0 && (
+              <button
+                onClick={handleBack}
+                className="text-white/50 hover:text-white transition-colors text-sm uppercase tracking-[0.2em]"
+              >
+                Back
+              </button>
+            )}
+
+            {currentStep < TOTAL_STEPS - 1 && (
+              <button
+                onClick={handleNext}
+                className="text-white hover:text-white/80 transition-colors text-sm uppercase tracking-[0.2em] font-bold"
+              >
+                Next
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Bottom Navigation */}
+        <div className="fixed bottom-12 left-0 w-full flex flex-col items-center gap-4 z-20">
+          <div className="flex items-center gap-6">
+            <Link
+              className="text-white/40 hover:text-white text-xs uppercase tracking-[0.3em] transition-all"
+              to="/auth/register"
+            >
+              No account? Register
+            </Link>
+            <div className="w-[1px] h-4 bg-white/20" />
+            <Link
+              className="text-white/40 hover:text-white text-xs uppercase tracking-[0.3em] transition-all"
+              to="/auth/forgot-password"
+            >
+              Forgot?
+            </Link>
+          </div>
+
+          <Link
+            className="mt-2 text-white/40 hover:text-white transition-all p-2 rounded-full border border-white/10 hover:border-white/30"
+            to="/shop/home"
+          >
+            <Home className="h-5 w-5" />
+          </Link>
         </div>
       </div>
     </div>

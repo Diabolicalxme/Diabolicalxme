@@ -1,8 +1,8 @@
-// BackgroundModel.jsx
 import React, { Suspense, useMemo, useRef, useState, useEffect } from 'react';
 import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
+import { motion, useScroll, useTransform } from 'framer-motion';
 
 // ---------------- Model ----------------
 function Model({ modelName, isMobile }) {
@@ -10,48 +10,39 @@ function Model({ modelName, isMobile }) {
   const { scene } = useGLTF(`/models/${modelName}.glb`);
   const clonedScene = useMemo(() => (scene ? scene.clone() : null), [scene]);
 
-  useFrame(() => {
-    if (modelRef.current) {
-      modelRef.current.rotation.y += 0.005;
-    }
-  });
+  // useFrame(() => {
+  //   if (modelRef.current) {
+  //     modelRef.current.rotation.y += 0.005;
+  //   }
+  // });
 
   useEffect(() => {
     if (clonedScene && modelRef.current) {
       try {
-        // Reset transformations first
         clonedScene.position.set(0, 0, 0);
         clonedScene.rotation.set(0, 0, 0);
         clonedScene.scale.set(1, 1, 1);
 
-        // Calculate bounding box
         const box = new THREE.Box3().setFromObject(clonedScene);
         const size = box.getSize(new THREE.Vector3());
         const center = box.getCenter(new THREE.Vector3());
 
-        // Target height for consistent sizing
-        const targetHeight = isMobile ? 2.6 : 3.9;
+        const targetHeight = isMobile ? 4.5 : 6;
         const scale = targetHeight / size.y;
+        const verticalOffset = -size.y * 0.18; // shift model down so top half (head->waist) is framed
 
-        // Mobile-specific vertical adjustment to prevent head cutoff
-        const verticalOffset = isMobile ? -size.y * 0.02 : 0; // Move up 10% of model height on mobile
-
-        // Position to center model at origin (0,0,0) with vertical adjustment for mobile
         modelRef.current.position.set(
           -center.x * scale,
           (-center.y + verticalOffset) * scale,
           -center.z * scale
         );
 
-        // Apply uniform scaling
         modelRef.current.scale.setScalar(scale);
       } catch (err) {
         console.error("Error positioning model:", err);
       }
     }
   }, [clonedScene, isMobile]);
-
-  
 
   return clonedScene ? (
     <primitive ref={modelRef} object={clonedScene} />
@@ -63,7 +54,6 @@ function Scene({ modelName, isMobile }) {
   const { camera } = useThree();
 
   useEffect(() => {
-    // Reset camera position
     if (isMobile) {
       camera.position.set(0, 0.3, 4);
     } else {
@@ -76,51 +66,45 @@ function Scene({ modelName, isMobile }) {
 
   return (
     <>
-      {/* Very bright ambient light */}
       <ambientLight intensity={1.2} color="#ffffff" />
-
-      {/* Super bright overhead light */}
-      <directionalLight
-        position={[0, 10, 0]}
-        intensity={2.5}
-        color="#ffffff"
-      />
-
-      {/* Front bright light */}
-      <directionalLight
-        position={[0, 0, 10]}
-        intensity={1}
-        color="#ffffff"
-      />
-
-      {/* Multiple fill lights from all directions */}
-      <directionalLight
-        position={[-5, 10, 0]}
-        intensity={1}
-        color="#ffffff"
-      />
-      
-      <directionalLight
-        position={[5, 0, 0]}
-        intensity={1.5}
-        color="#ffffff"
-      />
-
+      <directionalLight position={[0, 10, 0]} intensity={2.5} color="#ffffff" />
+      <directionalLight position={[0, 0, 10]} intensity={1} color="#ffffff" />
+      <directionalLight position={[-5, 10, 0]} intensity={1} color="#ffffff" />
+      <directionalLight position={[5, 0, 0]} intensity={1.5} color="#ffffff" />
       <Model modelName={modelName} isMobile={isMobile} />
     </>
   );
-}// ---------------- Background Wrapper ----------------
+}
+
+// ---------------- Background Wrapper ----------------
 export default function BackgroundModel({ modelName, onError, onModelLoaded }) {
   const [hasError, setHasError] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
+  const [scrollProgress, setScrollProgress] = useState(0);
 
-  // Detect mobile
+  const { scrollY } = useScroll();
+
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
+
+  // Track scroll progress manually
+  useEffect(() => {
+    const unsubscribe = scrollY.on('change', (latest) => {
+      const progress = Math.min(latest / 500, 1);
+      setScrollProgress(progress);
+    });
+    return () => unsubscribe();
+  }, [scrollY]);
+
+  const handleMiniClick = () => {
+    if (scrollProgress > 0.85) {
+      window.dispatchEvent(new CustomEvent('open-mobile-menu'));
+    }
+  };
 
   const canvasProps = useMemo(() => ({
     camera: {
@@ -137,51 +121,63 @@ export default function BackgroundModel({ modelName, onError, onModelLoaded }) {
     onCreated: () => {
       onModelLoaded?.();
     },
-  }), []);
+  }), [onModelLoaded]);
 
   if (!modelName || hasError) return null;
 
-  return (
-    <div
-      className="fixed inset-0 w-full h-full z-0 pointer-events-none"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        width: '100vw',
-        height: '100vh',
-        overflow: 'hidden',
-        zIndex: 0,
-        pointerEvents: 'none',
-      }}
-    >
-    <Canvas
-  {...canvasProps}
-  frameloop='always'
-  shadows={false}        
-  gl={{
-    antialias: true,
-    alpha: true,
-    powerPreference: 'high-performance',
-    preserveDrawingBuffer: false,
-    outputColorSpace: THREE.SRGBColorSpace,
-    toneMapping: THREE.ACESFilmicToneMapping,
-    toneMappingExposure: 1.3,
-  }}
-  dpr={Math.min(window.devicePixelRatio, 2)}
-  onCreated={({ gl }) => {
-    gl.toneMapping = THREE.ACESFilmicToneMapping;
-    gl.toneMappingExposure = 1.3;
-    gl.outputColorSpace = THREE.SRGBColorSpace;
-    onModelLoaded?.();
-  }}
->
-  <Suspense fallback={null}>
-    <Scene modelName={modelName} isMobile={isMobile} />
-  </Suspense>
-</Canvas>
+  // Calculate styles based on scroll progress
+  const miniSize = '76px';
+  const miniTop = isMobile ? '0px' : '4px';
+  const miniLeft = isMobile ? '0px' : '55px';
 
-      <div className="absolute inset-0 bg-black/20 pointer-events-none" />
+
+  const containerStyle = {
+    position: 'fixed',
+    top: scrollProgress === 0 ? '20px' : `calc(${miniTop} * ${scrollProgress})`,
+    left: scrollProgress === 0 ? '0px' : `calc(${miniLeft} * ${scrollProgress})`,
+    width: scrollProgress === 0 ? '100vw' : `calc(100vw - (100vw - ${miniSize}) * ${scrollProgress})`,
+    height: scrollProgress === 0 ? '100vh' : `calc(100vh - (100vh - ${miniSize}) * ${scrollProgress})`,
+    borderRadius: `${scrollProgress * 50}%`,
+    overflow: 'hidden',
+    // Fade out in middle of scroll, then fade back in when reaching hamburger position
+    opacity: scrollProgress < 0.3 ? 1 : scrollProgress > 0.7 ? 1 : Math.max(0.4, 1 - ((scrollProgress - 0.3) * 1.5)),
+    zIndex: scrollProgress > 0.8 ? 100 : 0,
+    pointerEvents: scrollProgress > 0.8 ? 'auto' : 'none',
+    transition: 'all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1), opacity 0.6s ease-out, z-index 0.1s ease-out',
+  };
+
+  return (
+    <div onClick={handleMiniClick} style={containerStyle}>
+      <Canvas
+        {...canvasProps}
+        frameloop='always'
+        shadows={false}
+        gl={{
+          antialias: true,
+          alpha: true,
+          powerPreference: 'high-performance',
+          preserveDrawingBuffer: false,
+          outputColorSpace: THREE.SRGBColorSpace,
+          toneMapping: THREE.ACESFilmicToneMapping,
+          toneMappingExposure: 1.3,
+        }}
+        dpr={Math.min(window.devicePixelRatio, 2)}
+        onCreated={({ gl }) => {
+          gl.toneMapping = THREE.ACESFilmicToneMapping;
+          gl.toneMappingExposure = 1.3;
+          gl.outputColorSpace = THREE.SRGBColorSpace;
+          onModelLoaded?.();
+        }}
+      >
+        <Suspense fallback={null}>
+          <Scene modelName={modelName} isMobile={isMobile} />
+        </Suspense>
+      </Canvas>
+
+      <div
+        className="absolute inset-0 bg-black/20 pointer-events-none"
+        style={{ opacity: 0.2 - (scrollProgress * 0.2) }}
+      />
     </div>
   );
 }

@@ -48,6 +48,28 @@ function ShoppingHeader() {
   const { toast } = useToast();
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const [scrollProgress, setScrollProgress] = useState(0);
+
+  // Scroll listener for hamburger transition
+  useEffect(() => {
+    const handleScroll = () => {
+      const latest = window.scrollY;
+      const progress = Math.min(latest / 500, 1);
+      setScrollProgress(progress);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Event listener for model click
+  useEffect(() => {
+    const handleOpenMenu = () => {
+      setIsSheetOpen(true);
+    };
+    window.addEventListener('open-mobile-menu', handleOpenMenu);
+    return () => window.removeEventListener('open-mobile-menu', handleOpenMenu);
+  }, []);
 
   const messages = [
     "🔥 NEW ARRIVALS: Summer Collection 2024 is here!",
@@ -196,9 +218,9 @@ function ShoppingHeader() {
       sessionStorage.removeItem("filters");
       const currentFilter =
         getCurrentMenuItem.id !== "home" &&
-        getCurrentMenuItem.id !== "collections" &&
-        getCurrentMenuItem.id !== "new-arrivals" &&
-        getCurrentMenuItem.id !== "contact"
+          getCurrentMenuItem.id !== "collections" &&
+          getCurrentMenuItem.id !== "new-arrivals" &&
+          getCurrentMenuItem.id !== "contact"
           ? { category: [getCurrentMenuItem.id] }
           : null;
 
@@ -575,7 +597,11 @@ function ShoppingHeader() {
             <div className="flex items-center">
               <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
                 <SheetTrigger asChild>
-                  <Button variant="ghost" size="icon" className="text-foreground">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={`text-foreground transition-opacity duration-500 ${scrollProgress > 0.85 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+                  >
                     <Menu className="h-6 w-6" />
                     <span className="sr-only">Toggle menu</span>
                   </Button>
@@ -810,7 +836,7 @@ function ShoppingHeader() {
       <div className="h-[calc(2.5rem)]"></div>
       {/* Hidden on mobile, visible on desktop */}
       <div className="hidden">
-        <MenuItems onCloseSheet={() => {}} />
+        <MenuItems onCloseSheet={() => { }} />
       </div>
     </>
   );

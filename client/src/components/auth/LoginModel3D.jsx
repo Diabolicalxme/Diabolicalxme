@@ -78,7 +78,7 @@ function LoginScene({ formProgress }) {
     // Adjust camera for a tight head-and-shoulders framing
     camera.position.set(0, 0, 4);
     camera.lookAt(0, 0, 0);
-    
+
     // Narrower FOV to zoom in
     camera.fov = 35;
     camera.updateProjectionMatrix();
@@ -109,7 +109,7 @@ function LoginScene({ formProgress }) {
         intensity={1.5}
         color="#ffffff"
       />
-      
+
       <directionalLight
         position={[5, 0, 0]}
         intensity={1.5}
@@ -131,8 +131,8 @@ function LoginModel3D({ formProgress = 0 }) {
   // Get theme colors for background using centralized utility
   const gradientColors = getGradientColors(
     currentTheme === 'beige' ? 'arthur' :
-    currentTheme === 'black' ? 'bravo' :
-    currentTheme === 'bottle-green' ? 'hector' : 'bravo'
+      currentTheme === 'black' ? 'bravo' :
+        currentTheme === 'bottle-green' ? 'hector' : 'bravo'
   );
 
   const themeColors = {
@@ -158,7 +158,7 @@ function LoginModel3D({ formProgress = 0 }) {
 
   if (hasError) {
     return (
-      <div 
+      <div
         className="w-full h-full flex items-center justify-center"
         style={{ background: themeColors.gradient }}
       >
@@ -168,9 +168,9 @@ function LoginModel3D({ formProgress = 0 }) {
   }
 
   return (
-    <div 
+    <div
       className="fixed inset-0 w-full h-full"
-      style={{ 
+      style={{
         background: themeColors.gradient,
         position: 'fixed',
         top: 0,
@@ -183,7 +183,7 @@ function LoginModel3D({ formProgress = 0 }) {
       <Canvas
         {...canvasProps}
         frameloop='always'
-        shadows={false}        
+        shadows={false}
         gl={{
           antialias: true,
           alpha: true,
@@ -210,21 +210,8 @@ function LoginModel3D({ formProgress = 0 }) {
           <LoginScene formProgress={formProgress} />
         </Suspense>
       </Canvas>
-      
+
       {/* Progress indicator for login (same as register) */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-white/30 rounded-full overflow-hidden z-10">
-        <div
-          className="h-full bg-white transition-all duration-500 ease-out"
-          style={{ width: `${formProgress * 100}%` }}
-        />
-      </div>
-      
-      {/* Completion message */}
-      {formProgress >= 0.99 && (
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-white/90 text-gray-800 px-3 py-1 rounded-full text-sm font-medium">
-          Welcome Back!
-        </div>
-      )}
     </div>
   );
 }

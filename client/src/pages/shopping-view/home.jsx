@@ -2,7 +2,8 @@ import React, { useRef, useEffect, useState, useMemo } from "react";
 import { Helmet } from "react-helmet-async";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
-import { ArrowUpRight } from "lucide-react";
+import { ArrowUpRight, Menu } from "lucide-react";
+import { useScroll, useTransform, useSpring } from "framer-motion";
 import FilterDrawer from "@/components/shopping-view/filter-drawer";
 import "@/styles/masonry.css";
 
@@ -23,6 +24,7 @@ import Banner from "@/components/shopping-view/banner";
 import { addToTempCart, getTempCartItems } from "@/utils/tempCartManager";
 import { validateAddToCart } from "@/utils/cartValidation";
 import ProductSlider from "@/components/shopping-view/product-slider";
+import SingleProductBanners from "@/components/shopping-view/single-product-banners";
 import CategoryPicks from "@/components/shopping-view/category-picks";
 import BackgroundModel from "@/components/shopping-view/BackgroundModel";
 import banner from "../../assets/banner.jpg";
@@ -48,6 +50,27 @@ function ShoppingHome() {
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const [use3DBackground, setUse3DBackground] = useState(true);
 
+  // Track scroll for New Arrivals visibility (same as model transition)
+  const [scrollY, setScrollY] = useState(0);
+
+  // Scroll tracking for model transition
+  const { scrollYProgress } = useScroll();
+  const smoothScrollYProgress = useSpring(scrollYProgress, {
+    stiffness: 100,
+    damping: 30,
+    restDelta: 0.001
+  });
+
+  // Track scroll position for New Arrivals visibility
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollY(window.scrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   // If 3D background is disabled, consider model as loaded
   useEffect(() => {
     if (!use3DBackground) {
@@ -55,8 +78,11 @@ function ShoppingHome() {
     }
   }, [use3DBackground]);
 
-  // Fallback timeout to prevent infinite loading
+  // Fallback timeout and initial scroll reset
   useEffect(() => {
+    // Ensure we start at the top so the model is centered
+    window.scrollTo(0, 0);
+
     const timeout = setTimeout(() => {
       if (!isBackgroundModelLoaded) {
         console.warn('3D model loading timeout, proceeding without model');
@@ -258,293 +284,135 @@ function ShoppingHome() {
       </Helmet>
 
       {/* Full-page 3D background model based on user category */}
-      {/* {use3DBackground && (
+      {/* Full-page 3D background model based on user category */}
+      {/* Only show model if authenticated. It handles its own scroll logic internally */}
+      {isAuthenticated && use3DBackground && (
         <BackgroundModel
           modelName={getModelName}
           onError={() => setUse3DBackground(false)}
           onModelLoaded={() => setIsBackgroundModelLoaded(true)}
         />
-      )} */}
+      )}
 
       {/* Show loader until everything is ready */}
       {showLoader && <Loader />}
 
       {/* Main content - only show when not loading */}
       {!showLoader && (
-        <div className="pt-32 flex flex-col relative z-10">
-        {/* Category-based Product Picks - Only show for authenticated users */}
-        {isAuthenticated && (
-          <CategoryPicks
-            products={productList}
-            handleGetProductDetails={handleGetProductDetails}
-            handleAddtoCart={handleAddtoCart}
-          />
-        )}
+        <div className="pt-[110vh] flex flex-col relative z-10 w-full animate-in fade-in duration-700">
 
-
-        {/* Category Grid Layout - Revamped Design */}
-        <section className="py-16 ">
-          <div className="container mx-auto px-4">
-       
-
-           {/* Masonry layout desktop */}
-        <section className="hidden md:block py-8 ">
-          <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto text-center mb-12">
-              <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4">Shop by Category</h2>
-              <div className="w-24 h-1 bg-black mx-auto mb-6"></div>
-              <p className="text-gray-600">Discover our curated collections designed for every style and occasion</p>
+          {/* New Arrivals as overlay from model's hands - Now moves with scroll and fades out */}
+          {isAuthenticated && (
+            <div className="absolute top-[35vh] left-0 w-full z-[5] pointer-events-none transition-opacity duration-300"
+              style={{
+                opacity: Math.max(0, 1 - scrollY / 400)
+              }}>
+              <div className="pointer-events-auto">
+                <ProductSlider
+                  products={productList.filter(p => p.isNewArrival)}
+                  handleGetProductDetails={handleGetProductDetails}
+                  handleAddtoCart={handleAddtoCart}
+                  title=""
+                  description=""
+                />
+              </div>
             </div>
+          )}
 
-            {/* Masonry layout container */}
-            <div className="columns-1 sm:columns-2 md:columns-3 gap-4">
-              {categoriesList &&
-                categoriesList.map((categoryItem, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false, amount: 0.1 }}
-                    transition={{
-                      duration: 0.5,
-                      delay: index * 0.1,
-                      type: "spring",
-                      stiffness: 50,
-                    }}
-                    className="break-inside-avoid mb-4"
-                  >
-                    <CategoryCard
-                      categoryItem={categoryItem}
-                      index={index}
-                      variant="masonry"
-                    />
-                  </motion.div>
-                ))}
-            </div>
-
-           
+          {/* View All Collection Button - Appears immediately after model hero */}
+          <div className="text-center py-12">
+            <button
+              onClick={() => navigate("/shop/collections")}
+              className="inline-block px-12 py-4 border-2 border-foreground text-foreground hover:bg-foreground hover:text-background transition-all duration-500 uppercase tracking-[0.3em] text-sm font-bold rounded-full backdrop-blur-md bg-background/5 shadow-2xl hover:scale-105 active:scale-95"
+            >
+              View All Collection
+            </button>
           </div>
-        </section>
-        {/* Mobile layout */}
-        <section className="py-8  md:hidden">
-          <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto text-center mb-6">
-              <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4">Shop by Category</h2>
-              <div className="w-24 h-1 bg-black mx-auto mb-6"></div>
-              <p className="text-gray-600">Discover our curated collections designed for every style and occasion</p>
+
+          {/* Featured Products - Now appearing right after Collections button */}
+          {productList && productList.filter(product => product?.isFeatured).length > 0 && (
+            <div className="mb-16">
+              <SingleProductBanners
+                products={productList.filter(product => product?.isFeatured)}
+              />
             </div>
+          )}
 
-            {/* Custom layout container - mobile: first card full width, rest in 2 columns; desktop: masonry */}
-            <div className="hidden sm:block columns-2 md:columns-3 gap-4">
-              {categoriesList &&
-                categoriesList.map((categoryItem, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: false, amount: 0.1 }}
-                    transition={{
-                      duration: 0.5,
-                      delay: index * 0.1,
-                      type: "spring",
-                      stiffness: 50,
-                    }}
-                    className="break-inside-avoid mb-4"
-                  >
-                    <CategoryCard
-                      categoryItem={categoryItem}
-                      index={index}
-                      variant="masonry"
-                    />
-                  </motion.div>
-                ))}
+          <section>
+            <Banner
+              imageUrl={banner}
+              altText="Banner 3"
+              description="Exciting Offers & Discounts. Don't miss out! Shop now and save big. Best deals on your favorite products."
+            />
+          </section>
+
+          <section className="py-16">
+            <div className="container mx-auto px-4">
+              <div className="max-w-3xl mx-auto text-center mb-12 backdrop-blur-sm p-6 rounded-lg">
+                <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4 text-foreground">Follow Our Style</h2>
+                <div className="w-24 h-1 bg-foreground mx-auto mb-6"></div>
+                <p className="text-foreground">Get inspired by our Instagram feed and share your looks with #OurFashionStyle</p>
+              </div>
+              <InstagramFeed posts={instaFeedPosts} />
+
+              <div className="text-center mt-10">
+                <a
+                  href="https://instagram.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-sm uppercase tracking-wider font-medium hover:underline backdrop-blur-sm px-4 py-2 rounded text-foreground"
+                >
+                  Follow us on Instagram
+                  <ArrowUpRight className="h-4 w-4" />
+                </a>
+              </div>
             </div>
+          </section>
 
-            {/* Mobile layout - first card full width, rest in 2 columns, pattern repeats every 5 cards */}
-            <div className="sm:hidden">
-              {categoriesList && categoriesList.length > 0 &&
-                Array.from({ length: Math.ceil(categoriesList.length / 5) }).map((_, groupIndex) => {
-                  const startIndex = groupIndex * 5;
-                  const groupItems = categoriesList.slice(startIndex, startIndex + 5);
-
-                  return (
-                    <div key={`group-${groupIndex}`} className="mb-4">
-                      {/* First item in group - full width */}
-                      {groupItems[0] && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 20 }}
-                          whileInView={{ opacity: 1, y: 0 }}
-                          viewport={{ once: false, amount: 0.1 }}
-                          transition={{
-                            duration: 0.5,
-                            delay: 0.1,
-                            type: "spring",
-                            stiffness: 50,
-                          }}
-                          className="mb-4"
-                        >
-                          <CategoryCard
-                            categoryItem={groupItems[0]}
-                            index={startIndex}
-                            variant="masonry"
-                          />
-                        </motion.div>
-                      )}
-
-                      {/* Remaining items in group - 2 column grid */}
-                      {groupItems.length > 1 && (
-                        <div className="grid grid-cols-2 gap-4">
-                          {groupItems.slice(1).map((categoryItem, idx) => (
-                            <motion.div
-                              key={startIndex + idx + 1}
-                              initial={{ opacity: 0, y: 20 }}
-                              whileInView={{ opacity: 1, y: 0 }}
-                              viewport={{ once: false, amount: 0.1 }}
-                              transition={{
-                                duration: 0.5,
-                                delay: (idx + 1) * 0.1,
-                                type: "spring",
-                                stiffness: 50,
-                              }}
-                            >
-                              <CategoryCard
-                                categoryItem={categoryItem}
-                                index={startIndex + idx + 1}
-                                variant="masonry"
-                              />
-                            </motion.div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })
-              }
+          <section className="py-16">
+            <div className="container mx-auto px-4">
+              <div className="max-w-3xl mx-auto text-center mb-12 backdrop-blur-sm p-6 rounded-lg">
+                <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4 text-foreground">Customer Stories</h2>
+                <div className="w-24 h-1 bg-foreground mx-auto mb-6"></div>
+                <p className="text-foreground">Hear what our customers have to say about their experience</p>
+              </div>
+              <Testimonials />
             </div>
+          </section>
 
-            <div className="text-center mt-12">
-              <button
-                onClick={() => navigate("/shop/collections")}
-                className="inline-block px-8 py-3 border-2 border-black hover:bg-black hover:text-white transition-colors duration-300 uppercase tracking-wider text-sm font-medium"
-              >
-                View All Collections
-              </button>
-            </div>
-          </div>
-        </section>
+          {/* Add extra space to ensure footer visibility */}
+          <div className="h-16"></div>
 
+          {/* Filter Drawer */}
+          <FilterDrawer
+            filters={filters}
+            setFilters={setFilters}
+            handleFilter={(filterKey, filterValue) => {
+              // Ensure filters is an object
+              const safeFilters = filters || {};
+              const updatedFilters = { ...safeFilters };
 
-
-            <div className="text-center mt-12">
-              <button
-                onClick={() => navigate("/shop/collections")}
-                className="inline-block px-8 py-3 border-2 border-foreground hover:bg-foreground hover:text-background transition-colors duration-300 uppercase tracking-wider text-sm font-medium text-foreground"
-              >
-                View All Collections
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {/* Featured Products Slider */}
-        {productList && productList.filter(product => product?.isFeatured).length > 0 && (
-          <ProductSlider
-            products={productList.filter(product => product?.isFeatured)}
-            handleGetProductDetails={handleGetProductDetails}
-            handleAddtoCart={handleAddtoCart}
-            title="Featured Collection"
-            description="Discover our most popular styles and seasonal favorites"
-            bgColor="backdrop-blur-sm"
-          />
-        )}
-
-        {/* New Arrivals Slider */}
-        {productList && productList.filter(product => product?.isNewArrival).length > 0 && (
-          <ProductSlider
-            products={productList.filter(product => product?.isNewArrival)}
-            handleGetProductDetails={handleGetProductDetails}
-            handleAddtoCart={handleAddtoCart}
-            title="New Arrivals"
-            description="Explore our latest additions and be the first to wear them"
-            bgColor="backdrop-blur-sm"
-          />
-        )}
-
-        <section>
-          <Banner
-            imageUrl={banner}
-            altText="Banner 3"
-            description="Exciting Offers & Discounts. Don't miss out! Shop now and save big. Best deals on your favorite products."
-          />
-        </section>
-
-        <section className="py-16">
-          <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto text-center mb-12 backdrop-blur-sm p-6 rounded-lg">
-              <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4 text-foreground">Follow Our Style</h2>
-              <div className="w-24 h-1 bg-foreground mx-auto mb-6"></div>
-              <p className="text-foreground">Get inspired by our Instagram feed and share your looks with #OurFashionStyle</p>
-            </div>
-            <InstagramFeed posts={instaFeedPosts} />
-
-            <div className="text-center mt-10">
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 text-sm uppercase tracking-wider font-medium hover:underline backdrop-blur-sm px-4 py-2 rounded text-foreground"
-              >
-                Follow us on Instagram
-                <ArrowUpRight className="h-4 w-4" />
-              </a>
-            </div>
-          </div>
-        </section>
-
-        <section className="py-16">
-          <div className="container mx-auto px-4">
-            <div className="max-w-3xl mx-auto text-center mb-12 backdrop-blur-sm p-6 rounded-lg">
-              <h2 className="text-3xl md:text-4xl font-light uppercase tracking-wide mb-4 text-foreground">Customer Stories</h2>
-              <div className="w-24 h-1 bg-foreground mx-auto mb-6"></div>
-              <p className="text-foreground">Hear what our customers have to say about their experience</p>
-            </div>
-            <Testimonials />
-          </div>
-        </section>
-
-        {/* Add extra space to ensure footer visibility */}
-        <div className="h-16"></div>
-
-        {/* Filter Drawer */}
-        <FilterDrawer
-          filters={filters}
-          setFilters={setFilters}
-          handleFilter={(filterKey, filterValue) => {
-            // Ensure filters is an object
-            const safeFilters = filters || {};
-            const updatedFilters = { ...safeFilters };
-
-            // Add or remove filter value
-            if (!updatedFilters[filterKey]) {
-              updatedFilters[filterKey] = [filterValue];
-            } else {
-              const index = updatedFilters[filterKey].indexOf(filterValue);
-              if (index === -1) {
-                updatedFilters[filterKey].push(filterValue);
+              // Add or remove filter value
+              if (!updatedFilters[filterKey]) {
+                updatedFilters[filterKey] = [filterValue];
               } else {
-                updatedFilters[filterKey].splice(index, 1);
+                const index = updatedFilters[filterKey].indexOf(filterValue);
+                if (index === -1) {
+                  updatedFilters[filterKey].push(filterValue);
+                } else {
+                  updatedFilters[filterKey].splice(index, 1);
+                }
               }
-            }
 
-            // Remove filter if empty after removal
-            if (updatedFilters[filterKey]?.length === 0) {
-              delete updatedFilters[filterKey];
-            }
+              // Remove filter if empty after removal
+              if (updatedFilters[filterKey]?.length === 0) {
+                delete updatedFilters[filterKey];
+              }
 
-            setFilters(updatedFilters);
-          }}
-        />
-      </div>
+              setFilters(updatedFilters);
+            }}
+          />
+        </div>
       )}
 
     </>

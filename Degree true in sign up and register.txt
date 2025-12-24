@@ -1,0 +1,33 @@
+Degree true in sign up and register....
+- 1st Head 80*
+- Upper Body - Imaginization
+- Total  body - 60 - 120 - 180
+
+HomeScreen Posing
+- Power Mudhra - Hand Open -> Hand open la products
+
+
+initial load content
+
+- On Swipe Up --> hamburger replace with model image..
+- Top left la placement - Kiran bro reference - instead of hamberger menu in the left top part of the website
+
+- Dynamic trans   
+
+Login / SignUp
+- Transparent floating
+- One question mudika mudika adutha question that corresponds to the character movement
+- Animation
+- Single Character - grey character - is going to ask questions
+- character change agura apo - show a "center of the screen la oru quote mari potutu" MOVE TO NEXT CHARACTER fade in and out with delay
+Home
+- Character + Scroll - revolve newly launched new arriavals….remove new arriavlas section... one char under it newly launded scrll
+then only one product on the whole page..
+-- featured products mapped with focusing one product render them as banners...
+
+
+- ON Scrol - remove the existing ham berger menu and place the 3D image this will be user specifc
+- Single Product one page full screen - Hot Selling product
+- View all collection - change grid to 3 - 2 on all screens and one on mobile.
+-
+

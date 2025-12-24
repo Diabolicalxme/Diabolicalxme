@@ -233,21 +233,6 @@ function RegisterModel3D({ formProgress = 0 }) {
           <RegistrationScene formProgress={formProgress} />
         </Suspense>
       </Canvas>
-
-      {/* Progress indicator - Higher z-index to appear above form overlay */}
-      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 w-32 h-1 bg-white/30 rounded-full overflow-hidden z-30">
-        <div
-          className="h-full bg-white transition-all duration-500 ease-out"
-          style={{ width: `${formProgress * 100}%` }}
-        />
-      </div>
-
-      {/* Completion message - Higher z-index to appear above form overlay */}
-      {formProgress >= 0.99 && (
-        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-white/90 text-gray-800 px-3 py-1 rounded-full text-sm font-medium z-30">
-          Profile Complete!
-        </div>
-      )}
     </div>
   );
 }
