@@ -411,7 +411,7 @@ const uploadVideo = async (file) => {
               position="popper"
               side="bottom"
               align="start"
-              className="z-50 max-h-60 overflow-auto"
+              className="z-[110] max-h-60 overflow-auto"
             >
               {/* Show city-specific message when no state selected */}
               {controlItem.name === "city" && !formData.state ? (

@@ -41,6 +41,11 @@ const videoUploadUtil = async (videoData, transformations = []) => {
   }
 };
 
+async function imageDeleteUtil(publicId) {
+  const result = await cloudinary.uploader.destroy(publicId);
+  return result;
+}
+
 const upload = multer({ storage });
 
-module.exports = { upload, imageUploadUtil, videoUploadUtil };
+module.exports = { upload, imageUploadUtil, videoUploadUtil, imageDeleteUtil };

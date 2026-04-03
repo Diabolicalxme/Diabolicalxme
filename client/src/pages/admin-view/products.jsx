@@ -10,6 +10,7 @@ import { fetchCategories } from "@/store/shop/categories-slice";
 import { useToast } from "@/components/ui/use-toast";
 import { addProductFormElements } from "@/config";
 import { addNewProduct, deleteProduct, editProduct, fetchAllProducts } from "@/store/admin/products-slice";
+import axios from "axios";
 
 // Updated initial form data with new fields
 const initialFormData = {
@@ -35,9 +36,12 @@ function AdminProducts() {
   const [formData, setFormData] = useState(initialFormData);
   const [imageFiles, setImageFiles] = useState([]);
   const [uploadedImageUrls, setUploadedImageUrls] = useState([]);
+  const [newlyUploadedUrls, setNewlyUploadedUrls] = useState([]); // Track NEWLY uploaded images in this session
   const [imageLoadingState, setImageLoadingState] = useState(false);
   const [imageLoadingStates, setImageLoadingStates] = useState([]);
+  const [imageDeletingStates, setImageDeletingStates] = useState([]);
   const [currentEditedId, setCurrentEditedId] = useState(null);
+  const [formErrors, setFormErrors] = useState({});
   const { productList, isLoading } = useSelector((state) => state.adminProducts);
   const { categoriesList } = useSelector((state) => state.shopCategories);
   const [searchQuery, setSearchQuery] = useState("");
@@ -57,7 +61,44 @@ function AdminProducts() {
         ? imageFiles.map((_, index) => prevStates[index] || false)
         : imageFiles.map(() => false)
     );
+    
+    setImageDeletingStates((prevStates) =>
+      Array.isArray(prevStates)
+        ? imageFiles.map((_, index) => prevStates[index] || false)
+        : imageFiles.map(() => false)
+    );
   }, [imageFiles]);
+
+  // Helper to extract public_id from Cloudinary URL (duplicated from component for background cleanup)
+  function getPublicIdFromUrl(url) {
+    if (!url || typeof url !== 'string') return null;
+    const parts = url.split("/upload/");
+    if (parts.length < 2) return null;
+    const pathParts = parts[1].split("/");
+    const versionIndex = pathParts.findIndex(p => p.startsWith('v') && /^\d+$/.test(p.substring(1)));
+    let publicIdWithExt;
+    if (versionIndex !== -1) {
+      publicIdWithExt = pathParts.slice(versionIndex + 1).join("/");
+    } else {
+      publicIdWithExt = pathParts[pathParts.length - 1];
+    }
+    return publicIdWithExt.split(".")[0];
+  }
+
+  // Callback to track images uploaded during this session
+  const handleAddNewImageToSession = (url) => {
+    setNewlyUploadedUrls(prev => {
+      if (!prev.includes(url)) {
+        return [...prev, url];
+      }
+      return prev;
+    });
+  };
+
+  // Callback to remove image from session tracking (e.g. manually deleted during same session)
+  const handleRemoveImageFromSession = (url) => {
+    setNewlyUploadedUrls(prev => prev.filter(item => item !== url));
+  };
 
   // Extend the form elements to include colors if not already provided.
   const dynamicAddProductFormElements = addProductFormElements.map((element) =>
@@ -99,8 +140,50 @@ function AdminProducts() {
   //   });
   // }
 
+  function validateForm() {
+    const optionalFields = [
+      "productCode",
+      "isNewArrival",
+      "isFeatured",
+      "image",
+      "salePrice",
+      "secondTitle",
+      "colors"
+    ];
+
+    const errors = {};
+    Object.keys(formData).forEach((key) => {
+      if (!["averageReview", ...optionalFields].includes(key)) {
+        if (formData[key] === "" || formData[key] === null || formData[key] === undefined) {
+          // Map internal field names to user-friendly labels
+          const fieldLabels = {
+            title: "Title",
+            description: "Description",
+            category: "Category",
+            price: "Price",
+            totalStock: "Total Stock"
+          };
+          errors[key] = `${fieldLabels[key] || key} is required`;
+        }
+      }
+    });
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  }
+
   function onSubmit(event) {
     event.preventDefault();
+    
+    if (!validateForm()) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields.",
+        variant: "destructive"
+      });
+      return;
+    }
+
     const updatedFormData = {
       ...formData,
       image: uploadedImageUrls.length > 0 ? uploadedImageUrls : formData.image,
@@ -112,6 +195,7 @@ function AdminProducts() {
           dispatch(fetchAllProducts());
           setFormData(initialFormData);
           setUploadedImageUrls([]);
+          setNewlyUploadedUrls([]); // Reset tracking on success
           setImageFiles([]);
           setOpenCreateProductsDialog(false);
           setCurrentEditedId(null);
@@ -127,6 +211,7 @@ function AdminProducts() {
           setOpenCreateProductsDialog(false);
           setImageFiles([]);
           setUploadedImageUrls([]);
+          setNewlyUploadedUrls([]); // Reset tracking on success
           setFormData(initialFormData);
           toast({
             title: "Product added successfully",
@@ -164,6 +249,7 @@ function AdminProducts() {
       // video: product.video || ""
     });
     setUploadedImageUrls(product.image || []);
+    setFormErrors({});
     setOpenCreateProductsDialog(true);
   }
 
@@ -180,7 +266,8 @@ function AdminProducts() {
       // "video",
       "image",
       "salePrice",
-      "secondTitle"
+      "secondTitle",
+      "colors"
     ];
 
     if (imageLoadingStates?.includes(true)) return false;
@@ -258,7 +345,9 @@ function AdminProducts() {
           onClick={() => {
             setFormData(initialFormData);
             setUploadedImageUrls([]);
+            setNewlyUploadedUrls([]);
             setImageFiles([]);
+            setFormErrors({});
             setOpenCreateProductsDialog(true);
           }}
         >
@@ -292,12 +381,37 @@ function AdminProducts() {
 
       <Sheet
         open={openCreateProductsDialog}
-        onOpenChange={() => {
-          setOpenCreateProductsDialog(false);
-          setCurrentEditedId(null);
-          setFormData(initialFormData);
-          setUploadedImageUrls([]);
-          setImageFiles([]);
+        onOpenChange={(isOpen) => {
+          if (!isOpen) {
+            // Background cleanup of unsaved images
+            if (newlyUploadedUrls.length > 0) {
+              const imagesToDelete = newlyUploadedUrls.filter(url => 
+                // Only delete it if it's still in the uploadedImageUrls list (meaning it wasn't saved yet)
+                // Actually, if they close the dialog, we delete EVERYTHING they recently uploaded 
+                // that hasn't been committed to a product.
+                uploadedImageUrls.includes(url)
+              );
+
+              imagesToDelete.forEach(async (url) => {
+                const publicId = getPublicIdFromUrl(url);
+                if (publicId) {
+                   try {
+                     await axios.post(`${import.meta.env.VITE_BACKEND_URL}/admin/products/delete-image`, { publicId });
+                   } catch(err) {
+                     console.error("Background cleanup failed for", url);
+                   }
+                }
+              });
+            }
+
+            setOpenCreateProductsDialog(false);
+            setCurrentEditedId(null);
+            setFormData(initialFormData);
+            setUploadedImageUrls([]);
+            setNewlyUploadedUrls([]);
+            setImageFiles([]);
+            setFormErrors({});
+          }
         }}
       >
         <SheetContent side="right" className="overflow-auto">
@@ -314,6 +428,10 @@ function AdminProducts() {
             imageLoadingState={imageLoadingState}
             imageLoadingStates={imageLoadingStates}
             setImageLoadingStates={setImageLoadingStates}
+            imageDeletingStates={imageDeletingStates}
+            setImageDeletingStates={setImageDeletingStates}
+            onImageUploaded={handleAddNewImageToSession}
+            onImageRemoved={handleRemoveImageFromSession}
             setImageLoadingState={setImageLoadingState}
             isSingleImage={false}
           />
@@ -324,7 +442,8 @@ function AdminProducts() {
               setFormData={setFormData}
               buttonText={currentEditedId !== null ? "Edit" : "Add"}
               formControls={dynamicAddProductFormElements}
-              isBtnDisabled={!isFormValid()}
+              isBtnDisabled={false}
+              formErrors={formErrors}
             />
           </div>
         </SheetContent>

@@ -7,6 +7,7 @@ const {
   editProduct,
   fetchAllProducts, 
   deleteProduct,
+  handleDeleteImage
 } = require("../../controllers/admin/products-controller");
 
 const { upload } = require("../../helpers/cloudinary");
@@ -14,6 +15,7 @@ const { upload } = require("../../helpers/cloudinary");
 const router = express.Router();
 //aloow single or miltiple file upload
 router.post("/upload-image", upload.array("my_file"), handleImageUpload);
+router.post("/delete-image", handleDeleteImage);
 // router.post("/upload-video", upload.single("my_file"), handleVideoUpload);
 router.post("/add", addProduct);
 router.put("/edit/:id", editProduct);

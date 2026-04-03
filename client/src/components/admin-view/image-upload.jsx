@@ -18,6 +18,10 @@ function ProductImageUpload({
   setImageLoadingStates,
   isCustomStyling = false,
   isSingleImage = false, // Controls single vs. multiple uploads
+  imageDeletingStates = [], // New prop for deletion loading
+  setImageDeletingStates, // New prop for deletion loading
+  onImageUploaded, // Callback for session tracking
+  onImageRemoved, // Callback for session tracking
 }) {
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
@@ -42,7 +46,11 @@ function ProductImageUpload({
       console.warn("uploadedImageUrls is not an array, initializing as empty array");
       setUploadedImageUrls([]);
     }
-  }, [imageFiles, imageLoadingStates, uploadedImageUrls, setImageFiles, setImageLoadingStates, setUploadedImageUrls]);
+    if (!Array.isArray(imageDeletingStates)) {
+      console.warn("imageDeletingStates is not an array, initializing as empty array");
+      setImageDeletingStates([]);
+    }
+  }, [imageFiles, imageLoadingStates, imageDeletingStates, uploadedImageUrls, setImageFiles, setImageLoadingStates, setImageDeletingStates, setUploadedImageUrls]);
 
   function handleImageFileChange(event) {
     const selectedFiles = Array.from(event.target.files || []);
@@ -97,7 +105,15 @@ function ProductImageUpload({
           const states = Array.isArray(prevStates) ? prevStates : [];
           return [
             ...states,
-            ...selectedFiles.map(() => true),
+            ...validFiles.map(() => true),
+          ];
+        });
+
+        setImageDeletingStates((prevStates) => {
+          const states = Array.isArray(prevStates) ? prevStates : [];
+          return [
+            ...states,
+            ...validFiles.map(() => false),
           ];
         });
       }
@@ -167,7 +183,32 @@ function ProductImageUpload({
     event.preventDefault();
   }
 
-  function handleRemoveImage(index) {
+  // Helper to extract public_id from Cloudinary URL
+  function getPublicIdFromUrl(url) {
+    if (!url || typeof url !== 'string') return null;
+    const parts = url.split("/upload/");
+    if (parts.length < 2) return null;
+
+    // The part after /upload/ contains [transformations/][version/]public_id.extension
+    const pathParts = parts[1].split("/");
+    
+    // Find the index where the public_id starts (skip version and transformations)
+    // Version usually starts with 'v' followed by digits
+    const versionIndex = pathParts.findIndex(p => p.startsWith('v') && /^\d+$/.test(p.substring(1)));
+    
+    let publicIdWithExt;
+    if (versionIndex !== -1) {
+      publicIdWithExt = pathParts.slice(versionIndex + 1).join("/");
+    } else {
+      // If no version, use the last part as a fallback
+      publicIdWithExt = pathParts[pathParts.length - 1];
+    }
+
+    // Remove file extension
+    return publicIdWithExt.split(".")[0];
+  }
+
+  async function handleRemoveImage(index) {
     // Validate arrays before proceeding
     if (!Array.isArray(imageLoadingStates)) {
       console.error("imageLoadingStates is not an array! Resetting...");
@@ -190,14 +231,50 @@ function ProductImageUpload({
     // Set removing flag to prevent triggering uploads
     setIsRemoving(true);
 
+    // Mark specific image as deleting
+    setImageDeletingStates((prev) => {
+      if (!Array.isArray(prev)) return [];
+      const updated = [...prev];
+      updated[index] = true;
+      return updated;
+    });
+
+    // Get the URL and Extract public_id for Cloudinary deletion
+    const imageUrl = Array.isArray(uploadedImageUrls) ? uploadedImageUrls[index] : null;
+    const publicId = getPublicIdFromUrl(imageUrl);
+
+    if (publicId) {
+      try {
+        await axios.post(
+          `${import.meta.env.VITE_BACKEND_URL}/admin/products/delete-image`,
+          { publicId }
+        );
+        
+        // Remove from parent's newlyUploadedUrls tracking if it was there
+        if (onImageRemoved) {
+          onImageRemoved(imageUrl);
+        }
+
+        toast({
+          title: "Image deleted from Cloudinary",
+        });
+      } catch (error) {
+        console.error("Error deleting image from Cloudinary:", error);
+        // We still remove it from local state even if Cloudinary fails, 
+        // to avoid blocking the user, but we log the error.
+      }
+    }
+
     if (isSingleImage) {
       setImageFiles([]);
       setUploadedImageUrls([]);
       setImageLoadingStates([]);
+      setImageDeletingStates([]);
     } else {
       setImageFiles((prev) => Array.isArray(prev) ? prev.filter((_, i) => i !== index) : []);
       setUploadedImageUrls((prev) => Array.isArray(prev) ? prev.filter((_, i) => i !== index) : []);
       setImageLoadingStates((prev) => Array.isArray(prev) ? prev.filter((_, i) => i !== index) : []);
+      setImageDeletingStates((prev) => Array.isArray(prev) ? prev.filter((_, i) => i !== index) : []);
     }
 
     // Reset removing flag after a short delay to ensure state updates have completed
@@ -282,6 +359,16 @@ function ProductImageUpload({
             const urls = Array.isArray(prevUrls) ? prevUrls : [];
             return [...urls, optimizedUrl];
           });
+          
+          setImageDeletingStates((prev) => {
+            const states = Array.isArray(prev) ? prev : [];
+            return [...states, false];
+          });
+        }
+
+        // Call the callback to inform parent of newly uploaded image
+        if (onImageUploaded) {
+          onImageUploaded(optimizedUrl);
         }
       }
     } catch (error) {
@@ -485,9 +572,9 @@ function ProductImageUpload({
                         <GripIcon className="w-4 h-4" />
                       </div>
                     )}
-                    {isLoading ? (
+                    {isLoading || (Array.isArray(imageDeletingStates) && imageDeletingStates[index]) ? (
                       <div className="absolute top-0 right-0 p-2 rounded-md bg-gray-100">
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <Loader2 className="w-4 h-4 animate-spin text-primary" />
                       </div>
                     ) : (
                       <button

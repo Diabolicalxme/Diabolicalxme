@@ -46,30 +46,29 @@ function AdminProductTile({
         />
 
         {/* Dynamic Badges */}
-        {product?.totalStock === 0 ? (
-          <Badge className="absolute top-2 left-2 bg-red-500 text-white text-sm py-1 px-2 rounded">
-            Out Of Stock
-          </Badge>
-        ) : product?.totalStock < 10 ? (
-          <Badge className="absolute top-2 left-2 bg-orange-500 text-white text-sm py-1 px-2 rounded">
-            {`Only ${product?.totalStock} left`}
-          </Badge>
-        ) : product?.salePrice > 0 ? (
-          <>
+        <div className="absolute top-2 left-2 flex flex-col gap-2">
+          {product?.totalStock === 0 ? (
+            <Badge className="bg-red-500 text-white text-sm py-1 px-2 rounded shadow-md">
+              Out Of Stock
+            </Badge>
+          ) : product?.totalStock < 10 ? (
+            <Badge className="bg-orange-500 text-white text-sm py-1 px-2 rounded shadow-md">
+              {`Only ${product?.totalStock} left`}
+            </Badge>
+          ) : null}
 
-            {product?.isNewArrival && (
-              <div className="absolute top-2 left-2 bg-rose-50 text-rose-700 text-sm py-1 px-2 rounded-full font-semibold">
-                New Arrival
-              </div>
-            )}
-            {product?.isFeatured && (
-              <Badge className="absolute top-2 right-2 bg-green-50 text-green-700 text-sm py-1 px-2 rounded-full font-semibold">
-                Featured
-              </Badge>
-            )}
-
-          </>
-        ) : null}
+          {product?.isNewArrival && (
+            <Badge className="bg-rose-50 text-rose-700 text-sm py-1 px-2 rounded-full font-semibold border border-rose-200 shadow-sm">
+              New Arrival
+            </Badge>
+          )}
+          
+          {product?.isFeatured && (
+            <Badge className="bg-green-50 text-green-700 text-sm py-1 px-2 rounded-full font-semibold border border-green-200 shadow-sm">
+              Featured
+            </Badge>
+          )}
+        </div>
 
         {/* Overlay for admin action buttons */}
         <div className="absolute inset-0 flex items-center justify-center gap-4 bg-black bg-opacity-40 opacity-0 transition-opacity duration-300 group-hover:opacity-100">

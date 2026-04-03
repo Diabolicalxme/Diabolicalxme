@@ -1,4 +1,4 @@
-const { imageUploadUtil, videoUploadUtil } = require("../../helpers/cloudinary");
+const { imageUploadUtil, videoUploadUtil, imageDeleteUtil } = require("../../helpers/cloudinary");
 const Product = require("../../models/Product");
 const ProductReview = require("../../models/Review");
 const sharp = require("sharp");
@@ -471,4 +471,40 @@ module.exports = {
   fetchAllProducts,
   editProduct,
   deleteProduct,
+  handleDeleteImage
 };
+
+// Delete an image from Cloudinary
+async function handleDeleteImage(req, res) {
+  try {
+    const { publicId } = req.body;
+    
+    if (!publicId) {
+      return res.status(400).json({
+        success: false,
+        message: "Public id is required for deletion",
+      });
+    }
+
+    const result = await imageDeleteUtil(publicId);
+
+    if (result.result === "ok") {
+      return res.status(200).json({
+        success: true,
+        message: "Image deleted from Cloudinary successfully",
+      });
+    } else {
+      return res.json({
+        success: false,
+        message: "Cloudinary deletion result: " + result.result,
+        result
+      });
+    }
+  } catch (error) {
+    console.error("Cloudinary deletion controller error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "An error occurred while deleting the image",
+    });
+  }
+}
