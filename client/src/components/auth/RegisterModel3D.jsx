@@ -21,7 +21,7 @@ function RegistrationModel({ formProgress = 0 }) {
   }, []);
 
   // Use Arthur model as default for registration
-  const { scene } = useGLTF('/models/Bravo.glb');
+  const { scene } = useGLTF('https://diabolicalxme.github.io/3D-assests/Bravo.glb');
 
   // Clone the scene to avoid issues with multiple instances
   const clonedScene = useMemo(() => {
@@ -238,6 +238,6 @@ function RegisterModel3D({ formProgress = 0 }) {
 }
 
 // Preload the Arthur model
-useGLTF.preload('/models/Bravo.glb');
+useGLTF.preload('https://diabolicalxme.github.io/3D-assests/Bravo.glb');
 
 export default RegisterModel3D;

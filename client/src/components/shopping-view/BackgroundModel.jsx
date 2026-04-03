@@ -4,10 +4,12 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { motion, useScroll, useTransform } from 'framer-motion';
 
+const MODEL_BASE_URL = 'https://diabolicalxme.github.io/3D-assests';
+
 // ---------------- Model ----------------
 function Model({ modelName, isMobile }) {
   const modelRef = useRef();
-  const { scene } = useGLTF(`/models/${modelName}.glb`);
+  const { scene } = useGLTF(`${MODEL_BASE_URL}/${modelName}.glb`);
   const clonedScene = useMemo(() => (scene ? scene.clone() : null), [scene]);
 
   // useFrame(() => {
@@ -184,9 +186,9 @@ export default function BackgroundModel({ modelName, onError, onModelLoaded }) {
 
 // ---------------- Preload ----------------
 try {
-  useGLTF.preload('/models/Arthur.glb');
-  useGLTF.preload('/models/Bravo.glb');
-  useGLTF.preload('/models/Hector.glb');
+  useGLTF.preload(`${MODEL_BASE_URL}/Arthur.glb`);
+  useGLTF.preload(`${MODEL_BASE_URL}/Bravo.glb`);
+  useGLTF.preload(`${MODEL_BASE_URL}/Hector.glb`);
 } catch (error) {
   console.warn('Failed to preload 3D models:', error);
 }
