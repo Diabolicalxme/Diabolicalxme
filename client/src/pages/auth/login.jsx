@@ -10,7 +10,7 @@ import LoginModel3D from "@/components/auth/LoginModel3D";
 import logo from "@/assets/logo.png";
 import { getTempCartItems, copyTempCartToUser } from "@/utils/tempCartManager";
 import { hasCartCopyCompleted, startCartCopy, completeCartCopy } from "@/utils/cartCopyManager";
-import { Home } from "lucide-react";
+import { Home, Eye, EyeOff } from "lucide-react";
 
 const initialState = {
   email: "",
@@ -22,6 +22,7 @@ const TOTAL_STEPS = 2;
 function AuthLogin() {
   const [formData, setFormData] = useState(initialState);
   const [currentStep, setCurrentStep] = useState(0);
+  const [showPassword, setShowPassword] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -135,20 +136,20 @@ function AuthLogin() {
   return (
     <div className="h-screen w-full relative overflow-hidden bg-transparent">
       {/* 3D Model Background */}
-      <div className="fixed inset-0 z-0">
+      <div className="fixed inset-0 z-0 opacity-70">
         <LoginModel3D formProgress={formProgress} />
       </div>
 
       {/* Logo */}
-      <div className="fixed top-8 left-1/2 -translate-x-1/2 md:left-auto md:right-8 md:translate-x-0 z-30">
+      <div className="fixed top-8 right-4 md:right-8 z-30">
         <img src={logo} alt="Logo" className="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-2xl" />
       </div>
 
       {/* Main Content Overlay */}
-      <div className="relative z-10 h-full w-full flex flex-col items-center justify-end pb-[25vh] px-4">
+      <div className="relative z-10 h-full w-full flex flex-col items-center justify-end opacity-100 pb-[25vh] px-4">
         <div className="w-full max-w-lg space-y-12">
 
-          <div className="relative overflow-hidden h-32 flex items-center justify-center">
+          <div className="relative overflow-hidden  flex items-center justify-center">
             {currentStep === 0 && (
               <div className="w-full animate-in fade-in slide-in-from-right-8 duration-500">
                 <input
@@ -164,16 +165,23 @@ function AuthLogin() {
             )}
 
             {currentStep === 1 && (
-              <div className="w-full animate-in fade-in slide-in-from-right-8 duration-500 text-center">
+              <div className="w-full animate-in fade-in slide-in-from-right-8 duration-500 text-center relative">
                 <input
                   autoFocus
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   value={formData.password}
                   onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                   onKeyDown={handleKeyDown}
-                  className="w-full bg-transparent border-0 border-b-2 border-white/20 focus:border-white focus:outline-none py-4 text-3xl md:text-4xl text-white placeholder:text-white/30 transition-all text-center font-light tracking-wider"
+                  className="w-full bg-transparent border-0 border-b-2 border-white/20 focus:border-white focus:outline-none py-4 text-3xl md:text-4xl text-white placeholder:text-white/70 transition-all text-center font-light tracking-wider pr-12"
                 />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-0 top-1/3 -translate-y-1/2 text-white/50 hover:text-white transition-colors p-2"
+                >
+                  {showPassword ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
+                </button>
                 <button
                   onClick={onSubmit}
                   disabled={isCopying || !formData.password}

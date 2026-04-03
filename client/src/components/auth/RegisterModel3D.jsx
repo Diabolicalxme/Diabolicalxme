@@ -29,8 +29,8 @@ function RegistrationModel({ formProgress = 0 }) {
     return scene.clone();
   }, [scene]);
 
-  // Calculate rotation: Start at π (180°, back-faced) and rotate to 0 (front-faced)
-  const targetRotation = Math.PI - (formProgress * Math.PI); // π to 0 radians (back to front)
+  // Calculate rotation: Start at π (180°, back-faced) and rotate to 2π (front-faced) anti-clockwise
+  const targetRotation = Math.PI + (formProgress * Math.PI);
 
   // Smooth rotation animation
   useFrame(() => {

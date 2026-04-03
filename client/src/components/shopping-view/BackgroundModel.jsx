@@ -133,7 +133,7 @@ export default function BackgroundModel({ modelName, onError, onModelLoaded }) {
 
   const containerStyle = {
     position: 'fixed',
-    top: scrollProgress === 0 ? '20px' : `calc(${miniTop} * ${scrollProgress})`,
+    top: scrollProgress === 0 ? (isMobile ? '65px' : '20px') : `calc(${miniTop} * ${scrollProgress})`,
     left: scrollProgress === 0 ? '0px' : `calc(${miniLeft} * ${scrollProgress})`,
     width: scrollProgress === 0 ? '100vw' : `calc(100vw - (100vw - ${miniSize}) * ${scrollProgress})`,
     height: scrollProgress === 0 ? '100vh' : `calc(100vh - (100vh - ${miniSize}) * ${scrollProgress})`,
@@ -175,7 +175,7 @@ export default function BackgroundModel({ modelName, onError, onModelLoaded }) {
       </Canvas>
 
       <div
-        className="absolute inset-0 bg-black/20 pointer-events-none"
+        className="absolute inset-0 pointer-events-none"
         style={{ opacity: 0.2 - (scrollProgress * 0.2) }}
       />
     </div>

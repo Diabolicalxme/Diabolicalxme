@@ -7,7 +7,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import RegisterModel3D from "@/components/auth/RegisterModel3D";
 import logo from "@/assets/logo.png";
-import { Home } from "lucide-react";
+import { Home, Eye, EyeOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 const initialState = {
@@ -37,6 +37,7 @@ const TOTAL_STEPS = STEPS.length;
 function RegisterIncognitoUser() {
   const [formData, setFormData] = useState(initialState);
   const [currentStep, setCurrentStep] = useState(0);
+  const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -206,7 +207,7 @@ function RegisterIncognitoUser() {
       {/* Hide everything else when quote is showing */}
       {!showQuote && !registrationCompleted && (
         <>      {/* 3D Model Background */}
-          <div className="fixed inset-0 z-0">
+          <div className="fixed inset-0 z-0 opacity-70">
             <RegisterModel3D formProgress={formProgress} />
           </div>
 
@@ -216,26 +217,37 @@ function RegisterIncognitoUser() {
           </div>
 
           {/* Main Content Overlay */}
-          <div className="relative z-10 h-full w-full flex flex-col items-center justify-center translate-y-8 pb-[20vh] px-4">
-            <div className="w-full max-w-xl space-y-12">
+          <div className="relative z-10 h-full w-full flex flex-col items-center justify-center opacity-100 px-4">
+            <div className="w-full max-w-xl space-y-6  translate-y-20">
 
               <div className="relative min-h-[160px] flex flex-col items-center justify-center">
                 {/* Step Label */}
-                <span className="text-white/40 text-[10px] uppercase tracking-[0.4em] mb-4 font-bold">
+                <span className="text-white/90 text-[10px] uppercase tracking-[0.4em] mb-4 font-bold">
                   Register a Friend — Step {currentStep + 1} of {TOTAL_STEPS}
                 </span>
 
                 <div className="w-full animate-in fade-in slide-in-from-right-8 duration-500 text-center">
-                  <input
-                    key={activeStep.name}
-                    autoFocus
-                    type={activeStep.type}
-                    placeholder={activeStep.placeholder}
-                    value={formData[activeStep.name]}
-                    onChange={(e) => setFormData({ ...formData, [activeStep.name]: e.target.value })}
-                    onKeyDown={handleKeyDown}
-                    className="w-full bg-transparent border-0 border-b-2 border-white/20 focus:border-white focus:outline-none py-4 text-3xl md:text-5xl text-white placeholder:text-white/30 transition-all text-center font-light tracking-wide lg:tracking-wider appearance-none"
-                  />
+                  <div className="relative w-full">
+                    <input
+                      key={activeStep.name}
+                      autoFocus
+                      type={activeStep.name === "password" && showPassword ? "text" : activeStep.type}
+                      placeholder={activeStep.placeholder}
+                      value={formData[activeStep.name]}
+                      onChange={(e) => setFormData({ ...formData, [activeStep.name]: e.target.value })}
+                      onKeyDown={handleKeyDown}
+                      className={`w-full bg-transparent border-0 border-b-2 border-white/20 focus:border-white focus:outline-none py-4 text-3xl md:text-5xl text-white placeholder:text-white/70 transition-all text-center font-light tracking-wide lg:tracking-wider appearance-none ${activeStep.name === 'password' ? 'pr-12' : ''}`}
+                    />
+                    {activeStep.name === "password" && (
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute right-0 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors p-2"
+                      >
+                        {showPassword ? <EyeOff className="h-6 w-6" /> : <Eye className="h-6 w-6" />}
+                      </button>
+                    )}
+                  </div>
 
                   {currentStep === TOTAL_STEPS - 1 && (
                     <button

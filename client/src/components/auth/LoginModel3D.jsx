@@ -27,7 +27,7 @@ function LoginModel({ formProgress = 0 }) {
     return scene.clone();
   }, [scene]);
 
-  const targetRotation = Math.PI - (formProgress * Math.PI);
+  const targetRotation = Math.PI + (formProgress * Math.PI);
 
   useFrame(() => {
     if (modelRef.current) {
