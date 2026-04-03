@@ -3,4 +3,4 @@
 
 # remove public models
 # client/public/models
-models/
+# models/
