@@ -42,6 +42,7 @@ function AuthRegister() {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const { isLoading: isAuthLoading } = useSelector((state) => state.auth);
   const [showQuote, setShowQuote] = useState(false);
   const [registrationCompleted, setRegistrationCompleted] = useState(false);
 
@@ -57,6 +58,27 @@ function AuthRegister() {
 
   const formProgress = currentStep / (TOTAL_STEPS - 1);
 
+  const handleInputChange = (e) => {
+    const { value } = e.target;
+    const name = activeStep.name;
+
+    let newValue = value;
+
+    // Enforce digit limits based on field type
+    if (name === "age") {
+      // Max 2 digits for age
+      newValue = value.slice(0, 2);
+    } else if (["height", "chestSize", "bodyLength", "shoulderLength"].includes(name)) {
+      // Max 3 digits for measurements
+      newValue = value.slice(0, 3);
+    } else if (name === "userName") {
+      // Reasonably limit username length
+      newValue = value.slice(0, 30);
+    }
+
+    setFormData({ ...formData, [name]: newValue });
+  };
+
   const handleNext = () => {
     const activeStep = STEPS[currentStep];
     const value = formData[activeStep.name];
@@ -69,6 +91,19 @@ function AuthRegister() {
     if (activeStep.type === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
       toast({ title: "Invalid Email", variant: "destructive" });
       return;
+    }
+
+    // Value range validation for numeric fields
+    if (activeStep.type === "number") {
+      const numValue = Number(value);
+      if (activeStep.name === "age" && (numValue < 1 || numValue > 99)) {
+        toast({ title: "Invalid Age", description: "Please enter a valid age between 1 and 99.", variant: "destructive" });
+        return;
+      }
+      if (["height", "chestSize", "bodyLength", "shoulderLength"].includes(activeStep.name) && numValue <= 0) {
+        toast({ title: `Invalid ${activeStep.label}`, description: "Please enter a positive value.", variant: "destructive" });
+        return;
+      }
     }
 
     if (currentStep < TOTAL_STEPS - 1) {
@@ -221,7 +256,7 @@ function AuthRegister() {
                       type={activeStep.name === "password" && showPassword ? "text" : activeStep.type}
                       placeholder={activeStep.placeholder}
                       value={formData[activeStep.name]}
-                      onChange={(e) => setFormData({ ...formData, [activeStep.name]: e.target.value })}
+                      onChange={handleInputChange}
                       onKeyDown={handleKeyDown}
                       className={`w-full bg-transparent border-0 border-b-2 border-white/20 focus:border-white focus:outline-none py-4 text-3xl md:text-5xl text-white placeholder:text-white/70 transition-all text-center font-light tracking-wide lg:tracking-wider appearance-none ${activeStep.name === 'password' ? 'pr-12' : ''}`}
                     />
@@ -239,10 +274,10 @@ function AuthRegister() {
                   {currentStep === TOTAL_STEPS - 1 && (
                     <button
                       onClick={onSubmit}
-                      disabled={!formData[activeStep.name]}
+                      disabled={isAuthLoading || !formData[activeStep.name]}
                       className="mt-12 px-12 py-3 bg-white text-black rounded-full font-bold hover:bg-white/90 transition-all disabled:opacity-50 tracking-widest uppercase text-sm"
                     >
-                      Create Account
+                      {isAuthLoading ? "Registering..." : "Create Account"}
                     </button>
                   )}
                 </div>

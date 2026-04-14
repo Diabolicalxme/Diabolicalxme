@@ -143,8 +143,8 @@ function ShoppingHeader() {
           // Show success message
           toast({ title: "Logged out successfully" });
 
-          // Navigate to home page
-          navigate("/shop/home");
+          // Navigate to login page
+          navigate("/auth/login");
 
           // Restore temp cart items from backup and trigger refresh
           setTimeout(() => {

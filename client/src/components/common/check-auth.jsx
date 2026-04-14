@@ -11,12 +11,12 @@ function CheckAuth({ isAuthenticated, user, children }) {
         <Navigate to="/shop/home" />
       );
     }
-    return <Navigate to="/shop/home" />;
+    return <Navigate to="/auth/login" />;
   }
 
   if (
     !isAuthenticated &&
-    !(location.pathname.includes("/login") || location.pathname.includes("/register") || location.pathname.includes("/forgot-password") || location.pathname.includes("/reset-password") || location.pathname.includes("/shop/home"))
+    !(location.pathname.includes("/login") || location.pathname.includes("/register") || location.pathname.includes("/forgot-password") || location.pathname.includes("/reset-password"))
   ) {
     return <Navigate to="/auth/login" />;
   }

@@ -87,7 +87,7 @@ function App() {
               ? user?.role === "admin"
                 ? <Navigate to="/admin/dashboard" />
                 : <Navigate to="/shop/home" />
-              : <Navigate to="/shop/home" />
+              : <Navigate to="/auth/login" />
           }
         />
 
@@ -137,7 +137,9 @@ function App() {
         <Route
           path="/shop"
           element={
-            <ShoppingLayout />
+            <CheckAuth isAuthenticated={isAuthenticated} user={user}>
+              <ShoppingLayout />
+            </CheckAuth>
           }
         >
           <Route path="home" element={<ShoppingHome />} />

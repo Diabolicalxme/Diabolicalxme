@@ -1,15 +1,19 @@
 import { AlignJustify, LogOut, Moon, Sun } from "lucide-react";
 import { Button } from "../ui/button";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { logoutUser } from "@/store/auth-slice";
 import { THEMES, setTheme } from "@/store/theme-slice";
 
 function AdminHeader({ setOpen }) {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { currentTheme } = useSelector((state) => state.theme);
 
   function handleLogout() {
-    dispatch(logoutUser());
+    dispatch(logoutUser()).then(() => {
+      navigate("/auth/login");
+    });
   }
 
   function toggleAdminTheme() {

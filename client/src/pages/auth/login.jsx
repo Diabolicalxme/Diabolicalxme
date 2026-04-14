@@ -27,6 +27,7 @@ function AuthLogin() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
+  const { isLoading: isAuthLoading } = useSelector((state) => state.auth);
   const { toast } = useToast();
 
   const formProgress = currentStep / (TOTAL_STEPS - 1);
@@ -184,10 +185,10 @@ function AuthLogin() {
                 </button>
                 <button
                   onClick={onSubmit}
-                  disabled={isCopying || !formData.password}
+                  disabled={isAuthLoading || isCopying || !formData.password}
                   className="mt-8 px-12 py-3 bg-white text-black rounded-full font-bold hover:bg-white/90 transition-all disabled:opacity-50 tracking-widest uppercase text-sm"
                 >
-                  {isCopying ? "Signing In..." : "Sign In"}
+                  {isAuthLoading || isCopying ? "Signing In..." : "Sign In"}
                 </button>
               </div>
             )}
