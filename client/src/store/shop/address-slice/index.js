@@ -93,6 +93,16 @@ const addressSlice = createSlice({
       .addCase(fetchAllAddresses.rejected, (state) => {
         state.isLoading = false;
         state.addressList = [];
+      })
+      // Handle editaAddress lifecycle
+      .addCase(editaAddress.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(editaAddress.fulfilled, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(editaAddress.rejected, (state) => {
+        state.isLoading = false;
       });
   },
 });

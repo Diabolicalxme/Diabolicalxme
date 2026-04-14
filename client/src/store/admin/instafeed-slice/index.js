@@ -99,6 +99,26 @@ const InstaFeedSlice = createSlice({
       .addCase(fetchAllInstaFeedPosts.rejected, (state) => {
         state.isLoading = false;
         state.instaFeedPosts = [];
+      })
+      // Handle addNewInstaFeedPost lifecycle
+      .addCase(addNewInstaFeedPost.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(addNewInstaFeedPost.fulfilled, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(addNewInstaFeedPost.rejected, (state) => {
+        state.isLoading = false;
+      })
+      // Handle editInstaFeedPost lifecycle
+      .addCase(editInstaFeedPost.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(editInstaFeedPost.fulfilled, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(editInstaFeedPost.rejected, (state) => {
+        state.isLoading = false;
       });
   },
 });

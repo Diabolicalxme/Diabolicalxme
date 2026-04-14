@@ -443,6 +443,7 @@ function AdminProducts() {
               buttonText={currentEditedId !== null ? "Edit" : "Add"}
               formControls={dynamicAddProductFormElements}
               isBtnDisabled={false}
+              isBtnLoading={isLoading}
               formErrors={formErrors}
             />
           </div>

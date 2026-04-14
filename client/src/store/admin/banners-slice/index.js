@@ -98,6 +98,26 @@ const bannersSlice = createSlice({
       .addCase(fetchAllBanners.rejected, (state) => {
         state.isLoading = false;
         state.bannerList = [];
+      })
+      // Handle addNewBanner lifecycle
+      .addCase(addNewBanner.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(addNewBanner.fulfilled, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(addNewBanner.rejected, (state) => {
+        state.isLoading = false;
+      })
+      // Handle editBanner lifecycle
+      .addCase(editBanner.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(editBanner.fulfilled, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(editBanner.rejected, (state) => {
+        state.isLoading = false;
       });
   },
 });

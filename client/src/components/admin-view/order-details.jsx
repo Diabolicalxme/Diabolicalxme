@@ -258,16 +258,18 @@ function AdminOrderDetailsView({ orderDetails }) {
             formData={formData}
             setFormData={setFormData}
             buttonText={
-              isUpdating
-                ? (formData.status === "inShipping" && formData.trackingNumber
-                    ? "Updating & Sending Email..."
-                    : "Updating...")
-                : (formData.status === "inShipping" && formData.trackingNumber
-                    ? "Update Status & Send Tracking Email"
-                    : "Update Order Status")
+              formData.status === "inShipping" && formData.trackingNumber
+                ? "Update Status & Send Tracking Email"
+                : "Update Order Status"
             }
             onSubmit={handleUpdateStatus}
             isBtnDisabled={isUpdating}
+            isBtnLoading={isUpdating}
+            loadingButtonText={
+              formData.status === "inShipping" && formData.trackingNumber
+                ? "Updating & Sending Email..."
+                : "Updating..."
+            }
           />
         </div>
       </div>

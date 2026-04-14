@@ -219,6 +219,7 @@ function AdminCategories() {
               buttonText={currentEditedId !== null ? "Edit" : "Add"}
               formControls={addCategoryFormElements}
               isBtnDisabled={!isFormValid()}
+              isBtnLoading={isLoading}
             />
           </div>
         </SheetContent>

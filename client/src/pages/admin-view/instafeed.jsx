@@ -145,6 +145,7 @@ function AdminInstafeed() {
               buttonText={currentEditedId !== null ? "Edit" : "Add"}
               formControls={addInstafeedFormElements}
               isBtnDisabled={!isFormValid()}
+              isBtnLoading={isLoading}
             />
           </div>
         </SheetContent>

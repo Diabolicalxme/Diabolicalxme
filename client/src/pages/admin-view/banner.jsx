@@ -184,6 +184,7 @@ function AdminBanners() {
               buttonText={currentEditedId !== null ? "Edit" : "Add"}
               formControls={addBannerFormElements}
               isBtnDisabled={!isFormValid()}
+              isBtnLoading={isLoading}
             />
           </div>
         </SheetContent>

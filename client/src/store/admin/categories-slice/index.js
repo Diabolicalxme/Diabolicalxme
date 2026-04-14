@@ -97,6 +97,26 @@ const AdminCategoriesSlice = createSlice({
       .addCase(fetchAllCategories.rejected, (state) => {
         state.isLoading = false;
         state.categoryList = [];
+      })
+      // Handle addNewCategory lifecycle
+      .addCase(addNewCategory.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(addNewCategory.fulfilled, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(addNewCategory.rejected, (state) => {
+        state.isLoading = false;
+      })
+      // Handle editCategory lifecycle
+      .addCase(editCategory.pending, (state) => {
+        state.isLoading = true;
+      })
+      .addCase(editCategory.fulfilled, (state) => {
+        state.isLoading = false;
+      })
+      .addCase(editCategory.rejected, (state) => {
+        state.isLoading = false;
       });
   },
 });

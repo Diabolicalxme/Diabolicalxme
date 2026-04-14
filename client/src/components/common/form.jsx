@@ -39,7 +39,9 @@ function CommonForm({
   cityOptions = [],
   isLoadingStates = false,
   isLoadingCities = false,
-  formErrors = {}
+  formErrors = {},
+  isBtnLoading = false,
+  loadingButtonText = ""
 }) {
   const [passwordVisibility, setPasswordVisibility] = useState({});
   // Track upload status for color items (by index) and video upload status.
@@ -655,8 +657,15 @@ const uploadVideo = async (file) => {
           </div>
         ))}
       </div>
-      <Button disabled={shouldDisableButton} type="submit" className="mt-2 w-full hover:bg-accent">
-        {buttonText || "Submit"}
+      <Button disabled={shouldDisableButton || isBtnLoading} type="submit" className="mt-2 w-full hover:bg-accent">
+        {isBtnLoading ? (
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            {loadingButtonText || (buttonText === "Add" ? "Adding..." : buttonText === "Edit" ? "Editing..." : "Processing...")}
+          </div>
+        ) : (
+          buttonText || "Submit"
+        )}
       </Button>
     </form>
   );

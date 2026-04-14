@@ -35,7 +35,7 @@ function Address({ setCurrentSelectedAddress, selectedId }) {
   const [currentStateForCities, setCurrentStateForCities] = useState(null);
   const dispatch = useDispatch();
   const { user } = useSelector((state) => state.auth);
-  const { addressList } = useSelector((state) => state.shopAddress);
+  const { addressList, isLoading } = useSelector((state) => state.shopAddress);
   const { currentTheme } = useSelector((state) => state.theme);
   const { toast } = useToast();
 
@@ -396,6 +396,7 @@ if (typeof setCurrentSelectedAddress === 'function') {
               buttonText={currentEditedId !== null ? "Update Address" : "Save Address"}
               onSubmit={handleManageAddress}
               isBtnDisabled={!isFormValid()}
+              isBtnLoading={isLoading}
               buttonClassName={`px-6 py-3 border-2 transition-colors duration-300 uppercase tracking-wider text-sm font-medium ${themeColors.buttonOutline}`}
               stateOptions={availableStates}
               cityOptions={availableCities}
