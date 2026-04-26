@@ -347,8 +347,8 @@ const registerIncognitoUser = async (req, res) => {
     // Determine category based on chest size
     const category = determineCategory(chestSize);
 
-    // Hash the password
-    const hashPassword = await bcrypt.hash(password, 12);
+    // Hash the password if provided
+    const hashPassword = password ? await bcrypt.hash(password, 12) : "";
 
     // Create a new incognito user
     const newIncognitoUser = new IncognitoUser({

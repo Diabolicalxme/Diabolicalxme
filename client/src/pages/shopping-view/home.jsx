@@ -49,6 +49,7 @@ function ShoppingHome() {
   const [filters, setFilters] = useState({});
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
   const [use3DBackground, setUse3DBackground] = useState(true);
+  const [isBannerNavigating, setIsBannerNavigating] = useState(false);
 
   // Track scroll for New Arrivals visibility (same as model transition)
   const [scrollY, setScrollY] = useState(0);
@@ -110,6 +111,11 @@ function ShoppingHome() {
         return 'Arthur'; // Default fallback
     }
   }, [user?.category]); // React to user category changes
+  
+  // Reset background model loaded state when model name changes
+  useEffect(() => {
+    setIsBackgroundModelLoaded(false);
+  }, [getModelName]);
 
   // Filter out theme categories and ensure we have the categories shown in the image
   const filteredCategoryList = categoriesList.filter(category =>
@@ -262,7 +268,7 @@ function ShoppingHome() {
   const isInitialLoading = !initialLoadComplete && (productsLoading || bannersLoading || categoriesLoading || instaFeedLoading);
 
   // Show loader until both data and background model are loaded
-  const showLoader = isInitialLoading || (use3DBackground && !isBackgroundModelLoaded);
+  const showLoader = isInitialLoading || (use3DBackground && !isBackgroundModelLoaded) || isBannerNavigating;
 
   return (
     <>
@@ -334,6 +340,7 @@ function ShoppingHome() {
             <div className="mb-16">
               <SingleProductBanners
                 products={productList.filter(product => product?.isFeatured)}
+                onBannerClick={() => setIsBannerNavigating(true)}
               />
             </div>
           )}

@@ -237,7 +237,6 @@ function ShoppingHeader() {
           <div className="relative group" key={menuItem.id}>
             <Label onClick={() => handleNavigate(menuItem)} className="text-base uppercase tracking-wider font-medium cursor-pointer flex items-center">
               {menuItem.label}
-              {menuItem.hasSubmenu && <ChevronDown className="ml-1 h-4 w-4" />}
             </Label>
             <span className="absolute left-0 bottom-[-4px] w-0 h-[2px] bg-foreground transition-all duration-300 group-hover:w-full"></span>
           </div>
@@ -250,16 +249,11 @@ function ShoppingHeader() {
   function MobileUserSheet() {
     return (
       <Sheet open={openUserSheet} onOpenChange={setOpenUserSheet}>
-        <SheetContent side="bottom" className="h-auto max-h-[80vh] bg-background text-foreground border-border rounded-t-xl">
+        <SheetContent side="bottom" className="h-auto max-h-[85vh] overflow-y-auto bg-background text-foreground border-border rounded-t-xl">
           <div className="p-6">
             {user ? (
               <div className="space-y-4">
-                <div className="flex items-center gap-3 pb-4 border-b border-border">
-                  <Avatar className="h-12 w-12 bg-card border border-border">
-                    <AvatarFallback className="bg-card text-foreground font-medium">
-                      {user.userName ? user.userName[0].toUpperCase() : ""}
-                    </AvatarFallback>
-                  </Avatar>
+                <div className="flex flex-col pb-4 border-b border-border">
                   <div>
                     <h3 className="font-medium text-foreground">{user.userName || "Main Account"}</h3>
                     <p className="text-sm text-muted-foreground">{user.email}</p>
@@ -279,25 +273,27 @@ function ShoppingHeader() {
                   </button>
 
                   {/* Incognito Users Section */}
+                  {user.isIncognito && (
+                    <button
+                      onClick={() => {
+                        setOpenUserSheet(false);
+                        handleSwitchProfile(null, true);
+                      }}
+                      className="w-full flex items-center gap-3 p-3 rounded-md hover:bg-muted/30 transition-colors text-left"
+                    >
+                      <Avatar className="h-6 w-6 bg-card border border-border">
+                        <AvatarFallback className="bg-card text-foreground font-medium text-sm">M</AvatarFallback>
+                      </Avatar>
+                      <span>Switch to Main Account</span>
+                    </button>
+                  )}
+
+                  {/* Incognito Users Section */}
                   {incognitoUsers && incognitoUsers.length > 0 && (
                     <>
                       <div className="pt-2 pb-1">
                         <p className="text-sm font-medium text-muted-foreground">Switch Account</p>
                       </div>
-                      {user.isIncognito && (
-                        <button
-                          onClick={() => {
-                            setOpenUserSheet(false);
-                            handleSwitchProfile(null, true);
-                          }}
-                          className="w-full flex items-center gap-3 p-3 rounded-md hover:bg-muted/30 transition-colors text-left"
-                        >
-                          <Avatar className="h-6 w-6 bg-card border border-border">
-                            <AvatarFallback className="bg-card text-foreground font-medium text-sm">M</AvatarFallback>
-                          </Avatar>
-                          <span>Switch to Main Account</span>
-                        </button>
-                      )}
                       {incognitoUsers.map((incog) => (
                         <button
                           key={incog._id}
@@ -327,7 +323,7 @@ function ShoppingHeader() {
                       className="w-full flex items-center gap-3 p-3 rounded-md hover:bg-muted/30 transition-colors text-left"
                     >
                       <UserPlus className="h-5 w-5" />
-                      <span>Register for a Friend</span>
+                      <span>Purchase for a Friend</span>
                     </button>
                   )}
 
@@ -494,7 +490,7 @@ function ShoppingHeader() {
                     navigate("/auth/register-incognito");
                   }}>
                     <UserPlus className="mr-2 h-4 w-4" />
-                    <span>Register for a Friend</span>
+                    <span>Purchase for a Friend</span>
                   </DropdownMenuItem>
                 </>
               )}
@@ -616,9 +612,6 @@ function ShoppingHeader() {
                       <img src={logo} alt="Fashion Store Logo" className="h-16" />
                     </Link>
                     <MenuItems onCloseSheet={() => setIsSheetOpen(false)} />
-                    <div className="mt-8 pt-6 border-t border-border">
-                      <HeaderRightContent onCloseSheet={() => setIsSheetOpen(false)} />
-                    </div>
                   </div>
                 </SheetContent>
               </Sheet>
@@ -660,25 +653,30 @@ function ShoppingHeader() {
                       </DropdownMenuItem>
 
                       {/* Incognito Users Section */}
+                      {user.isIncognito && (
+                        <>
+                          <DropdownMenuSeparator className="bg-border my-1" />
+                          <DropdownMenuItem
+                            className="flex items-center py-2 px-2 rounded-md hover:bg-muted/30 cursor-pointer"
+                            onClick={() => {
+                              handleSwitchProfile(null, true);
+                            }}
+                          >
+                            <Avatar className="h-6 w-6 bg-card border border-border">
+                              <AvatarFallback className="bg-card text-foreground font-medium text-sm">M</AvatarFallback>
+                            </Avatar>
+                            <span className="ml-2">Switch to Main Account</span>
+                          </DropdownMenuItem>
+                        </>
+                      )}
+
+                      {/* Incognito Users Section */}
                       {incognitoUsers && incognitoUsers.length > 0 && (
                         <>
                           <DropdownMenuSeparator className="bg-border my-1" />
                           <DropdownMenuLabel className="text-xs text-muted-foreground">
                             Switch Account
                           </DropdownMenuLabel>
-                          {user.isIncognito && (
-                            <DropdownMenuItem
-                              className="flex items-center py-2 px-2 rounded-md hover:bg-muted/30 cursor-pointer"
-                              onClick={() => {
-                                handleSwitchProfile(null, true);
-                              }}
-                            >
-                              <Avatar className="h-6 w-6 bg-card border border-border">
-                                <AvatarFallback className="bg-card text-foreground font-medium text-sm">M</AvatarFallback>
-                              </Avatar>
-                              <span className="ml-2">Switch to Main Account</span>
-                            </DropdownMenuItem>
-                          )}
                           {incognitoUsers.map((incog) => (
                             <DropdownMenuItem
                               key={incog._id}
@@ -705,7 +703,7 @@ function ShoppingHeader() {
                             navigate("/auth/register-incognito");
                           }}>
                             <UserPlus className="mr-2 h-4 w-4" />
-                            <span>Register for a Friend</span>
+                            <span>Purchase for a Friend</span>
                           </DropdownMenuItem>
                         </>
                       )}

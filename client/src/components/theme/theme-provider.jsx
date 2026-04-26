@@ -10,12 +10,20 @@ function ThemeProvider({ children }) {
   const dispatch = useDispatch();
   const location = useLocation();
 
-  // Set theme based on user category when user logs in or changes
-  useEffect(() => {
-    if (isAuthenticated && user?.category) {
-      // Map category to theme
-      let themeToSet;
+  // Determine if we are on an auth page
+  const isAuthPage = location.pathname.includes('/auth');
 
+  // Set theme based on user category or route
+  useEffect(() => {
+    // 1. If on an auth page, force the dark default theme (BLACK)
+    if (isAuthPage) {
+      dispatch(setTheme(THEMES.BLACK));
+      return;
+    }
+
+    // 2. If authenticated, set theme based on user category
+    if (isAuthenticated && user?.category) {
+      let themeToSet;
       switch (user.category) {
         case "Author":
           themeToSet = THEMES.BEIGE;
@@ -30,14 +38,13 @@ function ThemeProvider({ children }) {
           themeToSet = THEMES.BLACK;
           break;
       }
-
-      // Always update when user changes (don't compare with currentTheme)
       dispatch(setTheme(themeToSet));
-    } else if (!isAuthenticated) {
-      // If user is logged out, set theme to light
+    } 
+    // 3. If not authenticated, default to BLACK theme
+    else if (!isAuthenticated) {
       dispatch(setTheme(THEMES.BLACK));
     }
-  }, [isAuthenticated, user?.id, user?.category, dispatch]);
+  }, [isAuthenticated, user?.id, user?.category, dispatch, isAuthPage]);
 
   // Check if current route is in admin section
   useEffect(() => {
@@ -109,7 +116,7 @@ function ThemeProvider({ children }) {
           break;
       }
     }
-  }, [currentTheme]);
+  }, [currentTheme, location.pathname]);
 
   return children;
 }

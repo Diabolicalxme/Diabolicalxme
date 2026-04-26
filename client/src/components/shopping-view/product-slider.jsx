@@ -78,11 +78,11 @@ const ProductSlider = ({
 }) => {
   const navigate = useNavigate();
   const containerRef = useRef(null);
-  const [scrollX, setScrollX] = useState(0);
+  const [scrollX, setScrollX] = useState(() => (200 / 2) - (window.innerWidth / 2));
   const [hoveredIndex, setHoveredIndex] = useState(null);
 
   const itemWidth = 200;  // Reduced width for 6 items
-  const spacing = 20;     // Reduced spacing for tighter layout
+  const spacing = 30;     // Increased base spacing
   const totalItemWidth = itemWidth + spacing;
   const visibleCount = products.length;
 
@@ -98,12 +98,30 @@ const ProductSlider = ({
   }, []);
 
   const handleWheel = (e) => {
+    // Industry Grade: Stop when the last item is centered, not when it drifts off-screen
+    const firstItemCentered = itemWidth / 2 - windowWidth / 2;
+    const lastItemCentered = (visibleCount - 1) * totalItemWidth + itemWidth / 2 - windowWidth / 2;
+    
+    const minScroll = firstItemCentered;
+    const maxScroll = lastItemCentered;
+
+    // Check if we've reached the boundaries
+    const isAtStart = scrollX <= minScroll;
+    const isAtEnd = scrollX >= maxScroll;
+    const scrollingUp = e.deltaY < 0;
+    const scrollingDown = e.deltaY > 0;
+
+    // If we're at a boundary and trying to scroll further in that direction,
+    // don't prevent default, so the parent page can scroll naturally.
+    if ((isAtStart && scrollingUp) || (isAtEnd && scrollingDown)) {
+      return;
+    }
+
+    // Otherwise, prevent page scroll and slide the products
     e.preventDefault();
     setScrollX((prev) => {
-      const maxScroll = (visibleCount - 1) * totalItemWidth;
-      // Ultra-smooth scroll sensitivity for seamless convex transitions
       let next = prev + e.deltaY * 0.8;
-      if (next < 0) next = 0;
+      if (next < minScroll) next = minScroll;
       if (next > maxScroll) next = maxScroll;
       return next;
     });
@@ -120,12 +138,16 @@ const ProductSlider = ({
 
   const handleTouchMove = (e) => {
     const touchCurrentX = e.touches[0].clientX;
-    const deltaX = touchStartX.current - touchCurrentX; // positive = swipe left, negative = swipe right
-    const maxScroll = (visibleCount - 1) * totalItemWidth;
+    const deltaX = touchStartX.current - touchCurrentX;
+    
+    const firstItemCentered = itemWidth / 2 - windowWidth / 2;
+    const lastItemCentered = (visibleCount - 1) * totalItemWidth + itemWidth / 2 - windowWidth / 2;
+    
+    const minScroll = firstItemCentered;
+    const maxScroll = lastItemCentered;
 
-    // Ultra-smooth touch sensitivity for seamless convex transitions
     let next = lastScrollX.current + deltaX * 1.0;
-    if (next < 0) next = 0;
+    if (next < minScroll) next = minScroll;
     if (next > maxScroll) next = maxScroll;
 
     setScrollX(next);
@@ -147,46 +169,6 @@ const ProductSlider = ({
     };
   }, [scrollX, visibleCount]);
 
-
-  // Concave
-
-  // const getItemStyle = (index, isHovered = false) => {
-  //   const centerX = windowWidth / 2;
-  //   const itemCenterX = index * totalItemWidth + itemWidth / 2;
-  //   const relativeX = itemCenterX - scrollX;
-  //   const distanceFromCenter = relativeX - centerX;
-  //   const maxDistance = windowWidth / 2 + totalItemWidth;
-  //   const normalizedDistance = Math.max(
-  //     Math.min(distanceFromCenter / maxDistance, 1),
-  //     -1
-  //   );
-
-  //   // Adjust rotation angle (smaller)
-  //   const maxRotate = 15; // reduce from 45 to 15 degrees
-  //   const rotateY = maxRotate * normalizedDistance;
-
-  //   // Increase scale range for stronger effect
-  //   const minScale = 0.5;
-  //   const maxScale = 1.1;
-  //   // Add a slight scale increase on hover, no box shadow though
-  //   const hoverBoost = isHovered ? 0.1 : 0;
-  //   const scale = minScale + (maxScale - minScale) * Math.abs(normalizedDistance) + hoverBoost;
-
-  //   const translateX = distanceFromCenter * 0.8;
-  //   const zIndex = Math.round((1 - Math.abs(normalizedDistance)) * 100);
-
-  //   return {
-  //     position: "absolute",
-  //     top: "50%",
-  //     left: "50%",
-  //     transform: `translateX(${translateX}px) translateY(-50%) perspective(800px) rotateY(${rotateY}deg)`,
-  //     cursor: "pointer",
-  //     zIndex,
-  //     scale,
-  //     transition: "transform 0.3s ease",
-  //     willChange: "transform",
-  //   };
-  // };
 
   // Perfect Symmetrical Convex Effect - Fixed Left Side Issue
   const getItemStyle = (index, isHovered = false) => {
@@ -218,8 +200,9 @@ const ProductSlider = ({
     const maxRotate = 3;
     const rotateY = maxRotate * normalizedDistance * 0.5;
 
-    // Direct positioning
-    const translateX = distanceFromCenter;
+    // Dynamic spread factor: items spread more as they get closer to the center to compensate for scaling
+    const spreadFactor = 1.5; // Increase horizontal spread
+    const translateX = distanceFromCenter * (1 + (spreadFactor - 1) * convexCurve);
 
     // Enhanced vertical lift for deeper 3D effect
     const maxVerticalLift = 30;

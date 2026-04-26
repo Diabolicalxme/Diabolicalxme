@@ -9,7 +9,7 @@ import * as THREE from 'three';
 // Model component that shows face to shoulders (portrait view) for login
 function LoginModel({ formProgress = 0 }) {
   const modelRef = useRef();
-  const { scene } = useGLTF('https://diabolicalxme.github.io/3D-assests/Bravo.glb');
+  const { scene } = useGLTF('https://diabolicalxme.github.io/3D-assests/Login.glb');
   const { viewport } = useThree(); // ✅ get viewport
   const [isMobile, setIsMobile] = useState(false);
 
@@ -217,6 +217,6 @@ function LoginModel3D({ formProgress = 0 }) {
 }
 
 // Preload the Arthur model
-useGLTF.preload('https://diabolicalxme.github.io/3D-assests/Bravo.glb');
+useGLTF.preload('https://diabolicalxme.github.io/3D-assests/Login.glb');
 
 export default LoginModel3D;

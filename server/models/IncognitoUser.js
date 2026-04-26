@@ -11,7 +11,7 @@ const IncognitoUserSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: true,
+    required: false,
   },
   age: {
     type: Number,

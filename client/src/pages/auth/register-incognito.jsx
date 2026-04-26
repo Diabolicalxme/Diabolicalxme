@@ -24,7 +24,6 @@ const initialState = {
 const STEPS = [
   { name: "userName", label: "Friend's Name", placeholder: "Enter their name", type: "text" },
   { name: "email", label: "Friend's Email", placeholder: "Their email address", type: "email" },
-  { name: "password", label: "Temporary Password", placeholder: "Assign a password", type: "password" },
   { name: "age", label: "Age", placeholder: "Their age", type: "number" },
   { name: "height", label: "Height (cm)", placeholder: "Height in cm", type: "number" },
   { name: "chestSize", label: "Chest Size (in)", placeholder: "Chest size in inches", type: "number" },
@@ -43,7 +42,7 @@ function RegisterIncognitoUser() {
   const { toast } = useToast();
   const [showQuote, setShowQuote] = useState(false);
   const [registrationCompleted, setRegistrationCompleted] = useState(false);
-  const { user, isAuthenticated } = useSelector((state) => state.auth);
+  const { user, isAuthenticated, isLoading } = useSelector((state) => state.auth);
 
 
   const quotes = [
@@ -223,7 +222,7 @@ function RegisterIncognitoUser() {
               <div className="relative min-h-[160px] flex flex-col items-center justify-center">
                 {/* Step Label */}
                 <span className="text-white/90 text-[10px] uppercase tracking-[0.4em] mb-4 font-bold">
-                  Register a Friend — Step {currentStep + 1} of {TOTAL_STEPS}
+                  Purchase for a Friend — Step {currentStep + 1} of {TOTAL_STEPS}
                 </span>
 
                 <div className="w-full animate-in fade-in slide-in-from-right-8 duration-500 text-center">
@@ -255,7 +254,7 @@ function RegisterIncognitoUser() {
                       disabled={!formData[activeStep.name]}
                       className="mt-12 px-12 py-3 bg-white text-black rounded-full font-bold hover:bg-white/90 transition-all disabled:opacity-50 tracking-widest uppercase text-sm"
                     >
-                      Register Friend
+                      {isLoading ? "Purchasing..." : "Purchase for a friend"}
                     </button>
                   )}
                 </div>

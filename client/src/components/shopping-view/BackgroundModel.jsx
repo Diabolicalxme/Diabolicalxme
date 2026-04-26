@@ -7,9 +7,11 @@ import { motion, useScroll, useTransform } from 'framer-motion';
 const MODEL_BASE_URL = 'https://diabolicalxme.github.io/3D-assests';
 
 // ---------------- Model ----------------
-function Model({ modelName, isMobile }) {
+function Model({ modelName, isMobile, scrollProgress }) {
   const modelRef = useRef();
-  const { scene } = useGLTF(`${MODEL_BASE_URL}/${modelName}.glb`);
+  const isMini = scrollProgress > 0.85;
+  const actualModelName = isMini ? `${modelName}-hambg` : modelName;
+  const { scene } = useGLTF(`${MODEL_BASE_URL}/${actualModelName}.glb`);
   const clonedScene = useMemo(() => (scene ? scene.clone() : null), [scene]);
 
   // useFrame(() => {
@@ -52,7 +54,7 @@ function Model({ modelName, isMobile }) {
 }
 
 // ---------------- Scene ----------------
-function Scene({ modelName, isMobile }) {
+function Scene({ modelName, isMobile, scrollProgress }) {
   const { camera } = useThree();
 
   useEffect(() => {
@@ -73,7 +75,7 @@ function Scene({ modelName, isMobile }) {
       <directionalLight position={[0, 0, 10]} intensity={1} color="#ffffff" />
       <directionalLight position={[-5, 10, 0]} intensity={1} color="#ffffff" />
       <directionalLight position={[5, 0, 0]} intensity={1.5} color="#ffffff" />
-      <Model modelName={modelName} isMobile={isMobile} />
+      <Model modelName={modelName} isMobile={isMobile} scrollProgress={scrollProgress} />
     </>
   );
 }
@@ -172,7 +174,7 @@ export default function BackgroundModel({ modelName, onError, onModelLoaded }) {
         }}
       >
         <Suspense fallback={null}>
-          <Scene modelName={modelName} isMobile={isMobile} />
+          <Scene modelName={modelName} isMobile={isMobile} scrollProgress={scrollProgress} />
         </Suspense>
       </Canvas>
 
@@ -189,6 +191,9 @@ try {
   useGLTF.preload(`${MODEL_BASE_URL}/Arthur.glb`);
   useGLTF.preload(`${MODEL_BASE_URL}/Bravo.glb`);
   useGLTF.preload(`${MODEL_BASE_URL}/Hector.glb`);
+  useGLTF.preload(`${MODEL_BASE_URL}/Arthur-hambg.glb`);
+  useGLTF.preload(`${MODEL_BASE_URL}/Bravo-hambg.glb`);
+  useGLTF.preload(`${MODEL_BASE_URL}/Hector-hambg.glb`);
 } catch (error) {
   console.warn('Failed to preload 3D models:', error);
 }

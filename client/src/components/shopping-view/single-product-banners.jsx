@@ -2,10 +2,15 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 
-const SingleProductBanners = ({ products }) => {
+const SingleProductBanners = ({ products, onBannerClick }) => {
     const navigate = useNavigate();
 
     if (!products || products.length === 0) return null;
+
+    const handleBannerClick = (productId) => {
+        if (onBannerClick) onBannerClick();
+        navigate(`/shop/details/${productId}`);
+    };
 
     return (
         <div className="flex flex-col w-full">
@@ -13,7 +18,7 @@ const SingleProductBanners = ({ products }) => {
                 <div
                     key={`${products[0]._id}-${index}`}
                     className="relative w-full cursor-pointer block group"
-                    onClick={() => navigate(`/shop/details/${products[0]._id}`)}
+                    onClick={() => handleBannerClick(products[0]._id)}
                 >
                     {/* 
                       Desktop: Aspect Ratio ~2:1 (Cinematic Wide)
