@@ -162,15 +162,17 @@ const capturePayment = async (req, res) => {
         const cart = await Cart.findById(order.cartId);
         if (cart) {
           // Remove only the items that were purchased
-          const purchasedProductIds = order.cartItems.map(item => item.productId);
-          cart.items = cart.items.filter(cartItem =>
-            !purchasedProductIds.some(purchasedId =>
-              cartItem.productId.toString() === purchasedId.toString() &&
-              cartItem.colors?._id === order.cartItems.find(orderItem =>
-                orderItem.productId === purchasedId
-              )?.colors?._id
-            )
-          );
+          order.cartItems.forEach(orderItem => {
+            const index = cart.items.findIndex(cartItem =>
+              cartItem.productId.toString() === orderItem.productId.toString() &&
+              (orderItem.colors?._id
+                ? cartItem.colors?._id === orderItem.colors._id.toString()
+                : !cartItem.colors?._id)
+            );
+            if (index > -1) {
+              cart.items.splice(index, 1);
+            }
+          });
           await cart.save();
           console.log('Cart cleared for user:', order.userId);
         }
@@ -184,7 +186,7 @@ const capturePayment = async (req, res) => {
     const message = `
     <div style="font-family: Arial, sans-serif; color: #2c3315; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
      <div style="background-color: #eeeeee; padding: 20px; text-align: center; color: #2c3315;">
-        <img src="https://res.cloudinary.com/dkqt39aad/image/upload/v1754300738/logo_pa0nq0.png" alt="Logo" style="max-width: 150px;">
+        <img src="https://res.cloudinary.com/dyzh2iszy/image/upload/v1777201334/logo_v0qres.png" alt="Logo" style="max-width: 150px;">
       <h2 style="margin-bottom: 5px;">Order Confirmed!</h2>
         <p style="font-size: 16px; margin-top: 0;">Thank you for your purchase.</p>
       </div>
@@ -305,7 +307,7 @@ const capturePayment = async (req, res) => {
     const adminMessage = `
     <div style="font-family: Arial, sans-serif; color: #2c3315; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
       <div style="background-color: #000000; padding: 20px; text-align: center; color: #2c3315;">
-        <img src="https://res.cloudinary.com/dkqt39aad/image/upload/v1754300738/logo_pa0nq0.png" alt="Logo" style="max-width: 150px;">
+        <img src="https://res.cloudinary.com/dyzh2iszy/image/upload/v1777201334/logo_v0qres.png" alt="Logo" style="max-width: 150px;">
         <h2 style="margin-bottom: 5px;">New Order Received!</h2>
         <p style="font-size: 16px; margin-top: 0;">A new order has been placed and payment confirmed.</p>
       </div>

@@ -139,7 +139,7 @@ const sendShippingEmail = async (order, trackingNumber) => {
     const message = `
     <div style="font-family: Arial, sans-serif; color: #2c3315; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
       <div style="background-color: #fed1d6; padding: 20px; text-align: center; color: #2c3315;">
-        <img src="https://res.cloudinary.com/dkqt39aad/image/upload/v1754300738/logo_pa0nq0.png" alt="DiabolicalXme Logo" style="max-width: 150px; margin-bottom: 10px;">
+        <img src="https://res.cloudinary.com/dyzh2iszy/image/upload/v1777201334/logo_v0qres.png" alt="DiabolicalXme Logo" style="max-width: 150px; margin-bottom: 10px;">
         <h2 style="margin-bottom: 5px;">📦 Your Order is On Its Way!</h2>
         <p style="font-size: 16px; margin-top: 0;">Great news! Your order has been shipped.</p>
       </div>

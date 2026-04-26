@@ -3,6 +3,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 
 const initialState = {
   cartItems: [],
+  cartId: null,
   isLoading: false,
 };
 
@@ -134,6 +135,7 @@ const shoppingCartSlice = createSlice({
       })
       .addCase(addToCart.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.cartId = action.payload.data?._id;
         state.cartItems = Array.isArray(action.payload.data?.items)
           ? action.payload.data.items.map(item => ({
               ...item,
@@ -150,6 +152,7 @@ const shoppingCartSlice = createSlice({
       })
       .addCase(fetchCartItems.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.cartId = action.payload.data?._id;
         state.cartItems = Array.isArray(action.payload.data?.items)
           ? action.payload.data.items.map(item => ({
               ...item,
@@ -167,6 +170,7 @@ const shoppingCartSlice = createSlice({
       })
       .addCase(updateCartQuantity.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.cartId = action.payload.data?._id;
         state.cartItems = Array.isArray(action.payload.data?.items)
           ? action.payload.data.items.map(item => ({
               ...item,
@@ -183,6 +187,7 @@ const shoppingCartSlice = createSlice({
       })
       .addCase(deleteCartItem.fulfilled, (state, action) => {
         state.isLoading = false;
+        state.cartId = action.payload.data?._id;
         state.cartItems = Array.isArray(action.payload.data?.items)
           ? action.payload.data.items.map(item => ({
               ...item,

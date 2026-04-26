@@ -178,7 +178,7 @@ const refreshAccessToken = async (req, res) => {
 
 
 const authMiddleware = async (req, res, next) => {
-  const token = req.headers.authorization?.split(" ")[1]; 
+  const token = req.headers.authorization?.split(" ")[1];
 
   if (!token) {
     return res.status(401).json({
@@ -189,7 +189,7 @@ const authMiddleware = async (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, CLIENT_SECRET_KEY);
-    req.user = decoded; 
+    req.user = decoded;
     next();
   } catch (error) {
     console.error("Error verifying token:", error.message);
@@ -228,7 +228,7 @@ const forgotPassword = async (req, res) => {
     const message = `
     <div style="font-family: Arial, sans-serif; color: #2c3315; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
       <div style="background-color: #eeeeee; padding: 20px; text-align: center; color: #2c3315;">
-        <img src="https://res.cloudinary.com/dkqt39aad/image/upload/v1754300738/logo_pa0nq0.png" alt="Logo" style="max-width: 150px; margin-bottom: 10px;">
+        <img src="https://res.cloudinary.com/dyzh2iszy/image/upload/v1777201334/logo_v0qres.png" alt="Logo" style="max-width: 150px; margin-bottom: 10px;">
         <h2 style="margin-bottom: 5px;">Reset Your Password</h2>
         <p style="font-size: 16px; margin-top: 0;">We received a request to reset your password.</p>
       </div>
@@ -259,7 +259,7 @@ const forgotPassword = async (req, res) => {
     </div>
 `;
 
-  
+
 
     // Send the reset email using the internal email utility.
     await sendEmail({
@@ -285,38 +285,38 @@ const forgotPassword = async (req, res) => {
 const resetPassword = async (req, res) => {
   const { token, newPassword } = req.body;
   if (!token || !newPassword) {
-      return res.status(400).json({
-          success: false,
-          message: "Token and new password are required.",
-      });
+    return res.status(400).json({
+      success: false,
+      message: "Token and new password are required.",
+    });
   }
   try {
-      // Verify the password reset token.
-      const decoded = jwt.verify(token, CLIENT_SECRET_KEY);
-      // Find the user using the ID from the token.
-      const user = await User.findById(decoded.id);
-      if (!user) {
-          return res.status(400).json({
-              success: false,
-              message: "Invalid token or user no longer exists.",
-          });
-      }
-
-      // Hash the new password before saving it.
-      const hashedPassword = await bcrypt.hash(newPassword, 12);
-      user.password = hashedPassword;
-      await user.save();
-
-      res.status(200).json({
-          success: true,
-          message: "Password reset successful.",
+    // Verify the password reset token.
+    const decoded = jwt.verify(token, CLIENT_SECRET_KEY);
+    // Find the user using the ID from the token.
+    const user = await User.findById(decoded.id);
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid token or user no longer exists.",
       });
+    }
+
+    // Hash the new password before saving it.
+    const hashedPassword = await bcrypt.hash(newPassword, 12);
+    user.password = hashedPassword;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: "Password reset successful.",
+    });
   } catch (error) {
-      console.error("Error in resetPassword:", error);
-      res.status(400).json({
-          success: false,
-          message: "Invalid or expired token.",
-      });
+    console.error("Error in resetPassword:", error);
+    res.status(400).json({
+      success: false,
+      message: "Invalid or expired token.",
+    });
   }
 };
 
@@ -475,7 +475,7 @@ const loginAsMainUser = async (req, res) => {
 const loginAsIncognitoUser = async (req, res) => {
   try {
     const { incognitoUserId } = req.body;
-console.log('Received incognitoUserId:', incognitoUserId);
+    console.log('Received incognitoUserId:', incognitoUserId);
     // Verify the user is authenticated
     if (!req.user || !req.user.id) {
       return res.status(401).json({

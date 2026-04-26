@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { Dialog } from "../ui/dialog";
 import {
   Table,
@@ -58,15 +59,15 @@ function ShoppingOrders() {
   const getStatusClass = (status) => {
     switch(status) {
       case "confirmed":
-        return "bg-green-100 text-green-800 border border-green-200";
+        return "bg-green-500/10 text-green-500 border border-green-500/20";
       case "rejected":
-        return "bg-red-100 text-red-800 border border-red-200";
+        return "bg-red-500/10 text-red-500 border border-red-500/20";
       case "pending":
-        return "bg-yellow-100 text-yellow-800 border border-yellow-200";
+        return "bg-yellow-500/10 text-yellow-500 border border-yellow-500/20";
       case "delivered":
-        return "bg-blue-100 text-blue-800 border border-blue-200";
+        return "bg-blue-500/10 text-blue-500 border border-blue-500/20";
       default:
-        return "bg-gray-100 text-gray-800 border border-gray-200";
+        return "bg-muted text-muted-foreground border border-border";
     }
   };
 
@@ -209,12 +210,12 @@ function ShoppingOrders() {
           </div>
           <h3 className="text-lg font-medium text-foreground mb-2">No Orders Found</h3>
           <p className="text-muted-foreground mb-6">You haven't placed any orders yet.</p>
-          <a
-            href="/shop"
+          <Link
+            to="/shop/collections"
             className="inline-block px-6 py-3 border-2 border-primary hover:bg-primary hover:text-primary-foreground transition-colors duration-300 uppercase tracking-wider text-sm font-medium"
           >
             Start Shopping
-          </a>
+          </Link>
         </div>
       )}
     </div>

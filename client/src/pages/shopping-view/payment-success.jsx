@@ -2,8 +2,20 @@ import { useNavigate } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import { CheckCircle, Package, Home } from "lucide-react";
 
+import { useDispatch, useSelector } from "react-redux";
+import { fetchCartItems } from "@/store/shop/cart-slice";
+import { useEffect } from "react";
+
 function PaymentSuccessPage() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const { user } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    if (user?.id) {
+      dispatch(fetchCartItems(user.id));
+    }
+  }, [dispatch, user]);
 
   return (
     <>

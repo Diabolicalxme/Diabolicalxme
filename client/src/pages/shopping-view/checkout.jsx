@@ -18,7 +18,7 @@ import { fetchAllFilteredProducts } from "@/store/shop/products-slice";
 import { getThemeColors } from "@/utils/theme-utils";
 
 function ShoppingCheckout() {
-  const { cartItems } = useSelector((state) => state.shopCart);
+  const { cartItems, cartId } = useSelector((state) => state.shopCart);
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const { approvalURL } = useSelector((state) => state.shopOrder);
   const { addressList } = useSelector((state) => state.shopAddress);
@@ -378,7 +378,7 @@ function ShoppingCheckout() {
     const orderData = {
       userId: user?.id,
       email: user?.email,
-      cartId: cartItems?._id,
+      cartId: cartId,
       cartItems: cartItems.map((item) => ({
         productId: item?.productId,
         title: item?.title,
@@ -452,6 +452,10 @@ function ShoppingCheckout() {
                   variant: "success",
                   className: "bg-green-50 text-green-800 border-green-200 font-medium",
                 });
+                
+                // Immediately refresh cart to clear items from header
+                dispatch(fetchCartItems(user.id));
+                
                 navigate("/shop/payment-success");
               } else {
                 toast({
