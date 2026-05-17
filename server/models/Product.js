@@ -26,7 +26,8 @@ const ProductSchema = new mongoose.Schema(
       }
     ],
     // isWatchAndBuy: Boolean,
-    video: String
+    video: String,
+    pairedProducts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Product' }]
   },
   { timestamps: true }
 );

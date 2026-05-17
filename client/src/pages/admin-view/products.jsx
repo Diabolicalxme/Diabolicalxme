@@ -27,6 +27,7 @@ const initialFormData = {
   totalStock: "",
   averageReview: 0,
   colors: [],
+  pairedProducts: [],
   // isWatchAndBuy: false,
   // video: ""
 };
@@ -122,6 +123,21 @@ function AdminProducts() {
     });
   }
 
+  // Add pairedProducts field dynamically using the fetched products
+  if (!dynamicAddProductFormElements.find((el) => el.name === "pairedProducts")) {
+    dynamicAddProductFormElements.push({
+      name: "pairedProducts",
+      label: "Paired Products",
+      componentType: "multiselect",
+      options: productList
+        .filter(p => p._id !== currentEditedId && !p.isFeatured) // exclude self and featured products
+        .map(p => ({
+          id: p._id,
+          label: p.title + (p.productCode ? ` (${p.productCode})` : "")
+        }))
+    });
+  }
+
   // If isWatchAndBuy toggle field is not present, add it.
   // if (!dynamicAddProductFormElements.find((el) => el.name === "isWatchAndBuy")) {
   //   dynamicAddProductFormElements.push({
@@ -148,7 +164,8 @@ function AdminProducts() {
       "image",
       "salePrice",
       "secondTitle",
-      "colors"
+      "colors",
+      "pairedProducts"
     ];
 
     const errors = {};
@@ -245,6 +262,7 @@ function AdminProducts() {
       totalStock: product.totalStock,
       averageReview: product.averageReview || 0,
       colors: product.colors || [],
+      pairedProducts: product.pairedProducts || [],
       // isWatchAndBuy: product.isWatchAndBuy,
       // video: product.video || ""
     });
@@ -267,7 +285,8 @@ function AdminProducts() {
       "image",
       "salePrice",
       "secondTitle",
-      "colors"
+      "colors",
+      "pairedProducts"
     ];
 
     if (imageLoadingStates?.includes(true)) return false;

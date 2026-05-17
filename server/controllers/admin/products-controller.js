@@ -270,6 +270,7 @@ const addProduct = async (req, res) => {
       totalStock,
       averageReview,
       colors,
+      pairedProducts,
       // isWatchAndBuy,
       // video
     } = req.body;
@@ -290,6 +291,9 @@ const addProduct = async (req, res) => {
       }
     }
 
+    // Ensure that pairedProducts is an array
+    const pairedProductsArray = Array.isArray(pairedProducts) ? pairedProducts : (pairedProducts ? [pairedProducts] : []);
+
     const newlyCreatedProduct = new Product({
       image: images,
       title,
@@ -304,11 +308,21 @@ const addProduct = async (req, res) => {
       totalStock,
       averageReview,
       colors: colorsArray,
+      pairedProducts: pairedProductsArray,
       // isWatchAndBuy,
       // video
     });
 
     await newlyCreatedProduct.save();
+
+    // Dual pairing logic
+    if (pairedProductsArray.length > 0) {
+      await Product.updateMany(
+        { _id: { $in: pairedProductsArray } },
+        { $addToSet: { pairedProducts: newlyCreatedProduct._id } }
+      );
+    }
+
     return res.status(201).json({
       success: true,
       data: newlyCreatedProduct
@@ -376,6 +390,7 @@ const editProduct = async (req, res) => {
       totalStock,
       averageReview,
       colors,        // new field: colors array
+      pairedProducts, // new field: array of paired product IDs
       // isWatchAndBuy, // new field: boolean
       // video         // new field: string
     } = req.body;
@@ -396,6 +411,15 @@ const editProduct = async (req, res) => {
       }
     }
 
+    // Ensure that pairedProducts is an array
+    const pairedProductsArray = Array.isArray(pairedProducts) ? pairedProducts : (pairedProducts ? [pairedProducts] : []);
+
+    const oldProduct = await Product.findById(id);
+    const oldPairedProducts = oldProduct && oldProduct.pairedProducts 
+      ? oldProduct.pairedProducts.map(p => p.toString()) 
+      : [];
+    const newPairedProducts = pairedProductsArray.map(p => p.toString());
+
     const updatedProduct = await Product.findByIdAndUpdate(
       id,
       {
@@ -412,6 +436,7 @@ const editProduct = async (req, res) => {
         totalStock,
         averageReview,
         colors: colorsArray,
+        pairedProducts: pairedProductsArray,
         // isWatchAndBuy,
         // video
       },
@@ -423,6 +448,24 @@ const editProduct = async (req, res) => {
         success: false,
         message: "Product not found"
       });
+    }
+
+    // Dual pairing logic: Identify added and removed pairs
+    const addedPairs = newPairedProducts.filter(p => !oldPairedProducts.includes(p));
+    const removedPairs = oldPairedProducts.filter(p => !newPairedProducts.includes(p));
+
+    if (addedPairs.length > 0) {
+      await Product.updateMany(
+        { _id: { $in: addedPairs } },
+        { $addToSet: { pairedProducts: id } }
+      );
+    }
+
+    if (removedPairs.length > 0) {
+      await Product.updateMany(
+        { _id: { $in: removedPairs } },
+        { $pull: { pairedProducts: id } }
+      );
     }
 
     return res.status(200).json({

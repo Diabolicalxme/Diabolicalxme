@@ -211,6 +211,11 @@ const ProductSlider = ({
     // Z-index for proper layering
     const zIndex = Math.round(convexCurve * 100) + 10;
 
+    // Unrevealed effect for non-centered items
+    const opacity = 0.3 + 0.7 * convexCurve; // 0.3 at edges, 1.0 at center
+    const blurAmount = 4 * (1 - convexCurve); // 4px at edges, 0px at center
+    const filter = `blur(${blurAmount}px)`;
+
     return {
       position: "absolute",
       top: "50%",
@@ -218,6 +223,8 @@ const ProductSlider = ({
       transform: `translateX(${translateX}px) translateY(${translateY}px) perspective(1000px) rotateY(${rotateY}deg) scale(${scale})`,
       cursor: "pointer",
       zIndex,
+      opacity,
+      filter,
       transition: "all 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
       willChange: "transform",
     };

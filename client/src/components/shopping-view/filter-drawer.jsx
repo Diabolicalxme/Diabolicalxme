@@ -112,7 +112,7 @@ function FilterDrawer({ filters, setFilters, handleFilter }) {
       {/* Fixed Filter Button */}
       <button
         onClick={toggleDrawer}
-        className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[9999] flex items-center gap-2 px-5 py-2.5 bg-foreground text-background rounded-full shadow-lg hover:bg-foreground/90 transition-all duration-300 border border-foreground/10"
+        className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-[9999] flex items-center gap-2 px-5 py-2.5 bg-transparent text-white rounded-full shadow-lg hover:bg-white/10 transition-all duration-300 border border-white backdrop-blur-sm"
       >
         <Filter size={16} />
         <span className="font-medium tracking-wide">Filters</span>
@@ -223,7 +223,7 @@ function FilterDrawer({ filters, setFilters, handleFilter }) {
               <div className="sticky bottom-0 bg-background pt-2 pb-6 mt-4">
                 <button
                   onClick={closeDrawer}
-                  className="w-full md:w-auto md:min-w-[200px] md:mx-auto md:block px-6 py-3 bg-foreground text-background hover:bg-foreground/90 transition-colors duration-300 uppercase tracking-wider text-sm font-medium rounded-md"
+                  className="w-full md:w-auto md:min-w-[200px] md:mx-auto md:block px-6 py-3 bg-transparent text-white border border-white hover:bg-white/10 transition-colors duration-300 uppercase tracking-wider text-sm font-medium rounded-md backdrop-blur-sm"
                 >
                   Apply Filters
                 </button>

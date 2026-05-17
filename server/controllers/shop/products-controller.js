@@ -57,7 +57,7 @@ const getFilteredProducts = async (req, res) => {
 const getProductDetails = async (req, res) => {
   try {
     const { id } = req.params;
-    const product = await Product.findById(id);
+    const product = await Product.findById(id).populate('pairedProducts');
 
     if (!product)
       return res.status(404).json({

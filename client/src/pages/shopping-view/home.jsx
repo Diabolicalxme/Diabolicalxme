@@ -268,7 +268,7 @@ function ShoppingHome() {
   const isInitialLoading = !initialLoadComplete && (productsLoading || bannersLoading || categoriesLoading || instaFeedLoading);
 
   // Show loader until both data and background model are loaded
-  const showLoader = isInitialLoading || (use3DBackground && !isBackgroundModelLoaded) || isBannerNavigating;
+  const showLoader = isInitialLoading || (isAuthenticated && use3DBackground && !isBackgroundModelLoaded) || isBannerNavigating;
 
   return (
     <>
@@ -303,9 +303,8 @@ function ShoppingHome() {
       {/* Show loader until everything is ready */}
       {showLoader && <Loader />}
 
-      {/* Main content - only show when not loading */}
-      {!showLoader && (
-        <div className="pt-[110vh] flex flex-col relative z-10 w-full animate-in fade-in duration-700">
+      {/* Main content - always render so components can mount, but hide visually when loading */}
+      <div className={`pt-[110vh] flex flex-col relative z-10 w-full transition-opacity duration-700 ${showLoader ? 'opacity-0 pointer-events-none' : 'opacity-100 animate-in fade-in'}`}>
 
           {/* New Arrivals as overlay from model's hands - Now moves with scroll and fades out */}
           {isAuthenticated && (
@@ -420,7 +419,6 @@ function ShoppingHome() {
             }}
           />
         </div>
-      )}
 
     </>
   );

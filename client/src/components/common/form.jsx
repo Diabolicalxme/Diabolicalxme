@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
@@ -12,7 +12,7 @@ import {
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
 import { Switch } from "../ui/switch";
-import { Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2, ChevronDown } from "lucide-react";
 import { getOptimizedImageUrl, getOptimizedVideoUrl } from "../../lib/utils";
 import { optimizeImageForUpload, isValidImageFile, isValidFileSize } from "../../lib/imageOptimization";
 import { searchCitiesByState } from "@/utils/locationUtils";
@@ -26,6 +26,68 @@ const LoadingSpinner = ({ message = "Loading..." }) => (
     <span className="text-sm text-gray-500">{message}</span>
   </div>
 );
+
+const MultiSelectDropdown = ({ options, selectedValues, onChange, label }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  return (
+    <div className={`relative ${isOpen ? 'z-[99]' : 'z-10'}`} ref={dropdownRef}>
+      <div 
+        className="flex min-h-[40px] w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 cursor-pointer"
+        onClick={() => setIsOpen(!isOpen)}
+      >
+        <div className="flex flex-wrap gap-1">
+          {selectedValues.length === 0 ? (
+            <span className="text-muted-foreground">Select {label}...</span>
+          ) : (
+            <span className="truncate">{selectedValues.length} selected</span>
+          )}
+        </div>
+        <ChevronDown className={`h-4 w-4 opacity-50 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+      </div>
+
+      {isOpen && (
+        <div className="absolute bottom-full mb-1 z-[100] max-h-60 w-full overflow-auto rounded-md border bg-background text-foreground shadow-lg outline-none">
+          {options && options.length > 0 ? (
+            options.map((option) => (
+              <div 
+                key={option.id} 
+                className="relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none hover:bg-accent hover:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onChange(option.id, !selectedValues.includes(option.id));
+                }}
+              >
+                <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
+                  <input
+                    type="checkbox"
+                    checked={selectedValues.includes(option.id)}
+                    onChange={() => {}} // handled by parent div click
+                    className="h-4 w-4 rounded border-input text-primary focus:ring-primary cursor-pointer pointer-events-none"
+                  />
+                </span>
+                <span>{option.label}</span>
+              </div>
+            ))
+          ) : (
+            <div className="p-2 text-sm text-muted-foreground">No options available</div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
 
 
 function CommonForm({
@@ -626,6 +688,32 @@ const uploadVideo = async (file) => {
           } else {
             element = null;
           }
+          break;
+        }
+
+        case "multiselect": {
+          const selectedValues = Array.isArray(value) ? value : [];
+          element = (
+            <MultiSelectDropdown
+              options={controlItem.options}
+              selectedValues={selectedValues}
+              label={controlItem.label}
+              onChange={(optionId, isChecked) => {
+                let newValues = [...selectedValues];
+                if (isChecked) {
+                  newValues.push(optionId);
+                } else {
+                  newValues = newValues.filter((id) => id !== optionId);
+                }
+                if (typeof setFormData === 'function') {
+                  setFormData({
+                    ...formData,
+                    [controlItem.name]: newValues,
+                  });
+                }
+              }}
+            />
+          );
           break;
         }
 

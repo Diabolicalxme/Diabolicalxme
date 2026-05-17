@@ -889,6 +889,24 @@ function ProductDetailsPage() {
           </div>
         </div>
 
+        {/* Suggested Paired Products */}
+        {productDetails?.pairedProducts && productDetails.pairedProducts.length > 0 && (
+          <div className="w-full mt-12 border-t border-border pt-10 max-w-5xl">
+            <h2 className="text-2xl font-light uppercase tracking-wide mb-4 text-center">
+              Suggested Paired Products
+            </h2>
+            <div className="w-24 h-0.5 bg-primary mx-auto mb-8"></div>
+            <div className="-mx-3.5 mt-8">
+              <ProductSlider
+                products={productDetails.pairedProducts}
+                handleGetProductDetails={(productId) => navigate(`/shop/details/${productId}`)}
+                handleAddtoCart={handleRelatedProductsAddToCart}
+                hideTitle={true}
+              />
+            </div>
+          </div>
+        )}
+
         {/* Zoom preview container - Repositioned for centered layout */}
         {zoomData.isHovering && (
           <div
