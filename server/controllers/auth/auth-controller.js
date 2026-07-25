@@ -576,6 +576,47 @@ const getUserProfile = async (req, res) => {
   }
 };
 
+const checkEmailExists = async (req, res) => {
+  const { email } = req.body;
+  try {
+    if (!email) {
+      return res.json({
+        success: false,
+        message: "Email is required.",
+      });
+    }
+
+    // Check in regular users first
+    const checkUser = await User.findOne({ email });
+    if (checkUser) {
+      return res.json({
+        success: true,
+        message: "Email exists in regular users.",
+      });
+    }
+
+    // If not found, check in incognito users
+    const checkIncognitoUser = await IncognitoUser.findOne({ email });
+    if (checkIncognitoUser) {
+      return res.json({
+        success: true,
+        message: "Email exists in incognito users.",
+      });
+    }
+
+    return res.json({
+      success: false,
+      message: "User doesn't exist! Please register first.",
+    });
+  } catch (error) {
+    console.error("Error during checking email existence:", error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred while validating email.",
+    });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
@@ -589,4 +630,5 @@ module.exports = {
   loginAsIncognitoUser,
   loginAsMainUser,
   getUserProfile,
+  checkEmailExists,
 };

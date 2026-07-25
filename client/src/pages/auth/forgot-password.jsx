@@ -27,6 +27,7 @@ const TOTAL_STEPS = STEPS.length;
 function AuthForgotPassword() {
   const [formData, setFormData] = useState(initialState);
   const [currentStep, setCurrentStep] = useState(0);
+  const [error, setError] = useState("");
   const { toast } = useToast();
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -34,16 +35,21 @@ function AuthForgotPassword() {
   const formProgress = currentStep / (TOTAL_STEPS); // For 1 step, we handle it slightly differently
 
   const handleNext = () => {
+    setError("");
     const activeStep = STEPS[currentStep];
     const value = formData[activeStep.name];
 
     if (!value || !value.trim()) {
-      toast({ title: "Email Required", variant: "destructive" });
+      const msg = "Email Required";
+      setError(msg);
+      toast({ title: msg, variant: "destructive" });
       return;
     }
 
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-      toast({ title: "Invalid Email", variant: "destructive" });
+      const msg = "Invalid Email";
+      setError(msg);
+      toast({ title: msg, variant: "destructive" });
       return;
     }
 
@@ -59,6 +65,7 @@ function AuthForgotPassword() {
 
   function onSubmit(event) {
     if (event) event.preventDefault();
+    setError("");
 
     dispatch(forgotPassword(formData)).then((data) => {
       if (data?.payload?.success) {
@@ -69,8 +76,13 @@ function AuthForgotPassword() {
         // Optionally redirect to login or check email page
         setTimeout(() => navigate("/auth/login"), 3000);
       } else {
+        const errMsg = data?.payload?.message 
+          || (typeof data?.payload === 'string' ? data.payload : null)
+          || data?.error?.message 
+          || "Something went wrong";
+        setError(errMsg);
         toast({
-          title: data?.payload?.message || "Something went wrong",
+          title: errMsg,
           variant: "destructive",
         });
       }
@@ -119,7 +131,10 @@ function AuthForgotPassword() {
                   type={activeStep.type}
                   placeholder={activeStep.placeholder}
                   value={formData[activeStep.name]}
-                  onChange={(e) => setFormData({ ...formData, [activeStep.name]: e.target.value })}
+                  onChange={(e) => {
+                    setError("");
+                    setFormData({ ...formData, [activeStep.name]: e.target.value });
+                  }}
                   onKeyDown={handleKeyDown}
                   className="w-full bg-transparent border-0 border-b-2 border-white/20 focus:border-white focus:outline-none py-6 text-3xl md:text-5xl text-white placeholder:text-white/20 transition-all text-center font-light tracking-wide lg:tracking-wider appearance-none"
                 />
@@ -135,6 +150,12 @@ function AuthForgotPassword() {
               </motion.div>
             </AnimatePresence>
           </div>
+
+          {error && (
+            <div className="text-red-500 text-center text-sm font-semibold tracking-wide bg-black/40 py-2 px-4 rounded-md border border-red-500/20 backdrop-blur-sm animate-in fade-in duration-300">
+              {error}
+            </div>
+          )}
         </div>
 
         {/* Navigation */}

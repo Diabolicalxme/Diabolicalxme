@@ -11,6 +11,7 @@ import logo from "@/assets/logo.png";
 import { getTempCartItems, copyTempCartToUser } from "@/utils/tempCartManager";
 import { hasCartCopyCompleted, startCartCopy, completeCartCopy } from "@/utils/cartCopyManager";
 import { Home, Eye, EyeOff } from "lucide-react";
+import axios from "axios";
 
 const initialState = {
   email: "",
@@ -24,6 +25,8 @@ function AuthLogin() {
   const [currentStep, setCurrentStep] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
   const [isCopying, setIsCopying] = useState(false);
+  const [error, setError] = useState("");
+  const [isCheckingEmail, setIsCheckingEmail] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -32,16 +35,49 @@ function AuthLogin() {
 
   const formProgress = currentStep / (TOTAL_STEPS - 1);
 
-  const handleNext = () => {
+  const handleNext = async () => {
+    setError("");
     if (currentStep === 0) {
       if (!formData.email.trim()) {
-        toast({ title: "Email Required", variant: "destructive" });
+        const msg = "Email Required";
+        setError(msg);
+        toast({ title: msg, variant: "destructive" });
         return;
       }
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-        toast({ title: "Invalid Email", variant: "destructive" });
+        const msg = "Invalid Email";
+        setError(msg);
+        toast({ title: msg, variant: "destructive" });
         return;
       }
+
+      setIsCheckingEmail(true);
+      try {
+        const response = await axios.post(`${import.meta.env.VITE_BACKEND_URL}/auth/check-email`, {
+          email: formData.email,
+        });
+        if (response.data.success) {
+          setCurrentStep(prev => prev + 1);
+        } else {
+          setError(response.data.message);
+          toast({
+            title: "Validation Error",
+            description: response.data.message,
+            variant: "destructive",
+          });
+        }
+      } catch (err) {
+        const errMsg = err.response?.data?.message || "Error validating email. Please try again.";
+        setError(errMsg);
+        toast({
+          title: "Network Error",
+          description: errMsg,
+          variant: "destructive",
+        });
+      } finally {
+        setIsCheckingEmail(false);
+      }
+      return;
     }
     if (currentStep < TOTAL_STEPS - 1) {
       setCurrentStep(prev => prev + 1);
@@ -49,6 +85,7 @@ function AuthLogin() {
   };
 
   const handleBack = () => {
+    setError("");
     if (currentStep > 0) {
       setCurrentStep(prev => prev - 1);
     }
@@ -56,6 +93,7 @@ function AuthLogin() {
 
   const handleKeyDown = (e) => {
     if (e.key === 'Enter') {
+      if (isCheckingEmail) return;
       if (currentStep < TOTAL_STEPS - 1) {
         handleNext();
       } else {
@@ -66,11 +104,14 @@ function AuthLogin() {
 
   async function onSubmit(event) {
     if (event) event.preventDefault();
+    setError("");
 
     if (!formData.email.trim() || !formData.password.trim()) {
+      const msg = "Please fill out both email and password.";
+      setError(msg);
       toast({
         title: "Missing Fields",
-        description: "Please fill out both email and password.",
+        description: msg,
         variant: "destructive",
       });
       return;
@@ -126,8 +167,13 @@ function AuthLogin() {
           navigate(redirectTo);
         }
       } else {
+        const errMsg = data?.payload?.message 
+          || (typeof data?.payload === 'string' ? data.payload : null)
+          || data?.error?.message 
+          || "Login failed. Please try again.";
+        setError(errMsg);
         toast({
-          title: data?.payload?.message,
+          title: errMsg,
           variant: "destructive",
         });
       }
@@ -155,12 +201,16 @@ function AuthLogin() {
               <div className="w-full animate-in fade-in slide-in-from-right-8 duration-500">
                 <input
                   autoFocus
+                  disabled={isCheckingEmail}
                   type="email"
                   placeholder="Enter your email"
                   value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  onChange={(e) => {
+                    setError("");
+                    setFormData({ ...formData, email: e.target.value });
+                  }}
                   onKeyDown={handleKeyDown}
-                  className="w-full bg-transparent border-0 border-b-2 border-white/20 focus:border-white focus:outline-none py-4 text-3xl md:text-4xl text-white placeholder:text-white/30 transition-all text-center font-light tracking-wider"
+                  className="w-full bg-transparent border-0 border-b-2 border-white/20 focus:border-white focus:outline-none py-4 text-3xl md:text-4xl text-white placeholder:text-white/30 transition-all text-center font-light tracking-wider disabled:opacity-50"
                 />
               </div>
             )}
@@ -172,7 +222,10 @@ function AuthLogin() {
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   value={formData.password}
-                  onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                  onChange={(e) => {
+                    setError("");
+                    setFormData({ ...formData, password: e.target.value });
+                  }}
                   onKeyDown={handleKeyDown}
                   className="w-full bg-transparent border-0 border-b-2 border-white/20 focus:border-white focus:outline-none py-4 text-3xl md:text-4xl text-white placeholder:text-white/70 transition-all text-center font-light tracking-wider pr-12"
                 />
@@ -194,12 +247,19 @@ function AuthLogin() {
             )}
           </div>
 
+          {error && (
+            <div className="text-red-500 text-center text-sm font-semibold tracking-wide bg-black/40 py-2 px-4 rounded-md border border-red-500/20 backdrop-blur-sm animate-in fade-in duration-300">
+              {error}
+            </div>
+          )}
+
           {/* Navigation Controls */}
           <div className="flex justify-center items-center gap-12 pt-4">
             {currentStep > 0 && (
               <button
                 onClick={handleBack}
-                className="text-white/50 hover:text-white transition-colors text-sm uppercase tracking-[0.2em]"
+                disabled={isCheckingEmail}
+                className="text-white/50 hover:text-white transition-colors text-sm uppercase tracking-[0.2em] disabled:opacity-50"
               >
                 Back
               </button>
@@ -208,9 +268,10 @@ function AuthLogin() {
             {currentStep < TOTAL_STEPS - 1 && (
               <button
                 onClick={handleNext}
-                className="text-white hover:text-white/80 transition-colors text-sm uppercase tracking-[0.2em] font-bold"
+                disabled={isCheckingEmail}
+                className="text-white hover:text-white/80 transition-colors text-sm uppercase tracking-[0.2em] font-bold disabled:opacity-50"
               >
-                Next
+                {isCheckingEmail ? "Checking..." : "Next"}
               </button>
             )}
           </div>

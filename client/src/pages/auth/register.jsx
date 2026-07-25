@@ -38,6 +38,7 @@ function AuthRegister() {
   const [formData, setFormData] = useState(initialState);
   const [currentStep, setCurrentStep] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -59,6 +60,7 @@ function AuthRegister() {
   const formProgress = currentStep / (TOTAL_STEPS - 1);
 
   const handleInputChange = (e) => {
+    setError("");
     const { value } = e.target;
     const name = activeStep.name;
 
@@ -80,16 +82,21 @@ function AuthRegister() {
   };
 
   const handleNext = () => {
+    setError("");
     const activeStep = STEPS[currentStep];
     const value = formData[activeStep.name];
 
     if (!value || (typeof value === 'string' && !value.trim())) {
-      toast({ title: `${activeStep.label} Required`, variant: "destructive" });
+      const msg = `${activeStep.label} Required`;
+      setError(msg);
+      toast({ title: msg, variant: "destructive" });
       return;
     }
 
     if (activeStep.type === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-      toast({ title: "Invalid Email", variant: "destructive" });
+      const msg = "Invalid Email";
+      setError(msg);
+      toast({ title: msg, variant: "destructive" });
       return;
     }
 
@@ -97,11 +104,15 @@ function AuthRegister() {
     if (activeStep.type === "number") {
       const numValue = Number(value);
       if (activeStep.name === "age" && (numValue < 1 || numValue > 99)) {
-        toast({ title: "Invalid Age", description: "Please enter a valid age between 1 and 99.", variant: "destructive" });
+        const msg = "Please enter a valid age between 1 and 99.";
+        setError(msg);
+        toast({ title: "Invalid Age", description: msg, variant: "destructive" });
         return;
       }
       if (["height", "chestSize", "bodyLength", "shoulderLength"].includes(activeStep.name) && numValue <= 0) {
-        toast({ title: `Invalid ${activeStep.label}`, description: "Please enter a positive value.", variant: "destructive" });
+        const msg = "Please enter a positive value.";
+        setError(`Invalid ${activeStep.label}: ${msg}`);
+        toast({ title: `Invalid ${activeStep.label}`, description: msg, variant: "destructive" });
         return;
       }
     }
@@ -112,6 +123,7 @@ function AuthRegister() {
   };
 
   const handleBack = () => {
+    setError("");
     if (currentStep > 0) {
       setCurrentStep(prev => prev - 1);
     }
@@ -129,6 +141,7 @@ function AuthRegister() {
 
   function onSubmit(event) {
     if (event) event.preventDefault();
+    setError("");
 
     // Final validation
     const isFullValid = STEPS.every(step => {
@@ -137,9 +150,11 @@ function AuthRegister() {
     });
 
     if (!isFullValid) {
+      const msg = "Please fill out all fields before signing up.";
+      setError(msg);
       toast({
         title: "Incomplete Form",
-        description: "Please fill out all fields before signing up.",
+        description: msg,
         variant: "destructive",
       });
       return;
@@ -179,8 +194,13 @@ function AuthRegister() {
             });
         }, 5000);
       } else {
+        const errMsg = data?.payload?.message 
+          || (typeof data?.payload === 'string' ? data.payload : null)
+          || data?.error?.message 
+          || "Registration failed. Please try again.";
+        setError(errMsg);
         toast({
-          title: data?.payload?.message,
+          title: errMsg,
           variant: "destructive",
         });
       }
@@ -282,6 +302,12 @@ function AuthRegister() {
                   )}
                 </div>
               </div>
+
+              {error && (
+                <div className="text-red-500 text-center text-sm font-semibold tracking-wide bg-black/40 py-2 px-4 rounded-md border border-red-500/20 backdrop-blur-sm animate-in fade-in duration-300">
+                  {error}
+                </div>
+              )}
 
               {/* Navigation Controls */}
               <div className="flex justify-center items-center gap-16 pt-4">

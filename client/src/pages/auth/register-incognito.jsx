@@ -37,6 +37,7 @@ function RegisterIncognitoUser() {
   const [formData, setFormData] = useState(initialState);
   const [currentStep, setCurrentStep] = useState(0);
   const [showPassword, setShowPassword] = useState(false);
+  const [error, setError] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -70,16 +71,21 @@ function RegisterIncognitoUser() {
   }, [isAuthenticated, navigate, toast]);
 
   const handleNext = () => {
+    setError("");
     const activeStep = STEPS[currentStep];
     const value = formData[activeStep.name];
 
     if (!value || (typeof value === 'string' && !value.trim())) {
-      toast({ title: `${activeStep.label} Required`, variant: "destructive" });
+      const msg = `${activeStep.label} Required`;
+      setError(msg);
+      toast({ title: msg, variant: "destructive" });
       return;
     }
 
     if (activeStep.type === "email" && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
-      toast({ title: "Invalid Email", variant: "destructive" });
+      const msg = "Invalid Email";
+      setError(msg);
+      toast({ title: msg, variant: "destructive" });
       return;
     }
 
@@ -89,6 +95,7 @@ function RegisterIncognitoUser() {
   };
 
   const handleBack = () => {
+    setError("");
     if (currentStep > 0) {
       setCurrentStep(prev => prev - 1);
     }
@@ -106,6 +113,7 @@ function RegisterIncognitoUser() {
 
   function onSubmit(event) {
     if (event) event.preventDefault();
+    setError("");
 
     const isFullValid = STEPS.every(step => {
       const val = formData[step.name];
@@ -113,9 +121,11 @@ function RegisterIncognitoUser() {
     });
 
     if (!isFullValid) {
+      const msg = "Please fill out all fields before registering.";
+      setError(msg);
       toast({
         title: "Incomplete Form",
-        description: "Please fill out all fields before registering.",
+        description: msg,
         variant: "destructive",
       });
       return;
@@ -157,8 +167,13 @@ function RegisterIncognitoUser() {
           }
         }, 5000);
       } else {
+        const errMsg = data?.payload?.message 
+          || (typeof data?.payload === 'string' ? data.payload : null)
+          || data?.error?.message 
+          || "Incognito registration failed. Please try again.";
+        setError(errMsg);
         toast({
-          title: data?.payload?.message,
+          title: errMsg,
           variant: "destructive",
         });
       }
@@ -233,7 +248,10 @@ function RegisterIncognitoUser() {
                       type={activeStep.name === "password" && showPassword ? "text" : activeStep.type}
                       placeholder={activeStep.placeholder}
                       value={formData[activeStep.name]}
-                      onChange={(e) => setFormData({ ...formData, [activeStep.name]: e.target.value })}
+                      onChange={(e) => {
+                        setError("");
+                        setFormData({ ...formData, [activeStep.name]: e.target.value });
+                      }}
                       onKeyDown={handleKeyDown}
                       className={`w-full bg-transparent border-0 border-b-2 border-white/20 focus:border-white focus:outline-none py-4 text-3xl md:text-5xl text-white placeholder:text-white/70 transition-all text-center font-light tracking-wide lg:tracking-wider appearance-none ${activeStep.name === 'password' ? 'pr-12' : ''}`}
                     />
@@ -259,6 +277,12 @@ function RegisterIncognitoUser() {
                   )}
                 </div>
               </div>
+
+              {error && (
+                <div className="text-red-500 text-center text-sm font-semibold tracking-wide bg-black/40 py-2 px-4 rounded-md border border-red-500/20 backdrop-blur-sm animate-in fade-in duration-300">
+                  {error}
+                </div>
+              )}
 
               {/* Navigation Controls */}
               <div className="flex justify-center items-center gap-16 pt-4">

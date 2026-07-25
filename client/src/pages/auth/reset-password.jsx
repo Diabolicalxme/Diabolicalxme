@@ -34,6 +34,7 @@ const TOTAL_STEPS = STEPS.length;
 function AuthResetPassword() {
   const [formData, setFormData] = useState(initialState);
   const [currentStep, setCurrentStep] = useState(0);
+  const [error, setError] = useState("");
   const { toast } = useToast();
   const dispatch = useDispatch();
   const [searchParams] = useSearchParams();
@@ -43,11 +44,14 @@ function AuthResetPassword() {
   const formProgress = currentStep / (TOTAL_STEPS - 1);
 
   const handleNext = () => {
+    setError("");
     const activeStep = STEPS[currentStep];
     const value = formData[activeStep.name];
 
     if (!value || !value.trim()) {
-      toast({ title: `${activeStep.label} Required`, variant: "destructive" });
+      const msg = `${activeStep.label} Required`;
+      setError(msg);
+      toast({ title: msg, variant: "destructive" });
       return;
     }
 
@@ -59,6 +63,7 @@ function AuthResetPassword() {
   };
 
   const handleBack = () => {
+    setError("");
     if (currentStep > 0) {
       setCurrentStep(prev => prev - 1);
     }
@@ -72,11 +77,14 @@ function AuthResetPassword() {
 
   function onSubmit(event) {
     if (event) event.preventDefault();
+    setError("");
 
     if (formData.newPassword !== formData.confirmPassword) {
+      const msg = "Please make sure passwords match.";
+      setError(msg);
       toast({
         title: "Passwords mismatch",
-        description: "Please make sure passwords match.",
+        description: msg,
         variant: "destructive",
       });
       // Reset back to confirm password step
@@ -92,9 +100,14 @@ function AuthResetPassword() {
         });
         setTimeout(() => navigate("/auth/login"), 2000);
       } else {
+        const errMsg = data?.payload?.message 
+          || (typeof data?.payload === 'string' ? data.payload : null)
+          || data?.error?.message 
+          || "Failed to reset password.";
+        setError(errMsg);
         toast({
           title: "Update Failed",
-          description: data?.payload?.message || "Failed to reset password.",
+          description: errMsg,
           variant: "destructive",
         });
       }
@@ -145,7 +158,10 @@ function AuthResetPassword() {
                   type={activeStep.type}
                   placeholder={activeStep.placeholder}
                   value={formData[activeStep.name]}
-                  onChange={(e) => setFormData({ ...formData, [activeStep.name]: e.target.value })}
+                  onChange={(e) => {
+                    setError("");
+                    setFormData({ ...formData, [activeStep.name]: e.target.value });
+                  }}
                   onKeyDown={handleKeyDown}
                   className="w-full bg-transparent border-0 border-b-2 border-white/20 focus:border-white focus:outline-none py-6 text-3xl md:text-5xl text-white placeholder:text-white/20 transition-all text-center font-light tracking-wide lg:tracking-wider appearance-none"
                 />
@@ -172,6 +188,12 @@ function AuthResetPassword() {
               </motion.div>
             </AnimatePresence>
           </div>
+
+          {error && (
+            <div className="text-red-500 text-center text-sm font-semibold tracking-wide bg-black/40 py-2 px-4 rounded-md border border-red-500/20 backdrop-blur-sm animate-in fade-in duration-300">
+              {error}
+            </div>
+          )}
         </div>
 
         {/* Bottom Navigation */}
