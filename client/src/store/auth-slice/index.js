@@ -84,8 +84,10 @@ export const loginAsIncognitoUser = createAsyncThunk(
       return rejectWithValue("Authentication required");
     }
     try {
-      // Before switching, if we haven't saved the main account info, save the current token.
-      if (!localStorage.getItem("mainAccessToken")) {
+      // Before switching, if the current user is a main user (not incognito), save/overwrite mainAccessToken
+      const state = getState();
+      const currentUser = state.auth?.user;
+      if (!currentUser?.isIncognito) {
         localStorage.setItem("mainAccessToken", accessToken);
       }
       const response = await axios.post(url,
@@ -144,9 +146,11 @@ export const loginUser = createAsyncThunk(
     try {
       const response = await axios.post(url, formData);
       const { accessToken, refreshToken, user } = response.data;
-      if (accessToken && refreshToken) {
+       if (accessToken && refreshToken) {
         localStorage.setItem("accessToken", accessToken);
         localStorage.setItem("refreshToken", refreshToken);
+        // Clear any leftover mainAccessToken when logging in as a main user
+        localStorage.removeItem("mainAccessToken");
       }
       return response.data;
     } catch (error) {

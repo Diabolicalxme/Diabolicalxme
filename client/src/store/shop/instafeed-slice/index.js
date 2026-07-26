@@ -35,7 +35,9 @@ const shoppingInstaFeedSlice = createSlice({
       })
       .addCase(fetchInstaFeed.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.instaFeedPosts = action.payload.data[0].posts;
+        state.instaFeedPosts = action.payload?.data && action.payload.data.length > 0
+          ? action.payload.data[0].posts || []
+          : [];
       })
       .addCase(fetchInstaFeed.rejected, (state) => {
         state.isLoading = false;
