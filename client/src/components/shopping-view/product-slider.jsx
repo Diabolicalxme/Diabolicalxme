@@ -3,12 +3,12 @@ import React, { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "@/styles/main.css";
 
-const ProductImageCard = ({ product }) => {
+const ProductImageCard = ({ product, cardWidth = 200, cardHeight = 320 }) => {
   return (
     <div
       style={{
-        width: "200px",  // Reduced for 6 items per row
-        height: "320px", // Increased height as requested
+        width: `${cardWidth}px`,  // Dynamically set width
+        height: `${cardHeight}px`, // Dynamically set height
         overflow: "visible",
         backgroundColor: "transparent",
         userSelect: "none",
@@ -20,7 +20,7 @@ const ProductImageCard = ({ product }) => {
         src={
           product.image && product.image.length > 0
             ? product.image[0]
-            : "https://placehold.co/200x320/EDE8D0/093624?text=No+Image"
+            : `https://placehold.co/${cardWidth}x${cardHeight}/EDE8D0/093624?text=No+Image`
         }
         alt={product.title || "Product"}
         style={{
@@ -75,19 +75,21 @@ const ProductSlider = ({
   handleGetProductDetails,
   title,
   description,
+  isHomeScreen = false,
 }) => {
   const navigate = useNavigate();
   const containerRef = useRef(null);
-  const [scrollX, setScrollX] = useState(() => (200 / 2) - (window.innerWidth / 2));
-  const [hoveredIndex, setHoveredIndex] = useState(null);
-
-  const itemWidth = 200;  // Reduced width for 6 items
-  const spacing = 30;     // Increased base spacing
+  const itemWidth = isHomeScreen ? 170 : 200;  // Dynamically set card width
+  const cardHeight = isHomeScreen ? 260 : 320; // Dynamically set card height
+  const spacing = isHomeScreen ? 157 : 30;     // Spacing to align products exactly with palms
   const totalItemWidth = itemWidth + spacing;
   const visibleCount = products.length;
 
+  const [scrollX, setScrollX] = useState(() => (itemWidth / 2) - (window.innerWidth / 2));
+  const [hoveredIndex, setHoveredIndex] = useState(null);
+
   // Define the slider height - optimized for 6 items
-  const sliderHeight = 320; // height matching increased card dimensions
+  const sliderHeight = cardHeight + 40; // height matching card dimensions with extra padding
 
   // Get window width dynamically
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
@@ -190,37 +192,68 @@ const ProductSlider = ({
     // Linear curve: gradual and equal reduction from center to edges
     const convexCurve = Math.max(0, 1 - absDistance); // Ensure non-negative values
 
-    // Ultra-dramatic scaling for maximum convex depth
-    const minScale = 0.1;   // Extremely small minimum (10%) for deep hollow effect
-    const maxScale = 1.3;   // Larger maximum (130%) for prominent center peak
-    const hoverBoost = isHovered ? 0.1 : 0;
-    const scale = minScale + (maxScale - minScale) * convexCurve + hoverBoost;
+    let scale, translateY, zIndex, opacity, filter, rotateY, translateX;
 
-    // Subtle rotation
-    const maxRotate = 3;
-    const rotateY = maxRotate * normalizedDistance * 0.5;
+    if (isHomeScreen) {
+      // Home screen custom dramatic concave palm depth effect
+      // Use a power of 4 to drop scale off away from center while keeping product readable
+      const scaleCurve = Math.pow(convexCurve, 4); 
+      
+      const minScale = 0.25; // Don't let it shrink to absolute zero, keep it visible in palm
+      const maxScale = 1.35; // Increased center card size from 1.15 to 1.35
+      const hoverBoost = isHovered ? 0.08 : 0;
+      scale = minScale + (maxScale - minScale) * scaleCurve + hoverBoost;
 
-    // Dynamic spread factor: items spread more as they get closer to the center to compensate for scaling
-    const spreadFactor = 1.5; // Increase horizontal spread
-    const translateX = distanceFromCenter * (1 + (spreadFactor - 1) * convexCurve);
+      // Rotate side items more significantly to face the center (creates 3D depth)
+      const maxRotate = 25; // 25 degrees rotation
+      rotateY = maxRotate * normalizedDistance; 
 
-    // Enhanced vertical lift for deeper 3D effect
-    const maxVerticalLift = 30;
-    const translateY = -50 + (maxVerticalLift * convexCurve);
+      // Spread factor
+      const spreadFactor = 1.15; 
+      translateX = distanceFromCenter * (1 + (spreadFactor - 1) * convexCurve);
 
-    // Z-index for proper layering
-    const zIndex = Math.round(convexCurve * 100) + 10;
+      // Vertical translation: side items should drop down to sit in the palms
+      const verticalLift = 60; // 60px lift at center
+      translateY = -70 + (verticalLift * scaleCurve); // -10px at center, -70px at sides
 
-    // Unrevealed effect for non-centered items
-    const opacity = 0.3 + 0.7 * convexCurve; // 0.3 at edges, 1.0 at center
-    const blurAmount = 4 * (1 - convexCurve); // 4px at edges, 0px at center
-    const filter = `blur(${blurAmount}px)`;
+      zIndex = Math.round(scaleCurve * 100) + 10;
+      
+      // Stop rendering any items outside the frame by forcing opacity to 0 beyond the palms (absDistance >= 0.35)
+      opacity = Math.max(0, 1 - Math.pow(absDistance / 0.32, 2));
+      
+      // Blur increases as they go to sides
+      const blurAmount = 3 * (1 - scaleCurve);
+      filter = `blur(${blurAmount}px)`;
+    } else {
+      // Standard product details slider style
+      const minScale = 0.1;
+      const maxScale = 1.3;
+      const hoverBoost = isHovered ? 0.1 : 0;
+      scale = minScale + (maxScale - minScale) * convexCurve + hoverBoost;
+
+      // Subtle rotation
+      const maxRotate = 3;
+      rotateY = maxRotate * normalizedDistance * 0.5;
+
+      // Dynamic spread factor
+      const spreadFactor = 1.5; 
+      translateX = distanceFromCenter * (1 + (spreadFactor - 1) * convexCurve);
+
+      // Enhanced vertical lift for deeper 3D effect
+      const maxVerticalLift = 30;
+      translateY = -50 + (maxVerticalLift * convexCurve);
+
+      zIndex = Math.round(convexCurve * 100) + 10;
+      opacity = 0.3 + 0.7 * convexCurve; 
+      const blurAmount = 4 * (1 - convexCurve); 
+      filter = `blur(${blurAmount}px)`;
+    }
 
     return {
       position: "absolute",
       top: "50%",
       left: "50%",
-      transform: `translateX(${translateX}px) translateY(${translateY}px) perspective(1000px) rotateY(${rotateY}deg) scale(${scale})`,
+      transform: `translateX(-50%) translateX(${translateX}px) translateY(${translateY}px) perspective(1000px) rotateY(${rotateY}deg) scale(${scale})`,
       cursor: "pointer",
       zIndex,
       opacity,
@@ -265,6 +298,8 @@ const ProductSlider = ({
                   transform: style.transform,
                   cursor: style.cursor,
                   zIndex: style.zIndex,
+                  opacity: style.opacity,
+                  filter: style.filter,
                   transition: style.transition,
                   willChange: style.willChange,
                 }}
@@ -277,7 +312,11 @@ const ProductSlider = ({
                   }
                 }}
               >
-                <ProductImageCard product={product} />
+                <ProductImageCard 
+                  product={product} 
+                  cardWidth={itemWidth} 
+                  cardHeight={cardHeight} 
+                />
               </div>
             );
           })}

@@ -101,6 +101,7 @@ export default defineConfig({
     chunkSizeWarningLimit: 1000,
   },
   server: {
+    host: true,
     port: 5173, // or any other available port
     open: true, // Opens the browser automatically
     strictPort: true, // Prevents port conflicts

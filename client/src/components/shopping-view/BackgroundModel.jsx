@@ -10,7 +10,9 @@ const MODEL_BASE_URL = 'https://diabolicalxme.github.io/3D-assests';
 function Model({ modelName, isMobile, scrollProgress }) {
   const modelRef = useRef();
   const isMini = scrollProgress > 0.85;
-  const actualModelName = isMini ? `${modelName}-hambg` : modelName;
+  const actualModelName = isMini 
+    ? (modelName === "Arthur_002" ? "Arthur-hambg" : `${modelName}-hambg`)
+    : modelName;
   const { scene } = useGLTF(`${MODEL_BASE_URL}/${actualModelName}.glb`);
   const clonedScene = useMemo(() => (scene ? scene.clone() : null), [scene]);
 
@@ -31,9 +33,9 @@ function Model({ modelName, isMobile, scrollProgress }) {
         const size = box.getSize(new THREE.Vector3());
         const center = box.getCenter(new THREE.Vector3());
 
-        const targetHeight = isMobile ? 4.5 : 6;
+        const targetHeight = isMobile ? 5.8 : 8.0;
         const scale = targetHeight / size.y;
-        const verticalOffset = -size.y * 0.18; // shift model down so top half (head->waist) is framed
+        const verticalOffset = isMobile ? -size.y * 0.20 : -size.y * 0.23; // shift model down slightly more than before
 
         modelRef.current.position.set(
           -center.x * scale,
@@ -85,6 +87,7 @@ export default function BackgroundModel({ modelName, onError, onModelLoaded }) {
   const [hasError, setHasError] = useState(false);
   const [isMobile, setIsMobile] = useState(typeof window !== 'undefined' ? window.innerWidth < 768 : false);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [canvasKey, setCanvasKey] = useState(0);
 
   const { scrollY } = useScroll();
 
@@ -122,10 +125,7 @@ export default function BackgroundModel({ modelName, onError, onModelLoaded }) {
       powerPreference: 'high-performance',
     },
     dpr: Math.min(window.devicePixelRatio, 2),
-    onCreated: () => {
-      onModelLoaded?.();
-    },
-  }), [onModelLoaded]);
+  }), []);
 
   if (!modelName || hasError) return null;
 
@@ -153,6 +153,7 @@ export default function BackgroundModel({ modelName, onError, onModelLoaded }) {
   return (
     <div onClick={handleMiniClick} style={containerStyle}>
       <Canvas
+        key={canvasKey}
         {...canvasProps}
         frameloop='always'
         shadows={false}
@@ -170,6 +171,14 @@ export default function BackgroundModel({ modelName, onError, onModelLoaded }) {
           gl.toneMapping = THREE.ACESFilmicToneMapping;
           gl.toneMappingExposure = 1.3;
           gl.outputColorSpace = THREE.SRGBColorSpace;
+
+          const handleContextLost = (event) => {
+            event.preventDefault();
+            console.warn("WebGL Context Lost! Recreating Canvas...");
+            setCanvasKey(prev => prev + 1);
+          };
+
+          gl.domElement.addEventListener("webglcontextlost", handleContextLost);
           onModelLoaded?.();
         }}
       >
@@ -188,7 +197,10 @@ export default function BackgroundModel({ modelName, onError, onModelLoaded }) {
 
 // ---------------- Preload ----------------
 try {
-  useGLTF.preload(`${MODEL_BASE_URL}/Arthur.glb`);
+  // useGLTF.preload(`${MODEL_BASE_URL}/Arthur.glb`);
+  // useGLTF.preload(`${MODEL_BASE_URL}/Arthur_002.glb`);
+  useGLTF.preload(`${MODEL_BASE_URL}/All_3.glb`);
+
   useGLTF.preload(`${MODEL_BASE_URL}/Bravo.glb`);
   useGLTF.preload(`${MODEL_BASE_URL}/Hector.glb`);
   useGLTF.preload(`${MODEL_BASE_URL}/Arthur-hambg.glb`);

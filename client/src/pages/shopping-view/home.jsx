@@ -294,7 +294,7 @@ function ShoppingHome() {
       {/* Only show model if authenticated. It handles its own scroll logic internally */}
       {isAuthenticated && use3DBackground && (
         <BackgroundModel
-          modelName={getModelName}
+          modelName={"Arthur_002"}
           onError={() => setUse3DBackground(false)}
           onModelLoaded={() => setIsBackgroundModelLoaded(true)}
         />
@@ -308,7 +308,7 @@ function ShoppingHome() {
 
           {/* New Arrivals as overlay from model's hands - Now moves with scroll and fades out */}
           {isAuthenticated && (
-            <div className="absolute top-[35vh] left-0 w-full z-[5] pointer-events-none transition-opacity duration-300"
+            <div className="absolute top-[36vh] left-0 w-full z-[5] pointer-events-none transition-opacity duration-300"
               style={{
                 opacity: Math.max(0, 1 - scrollY / 400)
               }}>
@@ -319,6 +319,7 @@ function ShoppingHome() {
                   handleAddtoCart={handleAddtoCart}
                   title=""
                   description=""
+                  isHomeScreen={true}
                 />
               </div>
             </div>

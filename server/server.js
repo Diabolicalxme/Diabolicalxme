@@ -40,7 +40,7 @@ const PORT = process.env.PORT || 5000;
 
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://diabolicalx-me.web.app"],
+    origin: ["http://localhost:5173", "https://diabolicalx-me.web.app", "http://192.168.137.1:5173"],
     methods: ["GET", "POST", "DELETE", "PUT"],
     allowedHeaders: [
       "Content-Type",
