@@ -294,7 +294,7 @@ function ShoppingHome() {
       {/* Only show model if authenticated. It handles its own scroll logic internally */}
       {isAuthenticated && use3DBackground && (
         <BackgroundModel
-          modelName={"Arthur_002"}
+          modelName={"All_3"}
           onError={() => setUse3DBackground(false)}
           onModelLoaded={() => setIsBackgroundModelLoaded(true)}
         />

@@ -9,18 +9,13 @@ const MODEL_BASE_URL = 'https://diabolicalxme.github.io/3D-assests';
 // ---------------- Model ----------------
 function Model({ modelName, isMobile, scrollProgress }) {
   const modelRef = useRef();
+  const { viewport } = useThree();
   const isMini = scrollProgress > 0.85;
   const actualModelName = isMini 
     ? (modelName === "Arthur_002" ? "Arthur-hambg" : `${modelName}-hambg`)
     : modelName;
   const { scene } = useGLTF(`${MODEL_BASE_URL}/${actualModelName}.glb`);
   const clonedScene = useMemo(() => (scene ? scene.clone() : null), [scene]);
-
-  // useFrame(() => {
-  //   if (modelRef.current) {
-  //     modelRef.current.rotation.y += 0.005;
-  //   }
-  // });
 
   useEffect(() => {
     if (clonedScene && modelRef.current) {
@@ -33,9 +28,19 @@ function Model({ modelName, isMobile, scrollProgress }) {
         const size = box.getSize(new THREE.Vector3());
         const center = box.getCenter(new THREE.Vector3());
 
-        const targetHeight = isMobile ? 5.8 : 8.0;
-        const scale = targetHeight / size.y;
-        const verticalOffset = isMobile ? -size.y * 0.20 : -size.y * 0.23; // shift model down slightly more than before
+        // Responsive scaling: enlarge models slightly to fill screen elegantly while remaining fully visible
+        const targetWidthFrac = isMobile ? 0.98 : 0.94;
+        const targetHeightFrac = isMobile ? 0.82 : 0.86;
+
+        const maxAllowedWidth = viewport.width * targetWidthFrac;
+        const maxAllowedHeight = viewport.height * targetHeightFrac;
+
+        const scaleX = maxAllowedWidth / size.x;
+        const scaleY = maxAllowedHeight / size.y;
+
+        // Choose scale that fits BOTH width and height in the viewport without clipping
+        const scale = Math.min(scaleX, scaleY);
+        const verticalOffset = isMobile ? -size.y * 0.08 : -size.y * 0.13;
 
         modelRef.current.position.set(
           -center.x * scale,
@@ -48,7 +53,7 @@ function Model({ modelName, isMobile, scrollProgress }) {
         console.error("Error positioning model:", err);
       }
     }
-  }, [clonedScene, isMobile]);
+  }, [clonedScene, isMobile, viewport.width, viewport.height]);
 
   return clonedScene ? (
     <primitive ref={modelRef} object={clonedScene} />
@@ -61,9 +66,9 @@ function Scene({ modelName, isMobile, scrollProgress }) {
 
   useEffect(() => {
     if (isMobile) {
-      camera.position.set(0, 0.3, 4);
+      camera.position.set(0, 0.2, 6);
     } else {
-      camera.position.set(0, 0, 6);
+      camera.position.set(0, 0, 6.5);
     }
 
     camera.lookAt(0, 0, 0);

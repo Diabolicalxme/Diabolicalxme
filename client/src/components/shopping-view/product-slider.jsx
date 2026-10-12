@@ -79,9 +79,9 @@ const ProductSlider = ({
 }) => {
   const navigate = useNavigate();
   const containerRef = useRef(null);
-  const itemWidth = isHomeScreen ? 170 : 200;  // Dynamically set card width
-  const cardHeight = isHomeScreen ? 260 : 320; // Dynamically set card height
-  const spacing = isHomeScreen ? 157 : 30;     // Spacing to align products exactly with palms
+  const itemWidth = isHomeScreen ? 160 : 200;  // Dynamically set card width
+  const cardHeight = isHomeScreen ? 240 : 320; // Dynamically set card height
+  const spacing = isHomeScreen ? 90 : 30;      // Spacing to align products smoothly across all 3 models' hands
   const totalItemWidth = itemWidth + spacing;
   const visibleCount = products.length;
 
@@ -179,50 +179,41 @@ const ProductSlider = ({
     const relativeX = itemCenterX - scrollX;
     const distanceFromCenter = relativeX - centerX;
 
-    // Enhanced symmetrical calculation - extend range for perfect left/right balance
-    const extendedRange = windowWidth * 0.7; // Larger range to ensure symmetry
-    const normalizedDistance = Math.max(
-      Math.min(distanceFromCenter / extendedRange, 1),
-      -1
-    );
-
-    // Linear convex curve for gradual, equal height reduction
-    const absDistance = Math.abs(normalizedDistance);
-
-    // Linear curve: gradual and equal reduction from center to edges
-    const convexCurve = Math.max(0, 1 - absDistance); // Ensure non-negative values
-
     let scale, translateY, zIndex, opacity, filter, rotateY, translateX;
 
     if (isHomeScreen) {
-      // Home screen custom dramatic concave palm depth effect
-      // Use a power of 4 to drop scale off away from center while keeping product readable
-      const scaleCurve = Math.pow(convexCurve, 4); 
+      // Home screen: Products span smoothly between the outer hands of the 3 models (from Green model left hand to Black model right hand)
+      const extendedRange = windowWidth * 0.44; 
+      const normalizedDistance = Math.max(
+        Math.min(distanceFromCenter / extendedRange, 1),
+        -1
+      );
+      const absDistance = Math.abs(normalizedDistance);
+      const convexCurve = Math.max(0, 1 - absDistance);
+
+      const scaleCurve = Math.pow(convexCurve, 2); 
       
-      const minScale = 0.25; // Don't let it shrink to absolute zero, keep it visible in palm
-      const maxScale = 1.35; // Increased center card size from 1.15 to 1.35
+      const minScale = 0.48; // Keep side items clearly visible floating over outer hands
+      const maxScale = 1.30; // Prominent center item
       const hoverBoost = isHovered ? 0.08 : 0;
       scale = minScale + (maxScale - minScale) * scaleCurve + hoverBoost;
 
-      // Rotate side items more significantly to face the center (creates 3D depth)
-      const maxRotate = 25; // 25 degrees rotation
+      // Slight rotation facing inward toward center
+      const maxRotate = 20; 
       rotateY = maxRotate * normalizedDistance; 
 
-      // Spread factor
-      const spreadFactor = 1.15; 
-      translateX = distanceFromCenter * (1 + (spreadFactor - 1) * convexCurve);
+      translateX = distanceFromCenter * (1 + 0.05 * convexCurve);
 
-      // Vertical translation: side items should drop down to sit in the palms
-      const verticalLift = 60; // 60px lift at center
-      translateY = -70 + (verticalLift * scaleCurve); // -10px at center, -70px at sides
+      // Vertical translation: side items drop slightly to sit floating near model hands
+      const verticalLift = 35; 
+      translateY = -45 + (verticalLift * scaleCurve); 
 
       zIndex = Math.round(scaleCurve * 100) + 10;
       
-      // Stop rendering any items outside the frame by forcing opacity to 0 beyond the palms (absDistance >= 0.35)
-      opacity = Math.max(0, 1 - Math.pow(absDistance / 0.32, 2));
+      // Smooth fade in/out right as products reach/emerge from the outer hands of the 3 models
+      opacity = Math.max(0, 1 - Math.pow(absDistance / 0.96, 3));
       
-      // Blur increases as they go to sides
-      const blurAmount = 3 * (1 - scaleCurve);
+      const blurAmount = 2.5 * (1 - scaleCurve);
       filter = `blur(${blurAmount}px)`;
     } else {
       // Standard product details slider style
