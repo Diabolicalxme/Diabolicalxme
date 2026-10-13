@@ -46,6 +46,7 @@ const allowedOrigins = [
   "https://diabolicalxme.com",
   "https://www.diabolicalxme.com",
   "https://diabolicalxme.vercel.app",
+  "https://diabolicalxme-frontend.vercel.app",
   process.env.FRONTEND_URL,
 ].filter(Boolean);
 
@@ -53,11 +54,13 @@ app.use(
   cors({
     origin: function (origin, callback) {
       if (!origin) return callback(null, true);
-      let isAllowed = allowedOrigins.includes(origin);
+      const cleanOrigin = origin.replace(/\/+$/, "");
+      let isAllowed = allowedOrigins.includes(cleanOrigin) || allowedOrigins.includes(origin);
       if (!isAllowed) {
         try {
-          const host = new URL(origin).hostname;
-          if (host === "vercel.app" || host.endsWith(".vercel.app")) {
+          const parsed = new URL(origin);
+          const host = parsed.hostname;
+          if (host === "vercel.app" || host.endsWith(".vercel.app") || allowedOrigins.includes(parsed.origin)) {
             isAllowed = true;
           }
         } catch (e) {
