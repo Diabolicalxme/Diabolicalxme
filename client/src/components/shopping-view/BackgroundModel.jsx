@@ -4,7 +4,8 @@ import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { motion, useScroll, useTransform } from 'framer-motion';
 
-const MODEL_BASE_URL = 'https://diabolicalxme.github.io/3D-assests';
+// Local Vercel CDN optimized models path (with fallback to external URL if VITE_3D_MODEL_BASE_URL is set)
+const MODEL_BASE_URL = import.meta.env.VITE_3D_MODEL_BASE_URL || '/models-optimized';
 
 // ---------------- Model ----------------
 function Model({ modelName, isMobile, scrollProgress }) {
@@ -24,7 +25,9 @@ function Model({ modelName, isMobile, scrollProgress }) {
     return `${base}-v2`;
   }, [modelName, isMini]);
 
-  const { scene } = useGLTF(`${MODEL_BASE_URL}/${actualModelName}.glb`);
+  const modelUrl = `${MODEL_BASE_URL}/${actualModelName}.glb`;
+
+  const { scene } = useGLTF(modelUrl);
   const clonedScene = useMemo(() => (scene ? scene.clone() : null), [scene]);
 
   useEffect(() => {
@@ -38,11 +41,11 @@ function Model({ modelName, isMobile, scrollProgress }) {
         const size = box.getSize(new THREE.Vector3());
         const center = box.getCenter(new THREE.Vector3());
 
-        const targetHeight = isMini ? 6.2 : (isMobile ? 6.5 : 9.2);
+        const targetHeight = isMini ? 5.5 : (isMobile ? 6.2 : 8.4);
         const scale = targetHeight / size.y;
         const verticalOffset = isMini 
-          ? -size.y * 0.04  // Lower down when in hamburger mode so head is not cut off
-          : (isMobile ? -size.y * 0.18 : -size.y * 0.21);
+          ? -size.y * 0.08  // Lower down in hamburger mode so full head is visible with headroom
+          : (isMobile ? -size.y * 0.18 : -size.y * 0.25);
 
         modelRef.current.position.set(
           -center.x * scale,
@@ -114,6 +117,22 @@ export default function BackgroundModel({ modelName, onError, onModelLoaded }) {
     return () => unsubscribe();
   }, [scrollY]);
 
+  // On-demand selective preload: only preload the active character's hamburger model when user scrolls
+  useEffect(() => {
+    if (scrollProgress > 0.3 && scrollProgress < 0.85 && modelName) {
+      const lower = modelName.toLowerCase();
+      let base = 'Arthur';
+      if (lower.includes('bravo')) base = 'Bravo';
+      else if (lower.includes('hector')) base = 'Hector';
+      else if (lower.includes('arthur')) base = 'Arthur';
+      try {
+        useGLTF.preload(`${MODEL_BASE_URL}/${base}-hambg.glb`);
+      } catch (err) {
+        // Preload fallback ignored
+      }
+    }
+  }, [scrollProgress, modelName]);
+
   const handleMiniClick = () => {
     if (scrollProgress > 0.85) {
       window.dispatchEvent(new CustomEvent('open-mobile-menu'));
@@ -144,7 +163,7 @@ export default function BackgroundModel({ modelName, onError, onModelLoaded }) {
 
   const containerStyle = {
     position: 'fixed',
-    top: scrollProgress === 0 ? (isMobile ? '65px' : '20px') : `calc(${miniTop} * ${scrollProgress})`,
+    top: scrollProgress === 0 ? '0px' : `calc(${miniTop} * ${scrollProgress})`,
     left: scrollProgress === 0 ? '0px' : `calc(${miniLeft} * ${scrollProgress})`,
     width: scrollProgress === 0 ? '100vw' : `calc(100vw - (100vw - ${miniSize}) * ${scrollProgress})`,
     height: scrollProgress === 0 ? '100vh' : `calc(100vh - (100vh - ${miniSize}) * ${scrollProgress})`,
@@ -200,16 +219,4 @@ export default function BackgroundModel({ modelName, onError, onModelLoaded }) {
       />
     </div>
   );
-}
-
-// ---------------- Preload ----------------
-try {
-  useGLTF.preload(`${MODEL_BASE_URL}/Arthur-v2.glb`);
-  useGLTF.preload(`${MODEL_BASE_URL}/Bravo-v2.glb`);
-  useGLTF.preload(`${MODEL_BASE_URL}/Hector-v2.glb`);
-  useGLTF.preload(`${MODEL_BASE_URL}/Arthur-hambg.glb`);
-  useGLTF.preload(`${MODEL_BASE_URL}/Bravo-hambg.glb`);
-  useGLTF.preload(`${MODEL_BASE_URL}/Hector-hambg.glb`);
-} catch (error) {
-  console.warn('Failed to preload 3D models:', error);
-}
+}

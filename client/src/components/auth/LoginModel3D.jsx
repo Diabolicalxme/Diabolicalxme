@@ -6,17 +6,22 @@ import { getGradientColors } from '@/utils/theme-utils';
 import { Loader } from '@/components/ui/loader';
 import * as THREE from 'three';
 
+const LOGIN_MODEL_URL = import.meta.env.VITE_3D_MODEL_BASE_URL 
+  ? `${import.meta.env.VITE_3D_MODEL_BASE_URL}/Login.glb` 
+  : '/models-optimized/Login.glb';
+
 // Model component that shows face to shoulders (portrait view) for login
 function LoginModel({ formProgress = 0 }) {
   const modelRef = useRef();
-  const { scene } = useGLTF('https://diabolicalxme.github.io/3D-assests/Login.glb');
+  const { scene } = useGLTF(LOGIN_MODEL_URL);
   const { viewport } = useThree(); // ✅ get viewport
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== 'undefined' ? window.innerWidth <= 768 : false
+  );
 
-  // Detect mobile on mount + resize
+  // Detect mobile on resize
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
-    checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
@@ -31,6 +36,11 @@ function LoginModel({ formProgress = 0 }) {
 
   useFrame(() => {
     if (modelRef.current) {
+      // Enforce portrait head-and-shoulders scale and position on render loop
+      const scale = Math.min(viewport.width, viewport.height) * 1.3;
+      modelRef.current.scale.setScalar(scale);
+      modelRef.current.position.set(0, isMobile ? -1.6 : -3.4, 0);
+
       const currentRotation = modelRef.current.rotation.y;
       let rotationDiff = targetRotation - currentRotation;
 
@@ -43,26 +53,12 @@ function LoginModel({ formProgress = 0 }) {
 
   useEffect(() => {
     if (clonedScene && modelRef.current) {
-      try {
-        const scale = Math.min(viewport.width, viewport.height) * 1.4;
-        modelRef.current.scale.setScalar(scale);
-
-        // ✅ Different position for mobile vs desktop
-        if (isMobile) {
-          modelRef.current.position.set(0, -2.26, 0);
-        } else {
-          modelRef.current.position.set(0, -4.7, 0);
-        }
-
-        if (!modelRef.current.userData.rotationInitialized) {
-          modelRef.current.rotation.y = Math.PI;
-          modelRef.current.userData.rotationInitialized = true;
-        }
-      } catch (error) {
-        console.error("Error positioning login model:", error);
+      if (!modelRef.current.userData.rotationInitialized) {
+        modelRef.current.rotation.y = Math.PI;
+        modelRef.current.userData.rotationInitialized = true;
       }
     }
-  }, [clonedScene, viewport, isMobile]);
+  }, [clonedScene]);
 
   if (!clonedScene) return null;
 
@@ -76,10 +72,8 @@ function LoginScene({ formProgress }) {
 
   useEffect(() => {
     // Adjust camera for a tight head-and-shoulders framing
-    camera.position.set(0, 0, 4);
+    camera.position.set(0, 0, 3.2);
     camera.lookAt(0, 0, 0);
-
-    // Narrower FOV to zoom in
     camera.fov = 35;
     camera.updateProjectionMatrix();
   }, [camera]);
@@ -143,7 +137,8 @@ function LoginModel3D({ formProgress = 0 }) {
 
   const canvasProps = useMemo(() => ({
     camera: {
-      fov: 50,
+      position: [0, 0, 3.2],
+      fov: 35,
       near: 0.1,
       far: 1000,
     },
@@ -217,6 +212,6 @@ function LoginModel3D({ formProgress = 0 }) {
 }
 
 // Preload the Arthur model
-useGLTF.preload('https://diabolicalxme.github.io/3D-assests/Login.glb');
+useGLTF.preload(LOGIN_MODEL_URL);
 
 export default LoginModel3D;

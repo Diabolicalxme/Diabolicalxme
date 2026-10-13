@@ -93,7 +93,9 @@ export default defineConfig({
           // UI and animation libraries
           'ui-vendor': ['framer-motion', 'lucide-react'],
           // Utility libraries
-          'utils-vendor': ['axios', 'clsx', 'class-variance-authority']
+          'utils-vendor': ['axios', 'clsx', 'class-variance-authority'],
+          // 3D and WebGL libraries
+          'three-vendor': ['three', '@react-three/fiber', '@react-three/drei']
         },
       },
     },

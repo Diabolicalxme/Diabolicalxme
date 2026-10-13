@@ -10,7 +10,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "generate-sitemap": "node scripts/generate-sitemap.js",
-    "cleanup": "node scripts/cleanup.js"
+    "cleanup": "node scripts/cleanup.js",
+    "optimize-models": "node scripts/optimize-models.js"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.0",

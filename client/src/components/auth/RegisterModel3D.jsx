@@ -6,22 +6,27 @@ import { getGradientColors } from '@/utils/theme-utils';
 import { Loader } from '@/components/ui/loader';
 import * as THREE from 'three';
 
+const LOGIN_MODEL_URL = import.meta.env.VITE_3D_MODEL_BASE_URL 
+  ? `${import.meta.env.VITE_3D_MODEL_BASE_URL}/Login.glb` 
+  : '/models-optimized/Login.glb';
+
 // Model component that shows face to shoulders (portrait view)
 function RegistrationModel({ formProgress = 0 }) {
   const modelRef = useRef();
   const { viewport } = useThree();
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(
+    typeof window !== 'undefined' ? window.innerWidth <= 768 : false
+  );
 
-  // Detect mobile on mount + resize
+  // Detect mobile on resize
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth <= 768);
-    checkMobile();
     window.addEventListener("resize", checkMobile);
     return () => window.removeEventListener("resize", checkMobile);
   }, []);
 
   // Use Arthur model as default for registration
-  const { scene } = useGLTF('https://diabolicalxme.github.io/3D-assests/Login.glb');
+  const { scene } = useGLTF(LOGIN_MODEL_URL);
 
   // Clone the scene to avoid issues with multiple instances
   const clonedScene = useMemo(() => {
@@ -35,47 +40,29 @@ function RegistrationModel({ formProgress = 0 }) {
   // Smooth rotation animation
   useFrame(() => {
     if (modelRef.current) {
-      // Smooth interpolation to target rotation with better continuity
+      // Enforce portrait head-and-shoulders scale and position on render loop
+      const scale = Math.min(viewport.width, viewport.height) * 1.3;
+      modelRef.current.scale.setScalar(scale);
+      modelRef.current.position.set(0, isMobile ? -1.6 : -3.4, 0);
+
       const currentRotation = modelRef.current.rotation.y;
       let rotationDiff = targetRotation - currentRotation;
 
-      // Handle rotation wrapping for smooth transition
-      if (rotationDiff > Math.PI) {
-        rotationDiff -= 2 * Math.PI;
-      } else if (rotationDiff < -Math.PI) {
-        rotationDiff += 2 * Math.PI;
-      }
+      if (rotationDiff > Math.PI) rotationDiff -= 2 * Math.PI;
+      else if (rotationDiff < -Math.PI) rotationDiff += 2 * Math.PI;
 
-      modelRef.current.rotation.y += rotationDiff * 0.08; // Smooth transition
+      modelRef.current.rotation.y += rotationDiff * 0.08;
     }
   });
 
-  // Position and scale the model to show face to shoulders (portrait view)
   useEffect(() => {
     if (clonedScene && modelRef.current) {
-      try {
-        // Scale up for tight head-and-shoulders framing
-        const scale = Math.min(viewport.width, viewport.height) * 1.3;
-        modelRef.current.scale.setScalar(scale);
-
-
-        if (isMobile) {
-          modelRef.current.position.set(0, -1.6, 0);
-        } else {
-          modelRef.current.position.set(0, -3.4, 0);
-        }
-
-
-        // Initial rotation
-        if (!modelRef.current.userData.rotationInitialized) {
-          modelRef.current.rotation.y = Math.PI; // Start facing back
-          modelRef.current.userData.rotationInitialized = true;
-        }
-      } catch (error) {
-        console.error('Error positioning registration model:', error);
+      if (!modelRef.current.userData.rotationInitialized) {
+        modelRef.current.rotation.y = Math.PI; // Start facing back
+        modelRef.current.userData.rotationInitialized = true;
       }
     }
-  }, [clonedScene, viewport, isMobile]);
+  }, [clonedScene]);
 
 
   if (!clonedScene) {
@@ -164,6 +151,7 @@ function RegisterModel3D({ formProgress = 0 }) {
 
   const canvasProps = useMemo(() => ({
     camera: {
+      position: [0, 0, 3.2],
       fov: 35, // Match the FOV set in RegistrationScene
       near: 0.1,
       far: 1000,
@@ -238,6 +226,6 @@ function RegisterModel3D({ formProgress = 0 }) {
 }
 
 // Preload the Arthur model
-useGLTF.preload('https://diabolicalxme.github.io/3D-assests/Login.glb');
+useGLTF.preload(LOGIN_MODEL_URL);
 
 export default RegisterModel3D;

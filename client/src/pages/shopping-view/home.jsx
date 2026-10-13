@@ -267,8 +267,8 @@ function ShoppingHome() {
   // Only show loader on initial load, not when filters change
   const isInitialLoading = !initialLoadComplete && (productsLoading || bannersLoading || categoriesLoading || instaFeedLoading);
 
-  // Show loader until both data and background model are loaded
-  const showLoader = isInitialLoading || (isAuthenticated && use3DBackground && !isBackgroundModelLoaded) || isBannerNavigating;
+  // Show loader until essential shop data is ready; 3D background streams in asynchronously
+  const showLoader = isInitialLoading || isBannerNavigating;
 
   return (
     <>
