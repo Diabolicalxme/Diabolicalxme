@@ -1,1 +1,1 @@
-*.glb filter=lfs diff=lfs merge=lfs -text
+# Git LFS removed - optimized models (2.3MB) are committed directly to Git for seamless Vercel CDN deployment

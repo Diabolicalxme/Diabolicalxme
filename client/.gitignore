@@ -32,4 +32,5 @@ dist-ssr
 
 
 assets/models/
-# public/models/ */
+public/models/*.glb
+!public/models/.gitkeep
