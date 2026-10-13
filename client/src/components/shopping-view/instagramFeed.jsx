@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import InstagramCard from "./InstagramCard";
+import InstagramCard from "./instagramCard";
 import { InstagramEmbed } from "react-social-media-embed";
 
 const InstagramFeed = ({ posts }) => {

@@ -47,8 +47,12 @@ function ShoppingHeader() {
   const lastCartSheetToggleTime = useRef(0);
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const dispatch = useDispatch();
   const [scrollProgress, setScrollProgress] = useState(0);
+
+  const isHomePage = location.pathname === '/shop/home' || location.pathname === '/';
+  const logoOpacity = isHomePage ? Math.min(1, Math.max(0, (scrollProgress - 0.05) * 4)) : 1;
 
   // Scroll listener for hamburger transition
   useEffect(() => {
@@ -617,8 +621,14 @@ function ShoppingHeader() {
               </Sheet>
             </div>
 
-            {/* Center Section - Logo (Absolutely Centered) */}
-            <div className="absolute left-1/2 transform -translate-x-1/2">
+            {/* Center Section - Logo (Absolutely Centered) - Disappears on landing to avoid overlapping head, fades in as user scrolls */}
+            <div
+              className="absolute left-1/2 transform -translate-x-1/2 transition-opacity duration-300 ease-out"
+              style={{
+                opacity: logoOpacity,
+                pointerEvents: logoOpacity < 0.3 ? 'none' : 'auto',
+              }}
+            >
               <Link to="/shop/home" className="flex items-center">
                 <img src={logo} alt="Fashion Store Logo" className="h-14 md:h-18" />
               </Link>

@@ -38,10 +38,38 @@ mongoose
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "http://192.168.137.1:5173",
+  "https://diabolicalx-me.web.app",
+  "https://diabolicalxme.com",
+  "https://www.diabolicalxme.com",
+  "https://diabolicalxme.vercel.app",
+  process.env.FRONTEND_URL,
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://diabolicalx-me.web.app", "http://192.168.137.1:5173"],
-    methods: ["GET", "POST", "DELETE", "PUT"],
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      let isAllowed = allowedOrigins.includes(origin);
+      if (!isAllowed) {
+        try {
+          const host = new URL(origin).hostname;
+          if (host === "vercel.app" || host.endsWith(".vercel.app")) {
+            isAllowed = true;
+          }
+        } catch (e) {
+          isAllowed = false;
+        }
+      }
+      if (isAllowed) {
+        return callback(null, true);
+      }
+      return callback(null, false);
+    },
+    methods: ["GET", "POST", "DELETE", "PUT", "OPTIONS"],
     allowedHeaders: [
       "Content-Type",
       "Authorization",

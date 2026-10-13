@@ -79,25 +79,27 @@ const ProductSlider = ({
 }) => {
   const navigate = useNavigate();
   const containerRef = useRef(null);
-  const itemWidth = isHomeScreen ? 170 : 200;  // Dynamically set card width
-  const cardHeight = isHomeScreen ? 260 : 320; // Dynamically set card height
-  const spacing = isHomeScreen ? 157 : 30;     // Spacing to align products exactly with palms
-  const totalItemWidth = itemWidth + spacing;
-  const visibleCount = products.length;
-
-  const [scrollX, setScrollX] = useState(() => (itemWidth / 2) - (window.innerWidth / 2));
-  const [hoveredIndex, setHoveredIndex] = useState(null);
-
-  // Define the slider height - optimized for 6 items
-  const sliderHeight = cardHeight + 40; // height matching card dimensions with extra padding
 
   // Get window width dynamically
-  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [windowWidth, setWindowWidth] = useState(typeof window !== "undefined" ? window.innerWidth : 1200);
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  const palmDistance = Math.round(windowWidth * 0.23);
+  const itemWidth = isHomeScreen ? 170 : 200;  // Dynamically set card width
+  const cardHeight = isHomeScreen ? 260 : 320; // Dynamically set card height
+  const spacing = isHomeScreen ? Math.max(30, palmDistance - itemWidth) : 30; // Spacing to align products exactly with palms
+  const totalItemWidth = itemWidth + spacing;
+  const visibleCount = products.length;
+
+  const [scrollX, setScrollX] = useState(() => (itemWidth / 2) - (windowWidth / 2));
+  const [hoveredIndex, setHoveredIndex] = useState(null);
+
+  // Define the slider height - optimized for 6 items
+  const sliderHeight = cardHeight + 40; // height matching card dimensions with extra padding
 
   const handleWheel = (e) => {
     // Industry Grade: Stop when the last item is centered, not when it drifts off-screen
@@ -196,34 +198,35 @@ const ProductSlider = ({
 
     if (isHomeScreen) {
       // Home screen custom dramatic concave palm depth effect
-      // Use a power of 4 to drop scale off away from center while keeping product readable
-      const scaleCurve = Math.pow(convexCurve, 4); 
+      // Use a power of 3 to drop scale off toward palm while keeping product sitting neatly in hand
+      const scaleCurve = Math.pow(convexCurve, 3); 
       
-      const minScale = 0.25; // Don't let it shrink to absolute zero, keep it visible in palm
-      const maxScale = 1.35; // Increased center card size from 1.15 to 1.35
+      const minScale = 0.28; // Fits neatly inside the open palm
+      const maxScale = 1.35; // Center featured card
       const hoverBoost = isHovered ? 0.08 : 0;
       scale = minScale + (maxScale - minScale) * scaleCurve + hoverBoost;
 
-      // Rotate side items more significantly to face the center (creates 3D depth)
-      const maxRotate = 25; // 25 degrees rotation
+      // Rotate side items slightly facing toward center
+      const maxRotate = 15;
       rotateY = maxRotate * normalizedDistance; 
 
-      // Spread factor
-      const spreadFactor = 1.15; 
-      translateX = distanceFromCenter * (1 + (spreadFactor - 1) * convexCurve);
+      translateX = distanceFromCenter;
 
-      // Vertical translation: side items should drop down to sit in the palms
-      const verticalLift = 60; // 60px lift at center
-      translateY = -70 + (verticalLift * scaleCurve); // -10px at center, -70px at sides
+      // Vertical translation: side items drop DOWN into the cupped palms (+80px down)
+      const verticalDrop = 85; 
+      translateY = -15 + (verticalDrop * (1 - scaleCurve)); 
 
       zIndex = Math.round(scaleCurve * 100) + 10;
       
-      // Stop rendering any items outside the frame by forcing opacity to 0 beyond the palms (absDistance >= 0.35)
-      opacity = Math.max(0, 1 - Math.pow(absDistance / 0.32, 2));
+      // Palm normalized distance: 0 at center, 1 directly in palm. Fades out completely outside palm
+      const palmNormalizedDist = Math.abs(distanceFromCenter) / totalItemWidth;
+      opacity = palmNormalizedDist > 1.05 
+        ? 0 
+        : Math.max(0, (1 - Math.pow(palmNormalizedDist / 1.05, 2)) * 0.95);
       
-      // Blur increases as they go to sides
-      const blurAmount = 3 * (1 - scaleCurve);
-      filter = `blur(${blurAmount}px)`;
+      // Subtle depth blur at sides
+      const blurAmount = 1.8 * (1 - scaleCurve);
+      filter = blurAmount > 0.2 ? `blur(${blurAmount}px)` : 'none';
     } else {
       // Standard product details slider style
       const minScale = 0.1;

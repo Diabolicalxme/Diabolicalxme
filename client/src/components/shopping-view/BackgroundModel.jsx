@@ -10,17 +10,22 @@ const MODEL_BASE_URL = 'https://diabolicalxme.github.io/3D-assests';
 function Model({ modelName, isMobile, scrollProgress }) {
   const modelRef = useRef();
   const isMini = scrollProgress > 0.85;
-  const actualModelName = isMini 
-    ? (modelName === "Arthur_002" ? "Arthur-hambg" : `${modelName}-hambg`)
-    : modelName;
+
+  const actualModelName = useMemo(() => {
+    const lower = (modelName || '').toLowerCase();
+    let base = 'Arthur';
+    if (lower.includes('bravo')) base = 'Bravo';
+    else if (lower.includes('hector')) base = 'Hector';
+    else if (lower.includes('arthur')) base = 'Arthur';
+
+    if (isMini) {
+      return `${base}-hambg`;
+    }
+    return `${base}-v2`;
+  }, [modelName, isMini]);
+
   const { scene } = useGLTF(`${MODEL_BASE_URL}/${actualModelName}.glb`);
   const clonedScene = useMemo(() => (scene ? scene.clone() : null), [scene]);
-
-  // useFrame(() => {
-  //   if (modelRef.current) {
-  //     modelRef.current.rotation.y += 0.005;
-  //   }
-  // });
 
   useEffect(() => {
     if (clonedScene && modelRef.current) {
@@ -33,9 +38,11 @@ function Model({ modelName, isMobile, scrollProgress }) {
         const size = box.getSize(new THREE.Vector3());
         const center = box.getCenter(new THREE.Vector3());
 
-        const targetHeight = isMobile ? 5.8 : 8.0;
+        const targetHeight = isMini ? 6.2 : (isMobile ? 6.5 : 9.2);
         const scale = targetHeight / size.y;
-        const verticalOffset = isMobile ? -size.y * 0.20 : -size.y * 0.23; // shift model down slightly more than before
+        const verticalOffset = isMini 
+          ? -size.y * 0.04  // Lower down when in hamburger mode so head is not cut off
+          : (isMobile ? -size.y * 0.18 : -size.y * 0.21);
 
         modelRef.current.position.set(
           -center.x * scale,
@@ -48,7 +55,7 @@ function Model({ modelName, isMobile, scrollProgress }) {
         console.error("Error positioning model:", err);
       }
     }
-  }, [clonedScene, isMobile]);
+  }, [clonedScene, isMobile, isMini]);
 
   return clonedScene ? (
     <primitive ref={modelRef} object={clonedScene} />
@@ -131,7 +138,7 @@ export default function BackgroundModel({ modelName, onError, onModelLoaded }) {
 
   // Calculate styles based on scroll progress
   const miniSize = '76px';
-  const miniTop = isMobile ? '0px' : '4px';
+  const miniTop = isMobile ? '2px' : '6px';
   const miniLeft = isMobile ? '0px' : '55px';
 
 
@@ -197,12 +204,9 @@ export default function BackgroundModel({ modelName, onError, onModelLoaded }) {
 
 // ---------------- Preload ----------------
 try {
-  // useGLTF.preload(`${MODEL_BASE_URL}/Arthur.glb`);
-  // useGLTF.preload(`${MODEL_BASE_URL}/Arthur_002.glb`);
-  useGLTF.preload(`${MODEL_BASE_URL}/All_3.glb`);
-
-  useGLTF.preload(`${MODEL_BASE_URL}/Bravo.glb`);
-  useGLTF.preload(`${MODEL_BASE_URL}/Hector.glb`);
+  useGLTF.preload(`${MODEL_BASE_URL}/Arthur-v2.glb`);
+  useGLTF.preload(`${MODEL_BASE_URL}/Bravo-v2.glb`);
+  useGLTF.preload(`${MODEL_BASE_URL}/Hector-v2.glb`);
   useGLTF.preload(`${MODEL_BASE_URL}/Arthur-hambg.glb`);
   useGLTF.preload(`${MODEL_BASE_URL}/Bravo-hambg.glb`);
   useGLTF.preload(`${MODEL_BASE_URL}/Hector-hambg.glb`);

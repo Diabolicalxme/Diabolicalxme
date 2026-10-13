@@ -1,5 +1,6 @@
 .qodo
 .env
+.vercel
 
 # remove public models
 # client/public/models
