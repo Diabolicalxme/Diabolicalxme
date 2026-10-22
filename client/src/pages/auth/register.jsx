@@ -249,13 +249,8 @@ function AuthRegister() {
       {!showQuote && !registrationCompleted && (
         <>
           {/* 3D Model Background */}
-          <div className="fixed inset-0 z-0 opacity-70">
+          <div className="fixed inset-0 z-0">
             <RegisterModel3D formProgress={formProgress} />
-          </div>
-
-          {/* Logo */}
-          <div className="fixed top-8 right-4 md:right-8 z-30">
-            <img src={logo} alt="Logo" className="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-2xl" />
           </div>
 
           {/* Main Content Overlay */}

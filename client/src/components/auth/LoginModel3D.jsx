@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import { getGradientColors } from '@/utils/theme-utils';
 import { Loader } from '@/components/ui/loader';
 import * as THREE from 'three';
+import heroSpotlightBg from '@/assets/hero-spotlight-bg.jpg';
 
 const LOGIN_MODEL_URL = import.meta.env.VITE_3D_MODEL_BASE_URL 
   ? `${import.meta.env.VITE_3D_MODEL_BASE_URL}/Login.glb` 
@@ -164,9 +165,9 @@ function LoginModel3D({ formProgress = 0 }) {
 
   return (
     <div
-      className="fixed inset-0 w-full h-full"
+      className="fixed inset-0 w-full h-full overflow-hidden"
       style={{
-        background: themeColors.gradient,
+        backgroundColor: '#070a0e',
         position: 'fixed',
         top: 0,
         left: 0,
@@ -175,6 +176,15 @@ function LoginModel3D({ formProgress = 0 }) {
         zIndex: 0
       }}
     >
+      {/* Studio Spotlight Backdrop matching Home screen */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden" style={{ zIndex: -1 }}>
+        <img
+          src={heroSpotlightBg}
+          alt="Spotlight Background"
+          className="w-full h-full object-cover object-center"
+        />
+      </div>
+
       <Canvas
         {...canvasProps}
         frameloop='always'

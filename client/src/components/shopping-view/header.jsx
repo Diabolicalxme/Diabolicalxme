@@ -26,7 +26,7 @@ import {
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { logoutUser, fetchUserProfile, fetchIncognitoUsers, loginAsIncognitoUser, loginAsMainUser } from "@/store/auth-slice";
 import CustomCartDrawer from "./custom-cart-drawer";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import RotatingMessages from "./rotating-messages.jsx";
 import { fetchCartItems, clearCart } from "@/store/shop/cart-slice";
 import { Label } from "../ui/label";
@@ -34,6 +34,7 @@ import { FaWhatsapp, FaInstagram, FaFacebook } from "react-icons/fa";
 import { useToast } from "../ui/use-toast";
 import { getTempCartCount, restoreTempCartFromBackup } from "@/utils/tempCartManager";
 import { resetCartCopyState } from "@/utils/cartCopyManager";
+import Hamburger3DModel from "./Hamburger3DModel";
 
 
 function ShoppingHeader() {
@@ -54,15 +55,27 @@ function ShoppingHeader() {
   const isHomePage = location.pathname === '/shop/home' || location.pathname === '/';
   const logoOpacity = isHomePage ? Math.min(1, Math.max(0, (scrollProgress - 0.05) * 4)) : 1;
 
-  // Scroll listener for hamburger transition
+  const modelName = useMemo(() => {
+    const category = user?.category || '';
+    if (category.toLowerCase().includes('bravo')) return 'Bravo';
+    if (category.toLowerCase().includes('hector')) return 'Hector';
+    return 'Arthur';
+  }, [user?.category]);
+
+  // On other pages: always show hamburger 3D model in header.
+  // On home page: show after complete scroll of background and hero model.
+  const showHamburger3D = !isHomePage || scrollProgress >= 1;
+
+  // Scroll listener for hero scroll completion
   useEffect(() => {
     const handleScroll = () => {
       const latest = window.scrollY;
-      const progress = Math.min(latest / 500, 1);
+      const progress = Math.min(latest / 450, 1);
       setScrollProgress(progress);
     };
 
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -593,19 +606,26 @@ function ShoppingHeader() {
         {/* Main header */}
         <div className={headerClasses.main}>
           <div className="max-w-[1440px] mx-auto flex h-20 items-center relative px-4 md:px-6">
-            {/* Left Section - Menu Button */}
+            {/* Left Section - Menu Button / Hamburger 3D Avatar */}
             <div className="flex items-center">
               <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
-                <SheetTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className={`${headerClasses.iconColor || 'text-foreground'} transition-opacity duration-500 ${scrollProgress > 0.85 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
-                  >
-                    <Menu className="h-6 w-6" />
-                    <span className="sr-only">Toggle menu</span>
-                  </Button>
-                </SheetTrigger>
+                {showHamburger3D ? (
+                  <Hamburger3DModel
+                    modelName={modelName}
+                    onClick={() => setIsSheetOpen(true)}
+                  />
+                ) : (
+                  <SheetTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className={`${headerClasses.iconColor || 'text-foreground'} transition-opacity duration-300`}
+                    >
+                      <Menu className="h-6 w-6" />
+                      <span className="sr-only">Toggle menu</span>
+                    </Button>
+                  </SheetTrigger>
+                )}
                 <SheetContent side="left" className="w-full max-w-xs p-0 bg-background text-foreground border-border">
                   <div className="p-6">
                     <Link

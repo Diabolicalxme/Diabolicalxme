@@ -94,13 +94,8 @@ function AuthForgotPassword() {
   return (
     <div className="h-screen w-full relative overflow-hidden bg-black selection:bg-white/20">
       {/* 3D Model Background */}
-      <div className="fixed inset-0 z-0 opacity-60">
+      <div className="fixed inset-0 z-0">
         <LoginModel3D formProgress={formData.email ? 0.5 : 0} />
-      </div>
-
-      {/* Logo */}
-      <div className="fixed top-8 left-1/2 -translate-x-1/2 md:left-auto md:right-8 md:translate-x-0 z-30">
-        <img src={logo} alt="Logo" className="w-16 h-16 md:w-20 md:h-20 object-contain drop-shadow-2xl" />
       </div>
 
       {/* Content Overlay */}

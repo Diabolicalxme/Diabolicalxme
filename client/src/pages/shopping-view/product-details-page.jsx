@@ -579,7 +579,7 @@ function ProductDetailsPage() {
   return (
     <>
       <Helmet>
-        <title>{productDetails?.title ? `${productDetails.title} | DiabolicalXme` : 'Product Details | DiabolicalXme'}</title>
+        <title>{productDetails?.title ? `${productDetails.title.toUpperCase()} | DiabolicalXme` : 'Product Details | DiabolicalXme'}</title>
         <meta
           name="description"
           content={productDetails?.description ?
@@ -593,7 +593,7 @@ function ProductDetailsPage() {
         <meta name="robots" content="index, follow" />
 
         {/* Open Graph tags */}
-        <meta property="og:title" content={productDetails?.title ? `${productDetails.title} | DiabolicalXme` : 'Product Details | DiabolicalXme'} />
+        <meta property="og:title" content={productDetails?.title ? `${productDetails.title.toUpperCase()} | DiabolicalXme` : 'Product Details | DiabolicalXme'} />
         <meta
           property="og:description"
           content={productDetails?.description ?
@@ -608,7 +608,7 @@ function ProductDetailsPage() {
 
         {/* Twitter Card tags */}
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content={productDetails?.title ? `${productDetails.title} | DiabolicalXme` : 'Product Details | DiabolicalXme'} />
+        <meta name="twitter:title" content={productDetails?.title ? `${productDetails.title.toUpperCase()} | DiabolicalXme` : 'Product Details | DiabolicalXme'} />
         <meta
           name="twitter:description"
           content={productDetails?.description ?
@@ -818,41 +818,33 @@ function ProductDetailsPage() {
                 </div>
               ) : (
                 <div className="flex flex-col items-center gap-6 w-full max-w-md">
-                  {/* Creative Quantity Controls */}
+                  {/* Quantity Controls */}
                   {productDetails?.totalStock > 0 && (
                     <div className="flex justify-center items-center w-full">
-                      <div className="relative flex items-center justify-center">
-                        {/* Circular quantity display with creative styling */}
-                        <div className="relative w-20 h-20 flex items-center justify-center">
-                          <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
-                            <circle cx="50" cy="50" r="45" fill="none" stroke="var(--muted)" strokeWidth="2" />
-                            <circle cx="50" cy="50" r="45" fill="none" stroke="var(--primary)" strokeWidth="2"
-                              strokeDasharray="283"
-                              strokeDashoffset={283 - (283 * (quantity / (productDetails.totalStock > 10 ? 10 : productDetails.totalStock)))}
-                              transform="rotate(-90 50 50)"
-                            />
-                          </svg>
-                          <span className="text-2xl font-medium text-foreground">{quantity}</span>
-                        </div>
-
-                        {/* Decrease button positioned to the left with more spacing */}
+                      <div className="relative flex items-center justify-center gap-6">
+                        {/* Decrease button */}
                         <button
                           onClick={decreaseQuantity}
-                          className="absolute -left-10 w-10 h-10 flex items-center justify-center hover:scale-110 transition-transform duration-300 focus:outline-none"
+                          className="w-10 h-10 flex items-center justify-center hover:scale-110 transition-transform duration-300 focus:outline-none cursor-pointer"
                           aria-label="Decrease quantity"
                           disabled={quantity <= 1}
                         >
-                          <Minus className={`h-5 w-5 text-muted-foreground`} />
+                          <Minus className="h-5 w-5 text-muted-foreground" />
                         </button>
 
-                        {/* Increase button positioned to the right with more spacing */}
+                        {/* Clean quantity display without circling SVG */}
+                        <div className="min-w-[48px] flex items-center justify-center">
+                          <span className="text-2xl font-medium text-foreground">{quantity}</span>
+                        </div>
+
+                        {/* Increase button */}
                         <button
                           onClick={increaseQuantity}
-                          className="absolute -right-10 w-10 h-10 flex items-center justify-center hover:scale-110 transition-transform duration-300 focus:outline-none"
+                          className="w-10 h-10 flex items-center justify-center hover:scale-110 transition-transform duration-300 focus:outline-none cursor-pointer"
                           aria-label="Increase quantity"
                           disabled={quantity >= productDetails.totalStock}
                         >
-                          <Plus className={`h-5 w-5 text-muted-foreground`} />
+                          <Plus className="h-5 w-5 text-muted-foreground" />
                         </button>
                       </div>
                     </div>
