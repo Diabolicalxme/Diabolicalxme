@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { useToast } from "../../components/ui/use-toast";
-import { fetchProductDetails } from "@/store/shop/products-slice";
+import { fetchProductDetails, setProductDetails } from "@/store/shop/products-slice";
 import { addToCart, fetchCartItems } from "@/store/shop/cart-slice";
 import { addReview, getReviews } from "@/store/shop/review-slice";
 import StarRatingComponent from "../../components/common/star-rating";
@@ -15,13 +15,14 @@ import { fetchAllProducts } from "@/store/admin/products-slice";
 import { Helmet } from "react-helmet-async";
 import { categoryMapping } from "@/config";
 import { addToTempCart } from "@/utils/tempCartManager";
+import { Loader } from "@/components/ui/loader";
 
 function ProductDetailsPage() {
   const [reviewMsg, setReviewMsg] = useState("");
   const [rating, setRating] = useState(0);
   const [selectedColor, setSelectedColor] = useState("");
   const [quantity, setQuantity] = useState(1);
-  const { productList, productDetails } = useSelector((state) => state.shopProducts);
+  const { productList, productDetails, isLoading } = useSelector((state) => state.shopProducts);
   const [selectedImage, setSelectedImage] = useState(null);
   const [isAddingToCart, setIsAddingToCart] = useState(false);
   const [zoomData, setZoomData] = useState({
@@ -418,6 +419,10 @@ function ProductDetailsPage() {
     };
 
     fetchData();
+
+    return () => {
+      dispatch(setProductDetails());
+    };
   }, [getCurrentProductId, location.key, dispatch]);
 
   // Fetch reviews and set the default selected image when product details are updated.
@@ -491,6 +496,11 @@ function ProductDetailsPage() {
       ? 'animate-slide-left'
       : 'animate-slide-right';
   };
+
+  // Show brand full-screen loader while product details are loading or not yet matching current product ID
+  if (isLoading || !productDetails || productDetails?._id !== getCurrentProductId) {
+    return <Loader />;
+  }
 
   // Create structured data for product
   const structuredData = productDetails ? {

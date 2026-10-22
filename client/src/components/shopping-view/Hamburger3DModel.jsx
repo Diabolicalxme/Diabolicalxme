@@ -23,10 +23,11 @@ function HamburgerAvatarModel({ baseModel = 'Arthur' }) {
         const size = box.getSize(new THREE.Vector3());
         const center = box.getCenter(new THREE.Vector3());
 
-        // Target height tuned for hamburger bust framing
-        const targetHeight = 5.5;
+        // Zoom in on bust/torso while keeping head safely inside circular viewport
+        const targetHeight = 8.2;
         const scale = targetHeight / size.y;
-        const verticalOffset = -size.y * 0.08;
+        // Offset model downwards so the head has comfortable headroom and is not cut off
+        const verticalOffset = -size.y * 0.24;
 
         modelRef.current.position.set(
           -center.x * scale,
