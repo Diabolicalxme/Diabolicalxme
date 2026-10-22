@@ -600,7 +600,7 @@ function ShoppingHeader() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className={`text-foreground transition-opacity duration-500 ${scrollProgress > 0.85 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
+                    className={`${headerClasses.iconColor || 'text-foreground'} transition-opacity duration-500 ${scrollProgress > 0.85 ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
                   >
                     <Menu className="h-6 w-6" />
                     <span className="sr-only">Toggle menu</span>
@@ -642,12 +642,12 @@ function ShoppingHeader() {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <div className="flex items-center gap-2 cursor-pointer p-2">
-                        <Avatar className="h-8 w-8 bg-card border border-border">
-                          <AvatarFallback className="bg-card text-foreground font-medium text-sm">
+                        <Avatar className={`h-8 w-8 ${headerClasses.avatarClass || 'bg-card border border-border'}`}>
+                          <AvatarFallback className={`${headerClasses.avatarFallback || 'bg-card text-foreground'} font-medium text-sm`}>
                             {user.userName ? user.userName[0].toUpperCase() : ""}
                           </AvatarFallback>
                         </Avatar>
-                        <span className="text-sm text-foreground">{user.userName || "Main Account"}</span>
+                        <span className={`text-sm ${headerClasses.textColor || 'text-foreground'}`}>{user.userName || "Main Account"}</span>
                       </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56 p-2 bg-card shadow-lg rounded-md border border-border">
@@ -728,8 +728,8 @@ function ShoppingHeader() {
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                       <div className="flex items-center gap-2 cursor-pointer p-2">
-                        <UserPlus className="h-5 w-5 text-foreground/70 group-hover:text-foreground transition-colors hover:cursor-pointer" />
-                        <span className="text-sm">Sign In</span>
+                        <UserPlus className={`h-5 w-5 ${headerClasses.iconColor || 'text-foreground/70'} group-hover:text-foreground transition-colors hover:cursor-pointer`} />
+                        <span className={`text-sm ${headerClasses.textColor || 'text-foreground'}`}>Sign In</span>
                       </div>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-56 p-2 bg-card shadow-lg rounded-md border border-border">
@@ -755,7 +755,7 @@ function ShoppingHeader() {
                   setIsSheetOpen(false); // Close the menu sidebar
                   navigate('/shop/search');
                 }} className="relative group p-2">
-                  <Search className="h-5 w-5 text-foreground group-hover:opacity-80 transition-colors" />
+                  <Search className={`h-5 w-5 ${headerClasses.iconColor || 'text-foreground'} group-hover:opacity-80 transition-colors`} />
                   <span className="sr-only">Search</span>
                 </button>
 
@@ -772,9 +772,9 @@ function ShoppingHeader() {
                     }
                   }}
                 >
-                  <ShoppingBag className="h-5 w-5 text-foreground group-hover:opacity-80 transition-colors" />
+                  <ShoppingBag className={`h-5 w-5 ${headerClasses.iconColor || 'text-foreground'} group-hover:opacity-80 transition-colors`} />
                   {totalCartCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-foreground text-background text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                    <span className={`absolute -top-2 -right-2 ${headerClasses.badge || 'bg-foreground text-background'} text-xs rounded-full h-4 w-4 flex items-center justify-center`}>
                       {totalCartCount}
                     </span>
                   )}
@@ -790,13 +790,13 @@ function ShoppingHeader() {
                   className="relative group px-1"
                 >
                   {user ? (
-                    <Avatar className="h-8 w-8 bg-card border border-border">
-                      <AvatarFallback className="bg-card text-foreground font-medium text-xs">
+                    <Avatar className={`h-8 w-8 ${headerClasses.avatarClass || 'bg-card border border-border'}`}>
+                      <AvatarFallback className={`${headerClasses.avatarFallback || 'bg-card text-foreground'} font-medium text-xs`}>
                         {user.userName ? user.userName[0].toUpperCase() : ""}
                       </AvatarFallback>
                     </Avatar>
                   ) : (
-                    <UserPlus className="h-8 w-8 text-foreground/70 group-hover:text-foreground transition-colors" />
+                    <UserPlus className={`h-8 w-8 ${headerClasses.iconColor || 'text-foreground/70'} group-hover:text-foreground transition-colors`} />
                   )}
                   <span className="sr-only">User Account</span>
                 </button>
@@ -805,7 +805,7 @@ function ShoppingHeader() {
                   setIsSheetOpen(false); // Close the menu sidebar
                   navigate('/shop/search');
                 }} className="relative group px-1">
-                  <Search className="h-5 w-5 text-foreground group-hover:opacity-80 transition-colors" />
+                  <Search className={`h-5 w-5 ${headerClasses.iconColor || 'text-foreground'} group-hover:opacity-80 transition-colors`} />
                   <span className="sr-only">Search</span>
                 </button>
 
@@ -821,9 +821,9 @@ function ShoppingHeader() {
                     }
                   }}
                 >
-                  <ShoppingBag className="h-5 w-5 text-foreground group-hover:opacity-80 transition-colors" />
+                  <ShoppingBag className={`h-5 w-5 ${headerClasses.iconColor || 'text-foreground'} group-hover:opacity-80 transition-colors`} />
                   {totalCartCount > 0 && (
-                    <span className="absolute -top-2 -right-2 bg-foreground text-background text-xs rounded-full h-4 w-4 flex items-center justify-center">
+                    <span className={`absolute -top-2 -right-2 ${headerClasses.badge || 'bg-foreground text-background'} text-xs rounded-full h-4 w-4 flex items-center justify-center`}>
                       {totalCartCount}
                     </span>
                   )}

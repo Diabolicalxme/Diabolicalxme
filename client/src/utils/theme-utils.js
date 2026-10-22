@@ -162,30 +162,55 @@ export const getHeaderClasses = (currentTheme) => {
   const mainBaseClasses = "border-b transition-colors duration-300";
 
   switch (currentTheme) {
-    case THEMES.BEIGE: // Author theme
+    case THEMES.BEIGE: // Author theme - Header sits over the dark spotlight background, so use white text & icons
       return {
         header: `${baseClasses} bg-transparent`,
-        main: `${mainBaseClasses} bg-transparent border-[#D6CCA9]/30`
+        main: `${mainBaseClasses} bg-transparent border-white/10`,
+        textColor: "text-white",
+        iconColor: "text-white",
+        avatarClass: "bg-white/10 border border-white/20",
+        avatarFallback: "bg-white/10 text-white",
+        badge: "bg-white text-black",
       };
     case THEMES.BLACK: // Bravo theme
       return {
         header: `${baseClasses} bg-transparent`,
-        main: `${mainBaseClasses} bg-transparent border-[#333333]/30`
+        main: `${mainBaseClasses} bg-transparent border-[#333333]/30`,
+        textColor: "text-foreground",
+        iconColor: "text-foreground",
+        avatarClass: "bg-card border border-border",
+        avatarFallback: "bg-card text-foreground",
+        badge: "bg-foreground text-background",
       };
     case THEMES.BOTTLE_GREEN: // Hector theme
       return {
         header: `${baseClasses} bg-transparent`,
-        main: `${mainBaseClasses} bg-transparent border-[#106840]/30`
+        main: `${mainBaseClasses} bg-transparent border-[#106840]/30`,
+        textColor: "text-foreground",
+        iconColor: "text-foreground",
+        avatarClass: "bg-card border border-border",
+        avatarFallback: "bg-card text-foreground",
+        badge: "bg-foreground text-background",
       };
     case THEMES.DARK:
       return {
         header: `${baseClasses} bg-transparent`,
-        main: `${mainBaseClasses} bg-transparent border-[#444444]/30`
+        main: `${mainBaseClasses} bg-transparent border-[#444444]/30`,
+        textColor: "text-foreground",
+        iconColor: "text-foreground",
+        avatarClass: "bg-card border border-border",
+        avatarFallback: "bg-card text-foreground",
+        badge: "bg-foreground text-background",
       };
     default: // Light theme
       return {
         header: `${baseClasses} bg-transparent`,
-        main: `${mainBaseClasses} bg-transparent border-border/30`
+        main: `${mainBaseClasses} bg-transparent border-border/30`,
+        textColor: "text-foreground",
+        iconColor: "text-foreground",
+        avatarClass: "bg-card border border-border",
+        avatarFallback: "bg-card text-foreground",
+        badge: "bg-foreground text-background",
       };
   }
 };

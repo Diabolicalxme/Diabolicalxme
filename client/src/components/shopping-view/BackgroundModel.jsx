@@ -3,9 +3,35 @@ import { Canvas, useFrame, useThree } from '@react-three/fiber';
 import { useGLTF } from '@react-three/drei';
 import * as THREE from 'three';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import heroSpotlightBg from '@/assets/hero-spotlight-bg.jpg';
 
 // Local Vercel CDN optimized models path (with fallback to external URL if VITE_3D_MODEL_BASE_URL is set)
 const MODEL_BASE_URL = import.meta.env.VITE_3D_MODEL_BASE_URL || '/models-optimized';
+
+// ---------------- Studio Spotlight Backdrop ----------------
+function StudioSpotlightBackdrop({ scrollProgress }) {
+  // Fade out smoothly as user scrolls towards hamburger avatar
+  const opacity = Math.max(0, 1 - scrollProgress * 2.5);
+
+  if (opacity <= 0.01) return null;
+
+  return (
+    <div
+      className="fixed inset-0 pointer-events-none overflow-hidden transition-opacity duration-300 ease-out"
+      style={{
+        zIndex: 0,
+        backgroundColor: '#070a0e',
+        opacity,
+      }}
+    >
+      <img
+        src={heroSpotlightBg}
+        alt="Studio Spotlight Backdrop"
+        className="w-full h-full object-cover object-center"
+      />
+    </div>
+  );
+}
 
 // ---------------- Model ----------------
 function Model({ modelName, isMobile, scrollProgress }) {
@@ -82,11 +108,32 @@ function Scene({ modelName, isMobile, scrollProgress }) {
 
   return (
     <>
-      <ambientLight intensity={1.2} color="#ffffff" />
-      <directionalLight position={[0, 10, 0]} intensity={2.5} color="#ffffff" />
-      <directionalLight position={[0, 0, 10]} intensity={1} color="#ffffff" />
-      <directionalLight position={[-5, 10, 0]} intensity={1} color="#ffffff" />
-      <directionalLight position={[5, 0, 0]} intensity={1.5} color="#ffffff" />
+      {/* Balanced ambient fill */}
+      <ambientLight intensity={0.65} color="#cbd5e1" />
+
+      {/* Soft overhead key spotlight matching the smoky backdrop light */}
+      <spotLight
+        position={[0, 8, 2]}
+        target-position={[0, 0, 0]}
+        angle={0.5}
+        penumbra={0.8}
+        intensity={2.4}
+        color="#f1f5f9"
+      />
+
+      {/* Gentle overhead downlight for subtle shoulder definition */}
+      <directionalLight position={[0, 7, 1]} intensity={1.1} color="#f8fafc" />
+
+      {/* Front fill light so T-shirt graphic and face details remain crisp without overexposure */}
+      <directionalLight position={[0, 1, 5]} intensity={1.2} color="#ffffff" />
+
+      {/* Soft side rim lights */}
+      <directionalLight position={[-4, 2, 2]} intensity={0.5} color="#94a3b8" />
+      <directionalLight position={[4, 2, 2]} intensity={0.5} color="#94a3b8" />
+
+      {/* Soft floor bounce reflection */}
+      <directionalLight position={[0, -3, 1.5]} intensity={0.3} color="#475569" />
+
       <Model modelName={modelName} isMobile={isMobile} scrollProgress={scrollProgress} />
     </>
   );
@@ -160,7 +207,6 @@ export default function BackgroundModel({ modelName, onError, onModelLoaded }) {
   const miniTop = isMobile ? '2px' : '6px';
   const miniLeft = isMobile ? '0px' : '55px';
 
-
   const containerStyle = {
     position: 'fixed',
     top: scrollProgress === 0 ? '0px' : `calc(${miniTop} * ${scrollProgress})`,
@@ -171,52 +217,57 @@ export default function BackgroundModel({ modelName, onError, onModelLoaded }) {
     overflow: 'hidden',
     // Fade out in middle of scroll, then fade back in when reaching hamburger position
     opacity: scrollProgress < 0.3 ? 1 : scrollProgress > 0.7 ? 1 : Math.max(0.4, 1 - ((scrollProgress - 0.3) * 1.5)),
-    zIndex: scrollProgress > 0.8 ? 100 : 0,
+    zIndex: scrollProgress > 0.8 ? 100 : 1,
     pointerEvents: scrollProgress > 0.8 ? 'auto' : 'none',
     transition: 'all 0.5s cubic-bezier(0.25, 0.1, 0.25, 1), opacity 0.6s ease-out, z-index 0.1s ease-out',
   };
 
   return (
-    <div onClick={handleMiniClick} style={containerStyle}>
-      <Canvas
-        key={canvasKey}
-        {...canvasProps}
-        frameloop='always'
-        shadows={false}
-        gl={{
-          antialias: true,
-          alpha: true,
-          powerPreference: 'high-performance',
-          preserveDrawingBuffer: false,
-          outputColorSpace: THREE.SRGBColorSpace,
-          toneMapping: THREE.ACESFilmicToneMapping,
-          toneMappingExposure: 1.3,
-        }}
-        dpr={Math.min(window.devicePixelRatio, 2)}
-        onCreated={({ gl }) => {
-          gl.toneMapping = THREE.ACESFilmicToneMapping;
-          gl.toneMappingExposure = 1.3;
-          gl.outputColorSpace = THREE.SRGBColorSpace;
+    <>
+      {/* Studio Spotlight Backdrop Layer (applied across all three categories) */}
+      <StudioSpotlightBackdrop scrollProgress={scrollProgress} />
 
-          const handleContextLost = (event) => {
-            event.preventDefault();
-            console.warn("WebGL Context Lost! Recreating Canvas...");
-            setCanvasKey(prev => prev + 1);
-          };
+      {/* Model Canvas Container (transforms to hamburger) */}
+      <div onClick={handleMiniClick} style={containerStyle}>
+        <Canvas
+          key={canvasKey}
+          {...canvasProps}
+          frameloop='always'
+          shadows={false}
+          gl={{
+            antialias: true,
+            alpha: true,
+            powerPreference: 'high-performance',
+            preserveDrawingBuffer: false,
+            outputColorSpace: THREE.SRGBColorSpace,
+            toneMapping: THREE.ACESFilmicToneMapping,
+            toneMappingExposure: 1.3,
+          }}
+          dpr={Math.min(window.devicePixelRatio, 2)}
+          onCreated={({ gl }) => {
+            gl.toneMapping = THREE.ACESFilmicToneMapping;
+            gl.toneMappingExposure = 1.3;
+            gl.outputColorSpace = THREE.SRGBColorSpace;
 
-          gl.domElement.addEventListener("webglcontextlost", handleContextLost);
-          onModelLoaded?.();
-        }}
-      >
-        <Suspense fallback={null}>
-          <Scene modelName={modelName} isMobile={isMobile} scrollProgress={scrollProgress} />
-        </Suspense>
-      </Canvas>
+            const handleContextLost = (event) => {
+              event.preventDefault();
+              console.warn("WebGL Context Lost! Recreating Canvas...");
+              setCanvasKey(prev => prev + 1);
+            };
 
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{ opacity: 0.2 - (scrollProgress * 0.2) }}
-      />
-    </div>
+            gl.domElement.addEventListener("webglcontextlost", handleContextLost);
+            onModelLoaded?.();
+          }}
+        >
+          <Suspense fallback={null}>
+            <Scene
+              modelName={modelName}
+              isMobile={isMobile}
+              scrollProgress={scrollProgress}
+            />
+          </Suspense>
+        </Canvas>
+      </div>
+    </>
   );
 }
